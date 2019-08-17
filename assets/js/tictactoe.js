@@ -135,8 +135,7 @@ GAME.instances.tictactoe = {};
         _gameOver = true;
     
         setTimeout(() => {
-            GAME.instances.tictactoe.stop();
-            console.log("GAMEOVER")
+            GAME.gameOver(result);
         }, 3000);
     };
 
@@ -254,5 +253,10 @@ GAME.instances.tictactoe = {};
         startMatch();
         GAME.start(_start)
     };
-    GAME.instances.tictactoe.stop = () => GAME.stop();
+    GAME.instances.tictactoe.stop = () => {
+        _boss.life = 100;
+        resetBoard();
+        _gameOver = false;
+        GAME.stop();
+    };
 })();

@@ -89,6 +89,14 @@ const GAME = {};
         _gameDraw();
         _animationFrame = requestAnimationFrame(_start);
     };
+    let _reset = () => {
+        GAME.player = {
+            name: "John Doe",
+            life: 100,
+            damage: 100
+        };
+        GAME.next("intro");
+    };
     GAME.start = gameDraw => {
         GAME.draw.styles(_ctxStyle);
         _gameDraw = gameDraw;
@@ -104,6 +112,20 @@ const GAME = {};
         GAME.instances[GAME.current].stop();
         GAME.current = name;
         GAME.instances[GAME.current].start();
+    };
+    GAME.gameOver = win => {
+        if(!win) {
+            alert("You are dead!");
+            _reset();
+            return;
+        }
+        
+        alert("You won!");
+        switch(GAME.current){
+            case "tictactoe":
+                GAME.next("intro");
+            break;
+        }
     };
 })();
 
