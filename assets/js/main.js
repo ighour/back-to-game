@@ -34,7 +34,7 @@ const GAME = {};
     GAME.current = "intro";
     GAME.instances = {};
     GAME.player = {
-        name: "John Doe",
+        name: "",
         life: 100,
         damage: 25
     };
@@ -76,6 +76,12 @@ const GAME = {};
     GAME.draw.fillText = (text, x, y, styles) => {
         _tempStyleAction(() => _ctx.fillText(text, x, y), styles);
     };
+    GAME.draw.fillTextBlock = (texts, x, y, spacing, styles) => {
+        _tempStyleAction(() => {
+            for(let i = 0; i < texts.length; i++)
+                _ctx.fillText(texts[i], x, y + spacing*i);
+        }, styles);
+    };
     GAME.draw.strokeText = (text, x, y, styles) => {
         _tempStyleAction(() => _ctx.strokeText(text, x, y), styles);
     };
@@ -93,11 +99,8 @@ const GAME = {};
         _animationFrame = requestAnimationFrame(_start);
     };
     let _reset = () => {
-        GAME.player = {
-            name: "John Doe",
-            life: 100,
-            damage: 100
-        };
+        GAME.player.name = "";
+        GAME.player.life = 100;
         GAME.next("intro");
     };
     GAME.start = gameDraw => {
