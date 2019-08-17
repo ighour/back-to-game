@@ -1,287 +1,258 @@
-const tictactoe = (player, gameCallback) => {
+GAME.instances.tictactoe = {};
 
-/** Canvas Config */
-const canvas = document.querySelector("canvas");
-canvas.width = 480;
-canvas.height = 560;
-
-/** Context Config */
-const ctx = canvas.getContext("2d");
-ctx.lineWidth = 2;
-
-/** Game Config */
-const boss = {
-    name: "Evil Tic",
-    life: 3
-};
-
-const gameSize = {
-    x: canvas.width,
-    y: 480
-};
-
-const panelSize = {
-    x: canvas.width,
-    y: canvas.height - gameSize.y
-};
-
-const cellSize = {
-    x: gameSize.x / 3,
-    y: gameSize.y / 3
-};
-
-const winCombos = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-];
-
-/** Helpers */
-const getSelectedSquare = (x, y) => {
-    return {
-        x: Math.floor(x / cellSize.x),
-        y: Math.floor(y / cellSize.y)
+(function config(){
+    /** Variables */
+    let _boss = {
+        name: "Evil Tic",
+        life: 100,
+        damage: 25
     };
-};
+    let _winCombos = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
+    let _turn = 0;
+    let _board = [
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0 
+    ];
+    let _matchWinner = 0;
+    let _playing;
+    let _gameOver = false;
 
-const checkResult = compareBoard => {
-    for(let i = 0; i < winCombos.length; i++){
-        let winCombo = winCombos[i];
+    /** UI */
+    let _gamePosition = {
+        x: GAME.canvas.width / 5,
+        y: GAME.canvas.height / 10,
+        width: GAME.canvas.width * 3 / 5,
+        height: GAME.canvas.height * 3 / 5
+    };
+    let _cellSize = {
+        x: _gamePosition.width  / 3,
+        y: _gamePosition.height / 3 
+    };
+    let _panelPosition = {
+        x: 0,
+        y: _gamePosition.y + _gamePosition.height + 20,
+        width: GAME.canvas.width,
+        height: GAME.canvas.height - (_gamePosition.y + _gamePosition.height + 20) - 1
+    };
 
-        let result = winCombo.reduce((carrier, boardIndex) => {
-            carrier *= compareBoard[boardIndex];
-            return carrier;
-        }, 1);
-
-        if(result === 1)
-            return 1;
-        else if(result === 8)
-            return 2;
-    }
-
-    return turn > 8 ? -1 : 0;
-};
-
-const getNPCMove = () => {
-    const random = [];
-    const lose = [];
-
-    for(let i = 0; i < 9; i++){
-        if(board[i] === 0){
-            let nextBoard = board.slice(0);
-
-            nextBoard[i] = 2;
-            if(checkResult(nextBoard) === 2)
-                return i;
-
-            nextBoard[i] = 1;
-            if(checkResult(nextBoard) === 1)
-                lose.push(i);
-            else
-                random.push(i);
+    /** Events */
+    let _click = (event, x, y) => {
+        if(x > _gamePosition.x && x < _gamePosition.x + _gamePosition.width && y > _gamePosition.y && y < _gamePosition.y + _gamePosition.height) {
+            if(_playing === 2 || _turn > 8 || _matchWinner !== 0 || _gameOver === true)
+                return;
+    
+            let square = getSelectedSquare(x, y);
+            let boardIndex = square.x + square.y*3;
+    
+            if(_board[boardIndex] === 0)
+                markBoard(boardIndex);
         }
-    }
+    };
 
-    if(lose.length > 0)
-        return lose[0];
+    /** Helper Functions */
+    let getSelectedSquare = (x, y) => {
+        return {
+            x: Math.floor((x - _gamePosition.x) / _cellSize.x),
+            y: Math.floor((y - _gamePosition.y) / _cellSize.y)
+        };
+    };
 
-    return random[Math.floor(Math.random() * random.length)];
-};
-
-/** Game State Commits */
-const resetBoard = () => {
-    board = [   0, 0, 0,
-                0, 0, 0,
-                0, 0, 0  ];
-    turn = 0;
-    matchWinner = 0;
-};
-
-const startMatch = () => {
-    resetBoard();
-
-    playing = Math.floor(Math.random() * 2) + 1;
-
-    if(playing === 2)
-        makeNPCMove();
-};
-
-const onGameOver = result => {
-    gameOver = true;
-
-    setTimeout(() => {
-        cancelAnimationFrame(running);
-        gameCallback(result);
-    }, 2000);
-};
-
-const endMatch = winner => {
-    if(winner === 1)
-        boss.life -= 1;
-    else if(winner === 2)
-        player.life -= 1;
-
-    if(boss.life <= 0 || player.life <= 0){
-        onGameOver(boss.life <= 0 ? true : false);
-        return;
-    }
-
-    matchWinner = winner;
-
-    setTimeout(() => startMatch(), 2000);
-};
-
-const makeNPCMove = () => {
-    const boardIndex = getNPCMove();
-    markBoard(boardIndex);
-};
-
-const markBoard = boardIndex => {
-    board[boardIndex] = playing;
-
-    turn += 1;
-    playing = playing === 1 ? 2 : 1;
-
-    const result = checkResult(board);
-
-    if(result !== 0)
-        endMatch(result);
+    let checkResult = compareBoard => {
+        for(let i = 0; i < _winCombos.length; i++){
+            let winCombo = _winCombos[i];
     
-    else if(playing === 2)
-        setTimeout(() => makeNPCMove(), Math.random() * 501 + 500);
-};
+            let result = winCombo.reduce((carrier, boardIndex) => {
+                carrier *= compareBoard[boardIndex];
+                return carrier;
+            }, 1);
+    
+            if(result === 1)
+                return 1;
+            else if(result === 8)
+                return 2;
+        }
+    
+        return _turn > 8 ? -1 : 0;
+    };
 
-/** Events */
-const onMouseClick = event => {
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    let getNPCMove = () => {
+        let lose = [];
+        let random = [];
+    
+        for(let i = 0; i < 9; i++){
+            if(_board[i] === 0){
+                let nextBoard = _board.slice(0);
+    
+                nextBoard[i] = 2;
+                if(checkResult(nextBoard) === 2)
+                    return i;
+    
+                nextBoard[i] = 1;
+                if(checkResult(nextBoard) === 1)
+                    lose.push(i);
+                else
+                    random.push(i);
+            }
+        }
+    
+        if(lose.length > 0)
+            return lose[0];
+    
+        return random[Math.floor(Math.random() * random.length)];
+    };
 
-    if(x < gameSize.x && y < gameSize.y) {
-        if(playing === 2 || turn > 8 || matchWinner !== 0 || gameOver === true)
+    /** State Functions */
+    let resetBoard = () => {
+        _turn = 0;
+        _board = [
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0  
+        ];
+        _matchWinner = 0;
+    };
+
+    let startMatch = () => {
+        resetBoard();
+    
+        _playing = Math.floor(Math.random() * 2) + 1;
+    
+        if(_playing === 2)
+            makeNPCMove();
+    };
+
+    let onGameOver = result => {
+        _gameOver = true;
+    
+        setTimeout(() => {
+            GAME.instances.tictactoe.stop();
+            console.log("GAMEOVER")
+        }, 3000);
+    };
+
+    let endMatch = winner => {
+        if(winner === 1)
+            _boss.life -= GAME.player.damage;
+        else if(winner === 2)
+            GAME.player.life -= _boss.damage;
+    
+        if(_boss.life <= 0 || GAME.player.life <= 0){
+            onGameOver(_boss.life <= 0 ? true : false);
             return;
-
-        const square = getSelectedSquare(x, y);
-        const boardIndex = square.x + square.y*3;
-
-        if(board[boardIndex] === 0)
-            markBoard(boardIndex);
-    }
-};
-
-/** Draw */
-const configText = (color = "white", font = "100px Arial", textBaseline = "middle", textAlign = "center") => {
-    ctx.strokeStyle = color;
-    ctx.font = font;
-    ctx.textBaseline = textBaseline;
-    ctx.textAlign = textAlign;
-};
-
-const drawLine = (x1, y1, x2, y2) => {
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-};
-
-const drawBoard = () => {
-    drawLine(0, cellSize.y, gameSize.x, cellSize.y);
-    drawLine(0, cellSize.y * 2, gameSize.x, cellSize.y * 2);
-    drawLine(cellSize.x, 0, cellSize.x, gameSize.y);
-    drawLine(cellSize.x * 2, 0, cellSize.x * 2, gameSize.y);
-    drawLine(0, gameSize.y, canvas.width, gameSize.y);
-};
-
-const drawText = (text, x, y) => {
-    ctx.strokeText(text, x, y);
-};
-
-const drawXY = () => {
-    for(let i = 0; i < 9; i++)
-        if(board[i] !== 0) {
-            let y = Math.floor(i / 3);
-            let x = i - y * 3;
-            drawText(board[i] === 1 ? "X" : "0", cellSize.x * (0.5 + x), cellSize.y * (0.5 + y));
-        }   
-};
-
-const drawPanel = () => {
-    if(gameOver === true){
-        ctx.textBaseline = "middle";
-
-        let msg = player.life <= 0 ? `${player.name} was Defeated!` : `${boss.name} was Defeated!`;
-        drawText(msg, gameSize.x / 2, gameSize.y + panelSize.y / 2);
-    }
-
-    else if(matchWinner !== 0){
-        ctx.textBaseline = "middle";
-
-        let msg = matchWinner === 1 ? `${player.name} Won!` : (matchWinner === 2 ? `${boss.name} Won!` : "It's a Draw!");
-        drawText(msg, gameSize.x / 2, gameSize.y + panelSize.y / 2);
-    }
-
-    else {
-        drawText(player.name, gameSize.x / 4, gameSize.y + panelSize.y / 10);
-        drawText(boss.name, gameSize.x * 3 / 4, gameSize.y + panelSize.y / 10);
-
-        if(playing === 1)
-            drawText(">", gameSize.x / 20, gameSize.y + panelSize.y / 4);
-        else
-            drawText("<", gameSize.x * 19 / 20, gameSize.y + panelSize.y / 4);
+        }
     
-        ctx.textBaseline = "middle";
-        drawText("x", panelSize.x / 2, gameSize.y + panelSize.y / 2);
+        _matchWinner = winner;
+    
+        setTimeout(() => startMatch(), 2000);
+    };
 
-        let playerLifeSize = player.life / 3 * cellSize.x;
-        let bossLifeSize = boss.life / 3 * cellSize.x;
+    let makeNPCMove = () => {
+        let boardIndex = getNPCMove();
 
-        ctx.fillStyle = "white";
-        ctx.fillRect(gameSize.x / 4 - cellSize.x / 2, gameSize.y + panelSize.y / 2 + 5, playerLifeSize, 20);
-        ctx.fillRect(gameSize.x * 3 / 4 - cellSize.x / 2, gameSize.y + panelSize.y / 2 + 5, bossLifeSize, 20);
+        setTimeout(() => markBoard(boardIndex), 500);
+    };
 
-        ctx.fillStyle = "black";
-        ctx.fillRect(gameSize.x / 4 - cellSize.x / 2 + playerLifeSize, gameSize.y + panelSize.y / 2 + 5, cellSize.x - playerLifeSize, 20);
-        ctx.fillRect(gameSize.x * 3 / 4 - cellSize.x / 2 + bossLifeSize, gameSize.y + panelSize.y / 2 + 5, cellSize.x - bossLifeSize, 20);
-    }
-};
+    let markBoard = boardIndex => {
+        _board[boardIndex] = _playing;
 
-/** Game Loop */
-const draw = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+        _turn += 1;
+        _playing = _playing === 1 ? 2 : 1;
 
-    //Game
-    configText("white", "100px Arial", "middle", "center");
-    drawBoard();
-    drawXY();
+        let result = checkResult(_board);
 
-    //Panel
-    configText("white", "30px Arial", "top", "center");
-    drawPanel();
+        if(result !== 0)
+            endMatch(result);
+        
+        else if(_playing === 2)
+            setTimeout(() => makeNPCMove(), Math.random() * 501 + 500);
+    };
 
-    running = requestAnimationFrame(draw);
-}
+    /** Draw Functions */
+    let drawBoard = () => {
+        GAME.draw.line(_gamePosition.x, _gamePosition.y + _cellSize.y, _gamePosition.x + _gamePosition.width, _gamePosition.y + _cellSize.y);
+        GAME.draw.line(_gamePosition.x, _gamePosition.y + _cellSize.y * 2, _gamePosition.x + _gamePosition.width, _gamePosition.y + _cellSize.y * 2);
+        GAME.draw.line(_gamePosition.x + _cellSize.x, _gamePosition.y, _gamePosition.x + _cellSize.x, _gamePosition.y + _gamePosition.height);
+        GAME.draw.line(_gamePosition.x + _cellSize.x * 2, _gamePosition.y, _gamePosition.x + _cellSize.x * 2, _gamePosition.y + _gamePosition.height);
+    };
 
-/** Game State */
-let running, board, turn, playing, matchWinner;
-let gameOver = false;
+    let drawXY = () => {
+        for(let i = 0; i < 9; i++)
+            if(_board[i] !== 0) {
+                let y = Math.floor(i / 3);
+                let x = i - y * 3;
+                GAME.draw.text(_board[i] === 1 ? "X" : "0", _gamePosition.x + _cellSize.x * (0.5 + x), _gamePosition.y +_cellSize.y * (0.5 + y));
+            }   
+    };
 
-/** Listeners */
-canvas.addEventListener("click", onMouseClick);
+    let drawGameOver = () => {
+        let msg = GAME.player.life <= 0 ? `${GAME.player.name} was Defeated!` : `${_boss.name} was Defeated!`;
+        GAME.draw.text(msg, _panelPosition.x + _panelPosition.width / 2, _panelPosition.y + _panelPosition.height / 2);
+    };
 
-/** Management */
-return {
-    start: () => {
+    let drawMatchResult = () => {
+        let msg = _matchWinner === 1 ? `${GAME.player.name} Won!` : (_matchWinner === 2 ? `${_boss.name} Won!` : "It's a Draw!");
+        GAME.draw.text(msg, _panelPosition.x + _panelPosition.width / 2, _panelPosition.y + _panelPosition.height / 2);
+    };
+
+    let drawBasePanel = () => {
+        // Names
+        GAME.draw.text(GAME.player.name, _panelPosition.x + _panelPosition.width / 4, _panelPosition.y + _panelPosition.height - 20, {textBaseline: "bottom"});
+        GAME.draw.text(_boss.name, _panelPosition.x + _panelPosition.width * 3 / 4, _panelPosition.y + _panelPosition.height - 20, {textBaseline: "bottom"});
+
+        // Turn
+        GAME.draw.text("x", _panelPosition.x + _panelPosition.width / 2, _panelPosition.y + _panelPosition.height - 20, {textBaseline: "bottom"});
+
+        if(_playing === 1)
+            GAME.draw.text("<", _panelPosition.x + _panelPosition.width / 2 - 40, _panelPosition.y + _panelPosition.height - 17, {textBaseline: "bottom"});
+        else
+            GAME.draw.text(">", _panelPosition.x + _panelPosition.width / 2 + 40, _panelPosition.y + _panelPosition.height - 17, {textBaseline: "bottom"});
+
+        //Lives
+        let maxSize = _panelPosition.x + _panelPosition.width / 4;
+        let playerLifeSize = GAME.player.life / 100 * maxSize;
+        let bossLifeSize = _boss.life / 100 * maxSize;
+
+        GAME.draw.fillRect(_panelPosition.x + _panelPosition.width / 8, _panelPosition.y + _panelPosition.height / 2, playerLifeSize, 20);
+        GAME.draw.fillRect(_panelPosition.x + _panelPosition.width / 8 + playerLifeSize, _panelPosition.y + _panelPosition.height / 2, maxSize - playerLifeSize, 20, {fillStyle: "black"});
+
+        GAME.draw.fillRect(_panelPosition.x + _panelPosition.width * 7 / 8 - maxSize, _panelPosition.y + _panelPosition.height / 2, bossLifeSize, 20);
+        GAME.draw.fillRect(_panelPosition.x + _panelPosition.width * 7 / 8 - maxSize + bossLifeSize, _panelPosition.y + _panelPosition.height / 2, maxSize - bossLifeSize, 20, {fillStyle: "black"});
+    };
+
+    let drawPanel = () => {
+        if(_gameOver === true)
+            drawGameOver();
+        else if(_matchWinner !== 0)
+            drawMatchResult();    
+        else
+            drawBasePanel();
+    };
+
+    /** Game Loop */
+    let _start = () => {  
+        //Game
+        drawBoard();
+        drawXY();
+    
+        //Panel
+        drawPanel();
+    };
+
+    /** Game Functions */
+    GAME.instances.tictactoe.start = () => {
+        GAME.events.addClick(_click);
         startMatch();
-        draw();
-    },
-    stop: () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-};
-
-};
+        GAME.start(_start)
+    };
+    GAME.instances.tictactoe.stop = () => GAME.stop();
+})();

@@ -1,81 +1,37 @@
-const intro = (player, gameCallback) => {
+GAME.instances.intro = {};
 
-/** Canvas Config */
-const canvas = document.querySelector("canvas");
-canvas.width = 480;
-canvas.height = 560;
+(function config(){
+    /** Variables */
 
-/** Context Config */
-const ctx = canvas.getContext("2d");
-ctx.lineWidth = 2;
+    /** UI */
 
-/** Game Config */
-const gameSize = {
-    x: canvas.width,
-    y: canvas.height
-};
+    /** Events */
+    let _click = (event, x, y) => {
+        //Start Button
+        if(x > GAME.canvas.width / 2 - 60 && x < GAME.canvas.width / 2 + 60 && y > GAME.canvas.height * 2 / 3 - 30 && y < GAME.canvas.height * 2 / 3 + 30)
+            GAME.next("tictactoe");
+    };
 
-/** Events */
-const onMouseClick = event => {
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    /** Helper Functions */
 
-    if(x > canvas.width / 2 - 60 && x < canvas.width / 2 + 60 && y > canvas.height * 2 / 3 - 30 && y < canvas.height * 2 / 3 + 30)  {
-        gameCallback();
-    }
-};
+    /** State Functions */
 
-/** Draw */
-const configText = (color = "white", font = "100px Arial", textBaseline = "middle", textAlign = "center") => {
-    ctx.strokeStyle = color;
-    ctx.font = font;
-    ctx.textBaseline = textBaseline;
-    ctx.textAlign = textAlign;
-};
+    /** Draw Functions */
 
-const drawLine = (x1, y1, x2, y2) => {
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-};
+    /** Game Loop */
+    let _start = () => {  
+        //Title
+        GAME.draw.text("Back To #", GAME.canvas.width / 2, GAME.canvas.height / 4, {font: "100px Arial"});
+    
+        //Start Game
+        GAME.draw.text("Start", GAME.canvas.width / 2, GAME.canvas.height * 2 / 3);
+        GAME.draw.strokeRect(GAME.canvas.width / 2 - 70, GAME.canvas.height * 2 / 3 - 30, 140, 60);
+    };
 
-const drawText = (text, x, y) => {
-    ctx.strokeText(text, x, y);
-};
-
-/** Game Loop */
-const draw = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    configText();
-
-    //Title
-    drawText("Back To #", canvas.width / 2, canvas.height / 3);
-
-    //Start Game
-    ctx.font = "40px Arial";
-    drawText("Start", canvas.width / 2, canvas.height * 2 / 3);
-    ctx.strokeRect(canvas.width / 2 - 60, canvas.height * 2 / 3 - 30, 120, 60);
-
-    running = requestAnimationFrame(draw);
-}
-
-/** Game State */
-let running;
-
-/** Listeners */
-canvas.addEventListener("click", onMouseClick);
-
-/** Management */
-return {
-    start: () => {
-        draw();
-    },
-    stop: () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-};
-
-};
+    /** Game Functions */
+    GAME.instances.intro.start = () => {
+        GAME.events.addClick(_click);
+        GAME.start(_start)
+    };
+    GAME.instances.intro.stop = () => GAME.stop();
+})();
