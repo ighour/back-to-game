@@ -189,32 +189,32 @@ GAME.instances.tictactoe = {};
             if(_board[i] !== 0) {
                 let y = Math.floor(i / 3);
                 let x = i - y * 3;
-                GAME.draw.text(_board[i] === 1 ? "X" : "0", _gamePosition.x + _cellSize.x * (0.5 + x), _gamePosition.y +_cellSize.y * (0.5 + y));
+                GAME.draw.fillText(_board[i] === 1 ? "X" : "0", _gamePosition.x + _cellSize.x * (0.5 + x), _gamePosition.y +_cellSize.y * (0.5 + y));
             }   
     };
 
     let drawGameOver = () => {
         let msg = GAME.player.life <= 0 ? `${GAME.player.name} was Defeated!` : `${_boss.name} was Defeated!`;
-        GAME.draw.text(msg, _panelPosition.x + _panelPosition.width / 2, _panelPosition.y + _panelPosition.height / 2);
+        GAME.draw.fillText(msg, _panelPosition.x + _panelPosition.width / 2, _panelPosition.y + _panelPosition.height / 2);
     };
 
     let drawMatchResult = () => {
         let msg = _matchWinner === 1 ? `${GAME.player.name} Won!` : (_matchWinner === 2 ? `${_boss.name} Won!` : "It's a Draw!");
-        GAME.draw.text(msg, _panelPosition.x + _panelPosition.width / 2, _panelPosition.y + _panelPosition.height / 2);
+        GAME.draw.fillText(msg, _panelPosition.x + _panelPosition.width / 2, _panelPosition.y + _panelPosition.height / 2);
     };
 
     let drawBasePanel = () => {
         // Names
-        GAME.draw.text(GAME.player.name, _panelPosition.x + _panelPosition.width / 4, _panelPosition.y + _panelPosition.height - 20, {textBaseline: "bottom"});
-        GAME.draw.text(_boss.name, _panelPosition.x + _panelPosition.width * 3 / 4, _panelPosition.y + _panelPosition.height - 20, {textBaseline: "bottom"});
+        GAME.draw.fillText(GAME.player.name, _panelPosition.x + _panelPosition.width / 4, _panelPosition.y + _panelPosition.height - 20, {textBaseline: "bottom"});
+        GAME.draw.fillText(_boss.name, _panelPosition.x + _panelPosition.width * 3 / 4, _panelPosition.y + _panelPosition.height - 20, {textBaseline: "bottom"});
 
         // Turn
-        GAME.draw.text("x", _panelPosition.x + _panelPosition.width / 2, _panelPosition.y + _panelPosition.height - 20, {textBaseline: "bottom"});
+        GAME.draw.fillText("x", _panelPosition.x + _panelPosition.width / 2, _panelPosition.y + _panelPosition.height - 20, {textBaseline: "bottom"});
 
         if(_playing === 1)
-            GAME.draw.text("<", _panelPosition.x + _panelPosition.width / 2 - 40, _panelPosition.y + _panelPosition.height - 17, {textBaseline: "bottom"});
+            GAME.draw.fillText("<", _panelPosition.x + _panelPosition.width / 2 - 40, _panelPosition.y + _panelPosition.height - 17, {textBaseline: "bottom"});
         else
-            GAME.draw.text(">", _panelPosition.x + _panelPosition.width / 2 + 40, _panelPosition.y + _panelPosition.height - 17, {textBaseline: "bottom"});
+            GAME.draw.fillText(">", _panelPosition.x + _panelPosition.width / 2 + 40, _panelPosition.y + _panelPosition.height - 17, {textBaseline: "bottom"});
 
         //Lives
         let maxSize = _panelPosition.x + _panelPosition.width / 4;

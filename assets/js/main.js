@@ -73,7 +73,10 @@ const GAME = {};
             _ctx.stroke();
         }, styles);
     };
-    GAME.draw.text = (text, x, y, styles) => {
+    GAME.draw.fillText = (text, x, y, styles) => {
+        _tempStyleAction(() => _ctx.fillText(text, x, y), styles);
+    };
+    GAME.draw.strokeText = (text, x, y, styles) => {
         _tempStyleAction(() => _ctx.strokeText(text, x, y), styles);
     };
     GAME.draw.fillRect = (x, y, width, height, styles) => {
