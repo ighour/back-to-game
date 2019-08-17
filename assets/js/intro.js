@@ -82,7 +82,7 @@ GAME.instances.intro = {};
         GAME.draw.fillTextBlock(texts, GAME.canvas.width / 2, GAME.canvas.height * 2 / 5, 70);
 
         //Start Game
-        GAME.draw.fillText("Start Challenge", _startPosition.x + _startPosition.width / 2, _startPosition.y + _startPosition.height / 2);
+        GAME.draw.fillText("Back to 1950", _startPosition.x + _startPosition.width / 2, _startPosition.y + _startPosition.height / 2);
         GAME.draw.strokeRect(_startPosition.x, _startPosition.y, _startPosition.width, _startPosition.height);
     };
 

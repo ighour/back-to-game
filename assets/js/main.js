@@ -98,11 +98,6 @@ const GAME = {};
         _gameDraw();
         _animationFrame = requestAnimationFrame(_start);
     };
-    let _reset = () => {
-        GAME.player.name = "";
-        GAME.player.life = 100;
-        GAME.next("intro");
-    };
     GAME.start = gameDraw => {
         GAME.draw.styles(_ctxStyle);
         _gameDraw = gameDraw;
@@ -114,22 +109,20 @@ const GAME = {};
         _gameDraw = null;
         _clearCanvas();
     };
-    GAME.next = name => {
+    GAME.next = (name, state) => {
         GAME.instances[GAME.current].stop();
         GAME.current = name;
-        GAME.instances[GAME.current].start();
+        GAME.instances[GAME.current].start(state);
     };
     GAME.gameOver = win => {
         if(!win) {
-            alert("You are dead!");
-            _reset();
+            GAME.next("gameover", win);
             return;
         }
         
-        alert("You won!");
         switch(GAME.current){
             case "tictactoe":
-                GAME.next("intro");
+                GAME.next("gameover", win);
             break;
         }
     };
