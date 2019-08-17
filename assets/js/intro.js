@@ -90,7 +90,7 @@ GAME.instances.intro = {};
         //Call
         let texts = [
             "What is your name,",
-            "Hero?"
+            "Traveler?"
         ];
         GAME.draw.fillTextBlock(texts, GAME.canvas.width / 2, GAME.canvas.height / 3, 70);
     };
