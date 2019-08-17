@@ -34,6 +34,17 @@ const cellSize = {
     y: gameSize.y / 3
 };
 
+const winCombos = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+];
+
 /** Helpers */
 const getSelectedSquare = (x, y) => {
     return {
@@ -42,57 +53,61 @@ const getSelectedSquare = (x, y) => {
     };
 };
 
-const checkResult = board => {
-    let vertical = [1, 1, 1];
-    let diagonal = [1, 1];
+const checkResult = compareBoard => {
+    for(let i = 0; i < winCombos.length; i++){
+        let winCombo = winCombos[i];
 
-    for(let v = 0; v < 3; v++){
-        let horizontal = 1;
+        let result = winCombo.reduce((carrier, boardIndex) => {
+            carrier *= compareBoard[boardIndex];
+            return carrier;
+        }, 1);
 
-        for(let h = 0; h < 3; h++){
-            let value = board[h + v*3];
-
-            horizontal *= value;
-            vertical[h] *= value;
-
-            if(v === h)
-                diagonal[0] *= value;
-            if(v+h === 2)
-                diagonal[1] *= value;
-        }
-
-        if(horizontal === 1 || horizontal === 8)
-            return Math.cbrt(horizontal);
+        if(result === 1)
+            return 1;
+        else if(result === 8)
+            return 2;
     }
-
-    for(let i = 0; i < 3; i++)
-        if(vertical[i] === 1 || vertical[i] === 8)
-            return Math.cbrt(vertical[i]);
-
-    for(let i = 0; i < 2; i++)
-        if(diagonal[i] === 1 || diagonal[i] === 8)
-            return Math.cbrt(diagonal[i]);
 
     return turn > 8 ? -1 : 0;
 };
 
 const getNPCMove = () => {
-    let index = -1;
-    while(index === -1){
-        let guess = Math.floor(Math.random() * 9);
-        if(slots[guess] === 0)
-            index = guess;
+    const random = [];
+    const lose = [];
+
+    for(let i = 0; i < 9; i++){
+        if(board[i] === 0){
+            let nextBoard = board.slice(0);
+
+            nextBoard[i] = 2;
+            if(checkResult(nextBoard) === 2)
+                return i;
+
+            nextBoard[i] = 1;
+            if(checkResult(nextBoard) === 1)
+                lose.push(i);
+            else
+                random.push(i);
+        }
     }
-    return index;
+
+    if(lose.length > 0)
+        return lose[0];
+
+    return random[Math.floor(Math.random() * random.length)];
 };
 
 /** Game State Commits */
 const resetBoard = () => {
-    slots = [   0, 0, 0,
+    board = [   0, 0, 0,
                 0, 0, 0,
                 0, 0, 0  ];
     turn = 0;
+    playing = Math.floor(Math.random() * 2) + 1;
     matchWinner = 0;
+
+    if(playing === 2)
+        makeNPCMove();
 };
 
 const resetGame = () => {
@@ -131,16 +146,17 @@ const makeNPCMove = () => {
 };
 
 const markBoard = boardIndex => {
-    slots[boardIndex] = turn % 2 === 0 ? 1 : 2;
+    board[boardIndex] = playing;
 
     turn += 1;
+    playing = playing === 1 ? 2 : 1;
 
-    const result = checkResult(slots);
+    const result = checkResult(board);
 
     if(result !== 0)
         endMatch(result);
     
-    else if(turn % 2 !== 0)
+    else if(playing === 2)
         setTimeout(() => makeNPCMove(), Math.random() * 501 + 500);
 };
 
@@ -151,13 +167,13 @@ const onMouseClick = event => {
     const y = event.clientY - rect.top;
 
     if(x < gameSize.x && y < gameSize.y) {
-        if(turn % 2 !== 0 || turn > 8 || matchWinner !== 0 || gameOver === true)
+        if(playing === 2 || turn > 8 || matchWinner !== 0 || gameOver === true)
             return;
 
         const square = getSelectedSquare(x, y);
         const boardIndex = square.x + square.y*3;
 
-        if(slots[boardIndex] === 0)
+        if(board[boardIndex] === 0)
             markBoard(boardIndex);
     }
 };
@@ -191,10 +207,10 @@ const drawText = (text, x, y) => {
 
 const drawXY = () => {
     for(let i = 0; i < 9; i++)
-        if(slots[i] !== 0) {
+        if(board[i] !== 0) {
             let y = Math.floor(i / 3);
             let x = i - y * 3;
-            drawText(slots[i] === 1 ? "X" : "0", cellSize.x * (0.5 + x), cellSize.y * (0.5 + y));
+            drawText(board[i] === 1 ? "X" : "0", cellSize.x * (0.5 + x), cellSize.y * (0.5 + y));
         }   
 };
 
@@ -216,6 +232,11 @@ const drawPanel = () => {
     else {
         drawText(player.name, gameSize.x / 4, gameSize.y + panelSize.y / 10);
         drawText(boss.name, gameSize.x * 3 / 4, gameSize.y + panelSize.y / 10);
+
+        if(playing === 1)
+            drawText(">", gameSize.x / 20, gameSize.y + panelSize.y / 4);
+        else
+            drawText("<", gameSize.x * 19 / 20, gameSize.y + panelSize.y / 4);
     
         ctx.textBaseline = "middle";
         drawText("x", panelSize.x / 2, gameSize.y + panelSize.y / 2);
@@ -250,11 +271,8 @@ const draw = () => {
 }
 
 /** Game State */
-let slots = [   0, 0, 0,
-                0, 0, 0,
-                0, 0, 0  ];
-let turn = 0;
-let matchWinner = 0;
+let board, turn, playing, matchWinner;
+resetBoard();
 let gameOver = false;
 
 /** Listeners */
