@@ -103,25 +103,16 @@ const resetBoard = () => {
                 0, 0, 0,
                 0, 0, 0  ];
     turn = 0;
-    playing = Math.floor(Math.random() * 2) + 1;
     matchWinner = 0;
+};
+
+const startMatch = () => {
+    resetBoard();
+
+    playing = Math.floor(Math.random() * 2) + 1;
 
     if(playing === 2)
         makeNPCMove();
-};
-
-const resetGame = () => {
-    resetBoard();
-    player.life = 3;
-    boss.life = 3;
-    gameOver = false;
-};
-
-const endGame = () => {
-    resetBoard();
-    gameOver = true;
-
-    setTimeout(() => resetGame(), 5000);
 };
 
 const endMatch = winner => {
@@ -137,7 +128,21 @@ const endMatch = winner => {
 
     matchWinner = winner;
 
-    setTimeout(() => resetBoard(), 2000);
+    setTimeout(() => startMatch(), 2000);
+};
+
+const resetGame = () => {
+    player.life = 3;
+    boss.life = 3;
+    gameOver = false;
+
+    startMatch();
+};
+
+const endGame = () => {
+    gameOver = true;
+
+    setTimeout(() => resetGame(), 5000);
 };
 
 const makeNPCMove = () => {
@@ -272,11 +277,12 @@ const draw = () => {
 
 /** Game State */
 let board, turn, playing, matchWinner;
-resetBoard();
 let gameOver = false;
+
 
 /** Listeners */
 canvas.addEventListener("click", onMouseClick);
 
 /** Start Game */
+startMatch();
 draw();
