@@ -34,9 +34,9 @@ let gamePosition = {
     height: GAME.canvas.height * 3 / 5
 };
 let startPosition = {
-    x: GAME.canvas.width / 2 - 180,
+    x: GAME.canvas.width / 2 - 90,
     y: GAME.canvas.height * 5 / 6 - 30,
-    width: 360,
+    width: 180,
     height: 60
 };
 let cellSize = {
@@ -257,14 +257,27 @@ let drawTutorial = () => {
 
     //Brief
     let texts = [
-        `Boss:  ${boss.name}.`,
-        "Evil Tic can play as player 1 (X) and 2 (0).",
-        "Make game draw by moving yourself through the board on your turn."
+        "Year:",
+        `Boss:`,
+        "Intel:"
     ];
     GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20, GAME.canvas.height * 2 / 5, 70, {textAlign: "left", font: "30px Arial"});
 
+    texts = [
+        "1950",
+        boss.name
+    ];
+    GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20 + 100, GAME.canvas.height * 2 / 5, 70, {textAlign: "left", font: "30px Arial"});
+
+    texts = [
+        "Evil Tic can act as player 1 (X) and 2 (0).",
+        "It loses HP when game result is draw.",
+        "You can move only to near positions."
+    ];
+    GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20 + 100, GAME.canvas.height * 2 / 5 + 140, 35, {textAlign: "left", font: "30px Arial"});
+
     //Start
-    GAME.draw.fillText("Travel to 1950", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
+    GAME.draw.fillText("Travel", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
     GAME.draw.strokeRect(startPosition.x, startPosition.y, startPosition.width, startPosition.height);
 };
 
@@ -290,7 +303,7 @@ let drawGameOver = () => {
 };
 
 let drawMatchResult = () => {
-    let msg = matchWinner === -1 ? `${GAME.player.name} Won!` : `${boss.name} Won!`;
+    let msg = matchWinner === -1 ? `${GAME.player.damage} damage to ${boss.name}!` : `${boss.damage} damage to you!`;
     GAME.draw.fillText(msg, panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2);
 };
 

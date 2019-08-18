@@ -3,6 +3,7 @@ const GAME = require('./main').default;
 /** Variables */
 let nameInput = document.querySelector("#game-form");
 let creating = false;
+let name = "";
 
 /** UI */
 let startPosition = {
@@ -15,33 +16,33 @@ let startPosition = {
 /** Events */
 let click = (event, x, y) => {
     //Start Button
-    if(creating === false && x > startPosition.x && x < startPosition.x + startPosition.width && 
-        y > startPosition.y && y < startPosition.y + startPosition.height){
-        creating = true;
-        makeNameInput();
+    if(x > startPosition.x && x < startPosition.x + startPosition.width && y > startPosition.y && y < startPosition.y + startPosition.height){
+        if(!creating)
+            creating = true;
+        else if(name.length > 0)
+            beginGame();
     }
 };
 
-/** Helper Functions */
-let makeNameInput = () => {
-    nameInput.style.top = (-1 * GAME.canvas.height / 3) + "px";
-    nameInput.style.display = "block";
+let keyDown = (event) => {
+    let key = event.key;
 
-    let input = nameInput.querySelector("input[type='text']");
-    let btn = nameInput.querySelector("input[type='submit']");
-
-    input.autofocus = true;
-
-    btn.addEventListener("click", event => {
-        if(input.value.length > 0)
-            beginGame(input.value);
-    });
+    if(validKeyForName(key) && name.length < 8)
+        name += key;
+    else if(event.keyCode === 8) //Backspace
+        name = name.slice(0, name.length - 1);
+    else if(event.keyCode === 13 && name.length > 0) //Enter
+        beginGame();
 };
 
-let beginGame = name => {
+/** Helper Functions */
+let beginGame = () => {
     GAME.player.name = name;
-    nameInput.style.display = "none";
     GAME.gameOver(true);
+};
+
+let validKeyForName = key => {
+    return key.length === 1 && /[a-zA-Z0-9]/.test(key);
 };
 
 /** State Functions */
@@ -68,10 +69,20 @@ let drawNew = () => {
 let drawCreate = () => {
     //Call
     let texts = [
-        "What is your name,",
+        "May I know your name,",
         "Traveler?"
     ];
     GAME.draw.fillTextBlock(texts, GAME.canvas.width / 2, GAME.canvas.height / 3, 70);
+
+    //Input
+    GAME.draw.fillRect(GAME.canvas.width/ 3, GAME.canvas.height * 3 / 5, GAME.canvas.width / 3, 46);
+    GAME.draw.fillText(name, GAME.canvas.width / 2, GAME.canvas.height * 3 / 5 + 23, {fillStyle: "#222222"});
+
+    //Send Name
+    if(name.length > 0){
+        GAME.draw.fillText("Time Travel", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
+        GAME.draw.strokeRect(startPosition.x, startPosition.y, startPosition.width, startPosition.height);
+    }
 };
 
 /** Game Loop */
@@ -85,6 +96,7 @@ let start = () => {
 export default {
     start: () => {
         GAME.events.addClick(click);
+        GAME.events.addKeyDown(keyDown);
         GAME.start(start)
     },
     stop: () => {

@@ -3,7 +3,8 @@ let canvas = document.querySelector("canvas");
 let ctx = canvas.getContext("2d");
 let events = {
     click: [],
-    mouseMove: []
+    mouseMove: [],
+    keyDown: []
 };
 let gameDraw;
 let animationFrame;
@@ -43,6 +44,11 @@ canvas.addEventListener("mousemove", event => {
     let y = event.clientY - rect.top;
 
     events.mouseMove.forEach(e => e(event, x, y));
+});
+
+let addKeyDown = event => events.keyDown.push(event);
+document.addEventListener("keydown", event => {
+    events.keyDown.forEach(e => e(event));
 });
 
 /** Draw Functions */
@@ -146,7 +152,8 @@ export default {
     },
     events: {
         addClick,
-        addMouseMove
+        addMouseMove,
+        addKeyDown
     },
     draw: {
         styles,
@@ -165,8 +172,11 @@ export default {
     },
     stop: () => {
         cancelAnimationFrame(animationFrame);
-        events.click = [];
-        events.mouseMove = [];
+        events = {
+            click: [],
+            mouseMove: [],
+            keyDown: []
+        };
         gameDraw = null;
         clearCanvas();
     },
