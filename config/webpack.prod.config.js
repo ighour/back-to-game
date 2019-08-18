@@ -3,6 +3,7 @@ const webpackBaseConfig = require('./webpack.common.config.js');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ZipPlugin = require('zip-webpack-plugin');
 
 module.exports = merge(webpackBaseConfig, {
     optimization: {
@@ -19,6 +20,11 @@ module.exports = merge(webpackBaseConfig, {
                 removeComments: true,
                 collapseWhitespace: true
             }
+        }),
+        new ZipPlugin({
+            path: '../dist_zip',
+            filename: 'backtohash.zip',
+            exclude: [/\.gitkeep$/]
         })
     ]
 });
