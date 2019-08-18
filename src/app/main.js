@@ -2,7 +2,8 @@
 let canvas = document.querySelector("canvas");
 let ctx = canvas.getContext("2d");
 let events = {
-    click: []
+    click: [],
+    mouseMove: []
 };
 let gameDraw;
 let animationFrame;
@@ -35,6 +36,15 @@ canvas.addEventListener("click", event => {
     events.click.forEach(e => e(event, x, y));
 });
 
+let addMouseMove = event => events.mouseMove.push(event);
+canvas.addEventListener("mousemove", event => {
+    let rect = canvas.getBoundingClientRect();
+    let x = event.clientX - rect.left;
+    let y = event.clientY - rect.top;
+
+    events.mouseMove.forEach(e => e(event, x, y));
+});
+
 /** Draw Functions */
 let tempStyleAction = (callback, newStyles) => {
     if(newStyles) styles(newStyles);
@@ -57,6 +67,29 @@ let line = (x1, y1, x2, y2, styles) => {
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }, styles);
+};
+
+let splitLine = (x1, y1, x2, y2, spacing, styles) => {
+    tempStyleAction(() => {
+        let x = x1;
+        let y = y1;
+
+        let spacingX = (x2 - x1) / spacing;
+        let spacingY = (y2 - y1) / spacing;
+
+        ctx.beginPath();
+
+        while(x < x2 || y < y2){
+            ctx.moveTo(x, y);
+            x += spacingX;
+            y += spacingY;
+            ctx.lineTo(x, y);
+            x += spacingX;
+            y += spacingY;
+        }
+
         ctx.stroke();
     }, styles);
 };
@@ -112,11 +145,13 @@ export default {
         damage: 25
     },
     events: {
-        addClick
+        addClick,
+        addMouseMove
     },
     draw: {
         styles,
         line,
+        splitLine,
         fillText,
         fillTextBlock,
         strokeText,
@@ -131,6 +166,7 @@ export default {
     stop: () => {
         cancelAnimationFrame(animationFrame);
         events.click = [];
+        events.mouseMove = [];
         gameDraw = null;
         clearCanvas();
     },
@@ -142,6 +178,9 @@ export default {
         }
         
         switch(current){
+            case "pong":
+                next("tictactoe");
+            break;
             case "tictactoe":
                 next("gameover", win);
             break;

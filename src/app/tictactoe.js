@@ -6,6 +6,8 @@ let boss = {
     life: 100,
     damage: 25
 };
+let gameOver = false;
+let matchWinner = 0;
 let winCombos = [
     [0, 1, 2],
     [3, 4, 5],
@@ -22,9 +24,7 @@ let board = [
     0, 0, 0,
     0, 0, 0 
 ];
-let matchWinner = 0;
 let playing;
-let gameOver = false;
 
 /** UI */
 let gamePosition = {
@@ -130,14 +130,6 @@ let startMatch = () => {
         makeNPCMove();
 };
 
-let onGameOver = result => {
-    gameOver = true;
-
-    setTimeout(() => {
-        GAME.gameOver(result);
-    }, 3000);
-};
-
 let endMatch = winner => {
     if(winner === 1)
         boss.life -= GAME.player.damage;
@@ -152,6 +144,14 @@ let endMatch = winner => {
     matchWinner = winner;
 
     setTimeout(() => startMatch(), 2000);
+};
+
+let onGameOver = result => {
+    gameOver = true;
+
+    setTimeout(() => {
+        GAME.gameOver(result);
+    }, 3000);
 };
 
 let makeNPCMove = () => {
@@ -206,10 +206,9 @@ let drawBasePanel = () => {
     // Names
     GAME.draw.fillText(GAME.player.name, panelPosition.x + panelPosition.width / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
     GAME.draw.fillText(boss.name, panelPosition.x + panelPosition.width * 3 / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
-
-    // Turn
     GAME.draw.fillText("x", panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
 
+    // Turn
     if(playing === 1)
         GAME.draw.fillText("<", panelPosition.x + panelPosition.width / 2 - 40, panelPosition.y + panelPosition.height - 17, {textBaseline: "bottom"});
     else
