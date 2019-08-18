@@ -1,8 +1,7 @@
 const GAME = require('./main').default;
 
 /** Variables */
-let UI = document.querySelector("#game");
-let nameInput;
+let nameInput = document.querySelector("#game-form");
 let creating = false;
 
 /** UI */
@@ -25,34 +24,15 @@ let click = (event, x, y) => {
 
 /** Helper Functions */
 let makeNameInput = () => {
-    nameInput = document.createElement("div");
-    nameInput.style.position = "relative";
     nameInput.style.top = (-1 * GAME.canvas.height / 3) + "px";
+    nameInput.style.display = "block";
 
-    let input = document.createElement("input");
-    input.type = "text";
-    input.maxLength = 8;
+    let input = nameInput.querySelector("input[type='text']");
+    let btn = nameInput.querySelector("input[type='submit']");
+
     input.autofocus = true;
-    input.style.width = "240px";
-    input.style.height = "60px";
-    input.style.fontSize = "40pt";
-    input.style.margin = "0";
-    input.style.padding = "0";
-    nameInput.appendChild(input);
 
-    let submit = document.createElement("input");
-    submit.type = "submit";
-    submit.value = ">";
-    submit.style.width = "40px";
-    submit.style.height = "64px";
-    submit.style.fontSize = "40pt";
-    submit.style.margin = "1px 0 0 0";
-    submit.style.padding = "0";
-    nameInput.appendChild(submit);
-
-    UI.appendChild(nameInput);
-
-    submit.addEventListener("click", event => {
+    btn.addEventListener("click", event => {
         if(input.value.length > 0)
             beginGame(input.value);
     });
@@ -60,7 +40,7 @@ let makeNameInput = () => {
 
 let beginGame = name => {
     GAME.player.name = name;
-    UI.removeChild(nameInput);
+    nameInput.style.display = "none";
     GAME.next("tictactoe");
 };
 
