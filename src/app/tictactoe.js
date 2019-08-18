@@ -1,6 +1,7 @@
 const GAME = require('./main').default;
 
 /** Variables */
+let tutorial = true;
 let boss = {
     name: "Evil Tic",
     life: 100,
@@ -18,13 +19,12 @@ let winCombos = [
     [0, 4, 8],
     [2, 4, 6]
 ];
-let turn = 0;
 let board = [
     0, 0, 0,
     0, 0, 0,
     0, 0, 0 
 ];
-let playing;
+let playing = -1;
 
 /** UI */
 let gamePosition = {
@@ -32,6 +32,12 @@ let gamePosition = {
     y: GAME.canvas.height / 10,
     width: GAME.canvas.width * 3 / 5,
     height: GAME.canvas.height * 3 / 5
+};
+let startPosition = {
+    x: GAME.canvas.width / 2 - 180,
+    y: GAME.canvas.height * 5 / 6 - 30,
+    width: 360,
+    height: 60
 };
 let cellSize = {
     x: gamePosition.width  / 3,
@@ -43,14 +49,30 @@ let panelPosition = {
     width: GAME.canvas.width,
     height: GAME.canvas.height - (gamePosition.y + gamePosition.height + 20) - 1
 };
+let signs = {
+    "-1": "P",
+    0: "",
+    1: "X",
+    2: "0"
+};
 
 /** Events */
 let click = (event, x, y) => {
-    if(x > gamePosition.x && x < gamePosition.x + gamePosition.width && y > gamePosition.y && y < gamePosition.y + gamePosition.height) {
-        if(playing === 2 || turn > 8 || matchWinner !== 0 || gameOver === true)
+    if(tutorial){
+        //Start Button
+        if(x > startPosition.x && x < startPosition.x + startPosition.width && y > startPosition.y && y < startPosition.y + startPosition.height)
+            tutorial = false;
+    }
+    //Board
+    else if(x > gamePosition.x && x < gamePosition.x + gamePosition.width && y > gamePosition.y && y < gamePosition.y + gamePosition.height) {
+        if(playing !== -1 || matchWinner !== 0 || gameOver === true)
             return;
 
         let square = getSelectedSquare(x, y);
+
+        if(!canMoveToSquare(square.x, square.y))
+            return;
+
         let boardIndex = square.x + square.y*3;
 
         if(board[boardIndex] === 0)
@@ -59,11 +81,54 @@ let click = (event, x, y) => {
 };
 
 /** Helper Functions */
+let getPlayerCoords = () => {
+    let index;
+
+    for(let i = 0; i < board.length; i++){
+        if(board[i] === -1){
+            index = i;
+            break;
+        }
+    };
+
+    let y = Math.floor(index / 3);
+    let x = index - y * 3;
+
+    return {x, y};
+};
+
+let canMoveToSquare = (x, y) => {
+    let coords = getPlayerCoords();
+
+    if(Math.abs(x - coords.x) > 1 || Math.abs(y - coords.y) > 1)
+        return false;
+    return true;
+};
+
+let playerCanMove = () => {
+    let coords = getPlayerCoords();
+
+    for(let i = -1; i < 2; i++)
+        for(let j = -1; j < 2; j++){
+            let x = coords.x + i;
+            let y = coords.y + j;
+
+            if(x >= 0 && x <= 2 && y >= 0 && y <= 2 && board[x + y*3] === 0)
+                return true;
+        }
+
+    return false;
+};
+
 let getSelectedSquare = (x, y) => {
     return {
         x: Math.floor((x - gamePosition.x) / cellSize.x),
         y: Math.floor((y - gamePosition.y) / cellSize.y)
     };
+};
+
+let boardIsFull = () => {
+    return board.reduce((carrier, e) => carrier * e, 1) !== 0;
 };
 
 let checkResult = compareBoard => {
@@ -81,10 +146,12 @@ let checkResult = compareBoard => {
             return 2;
     }
 
-    return turn > 8 ? -1 : 0;
+    return boardIsFull() ? -1 : 0;
 };
 
 let getNPCMove = () => {
+    let otherPlaying = playing === 1 ? 2 : 1;
+
     let lose = [];
     let random = [];
 
@@ -92,12 +159,12 @@ let getNPCMove = () => {
         if(board[i] === 0){
             let nextBoard = board.slice(0);
 
-            nextBoard[i] = 2;
-            if(checkResult(nextBoard) === 2)
+            nextBoard[i] = playing;
+            if(checkResult(nextBoard) === playing)
                 return i;
 
-            nextBoard[i] = 1;
-            if(checkResult(nextBoard) === 1)
+            nextBoard[i] = otherPlaying;
+            if(checkResult(nextBoard) === otherPlaying)
                 lose.push(i);
             else
                 random.push(i);
@@ -111,29 +178,20 @@ let getNPCMove = () => {
 };
 
 /** State Functions */
-let resetBoard = () => {
-    turn = 0;
+let clearBoard = () => {
     board = [
         0, 0, 0,
         0, 0, 0,
         0, 0, 0  
     ];
     matchWinner = 0;
-};
-
-let startMatch = () => {
-    resetBoard();
-
-    playing = Math.floor(Math.random() * 2) + 1;
-
-    if(playing === 2)
-        makeNPCMove();
+    playing = -1;
 };
 
 let endMatch = winner => {
-    if(winner === 1)
+    if(winner === -1)
         boss.life -= GAME.player.damage;
-    else if(winner === 2)
+    else
         GAME.player.life -= boss.damage;
 
     if(boss.life <= 0 || GAME.player.life <= 0){
@@ -143,7 +201,7 @@ let endMatch = winner => {
 
     matchWinner = winner;
 
-    setTimeout(() => startMatch(), 2000);
+    setTimeout(() => clearBoard(), 2000);
 };
 
 let onGameOver = result => {
@@ -160,22 +218,56 @@ let makeNPCMove = () => {
     setTimeout(() => markBoard(boardIndex), 500);
 };
 
+let clearPlayerBoard = () => {
+    for(let i = 0; i < board.length; i++)
+        if(board[i] === -1)
+            board[i] = 0;
+};
+
 let markBoard = boardIndex => {
+    if(playing === -1)
+        clearPlayerBoard();
+
     board[boardIndex] = playing;
 
-    turn += 1;
-    playing = playing === 1 ? 2 : 1;
+    switch(playing){
+        case -1: playing = 1; break;
+        case 1: playing = 2; break;
+        case 2:
+            if(playerCanMove())
+                playing = -1;
+            else
+                playing = 1;    
+        break;
+    }
 
     let result = checkResult(board);
 
     if(result !== 0)
         endMatch(result);
     
-    else if(playing === 2)
+    else if(playing > 0)
         setTimeout(() => makeNPCMove(), Math.random() * 501 + 500);
 };
 
 /** Draw Functions */
+let drawTutorial = () => {
+    //Mission
+    GAME.draw.fillText("Mission #1", GAME.canvas.width / 2, GAME.canvas.height / 5, {font: "100px Arial"});
+
+    //Brief
+    let texts = [
+        `Boss:  ${boss.name}.`,
+        "Evil Tic can play as player 1 (X) and 2 (0).",
+        "Make game draw by moving yourself through the board on your turn."
+    ];
+    GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20, GAME.canvas.height * 2 / 5, 70, {textAlign: "left", font: "30px Arial"});
+
+    //Start
+    GAME.draw.fillText("Travel to 1950", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
+    GAME.draw.strokeRect(startPosition.x, startPosition.y, startPosition.width, startPosition.height);
+};
+
 let drawBoard = () => {
     GAME.draw.line(gamePosition.x, gamePosition.y + cellSize.y, gamePosition.x + gamePosition.width, gamePosition.y + cellSize.y);
     GAME.draw.line(gamePosition.x, gamePosition.y + cellSize.y * 2, gamePosition.x + gamePosition.width, gamePosition.y + cellSize.y * 2);
@@ -188,7 +280,7 @@ let drawXY = () => {
         if(board[i] !== 0) {
             let y = Math.floor(i / 3);
             let x = i - y * 3;
-            GAME.draw.fillText(board[i] === 1 ? "X" : "0", gamePosition.x + cellSize.x * (0.5 + x), gamePosition.y + cellSize.y * (0.5 + y));
+            GAME.draw.fillText(signs[board[i]], gamePosition.x + cellSize.x * (0.5 + x), gamePosition.y + cellSize.y * (0.5 + y));
         }   
 };
 
@@ -198,7 +290,7 @@ let drawGameOver = () => {
 };
 
 let drawMatchResult = () => {
-    let msg = matchWinner === 1 ? `${GAME.player.name} Won!` : (matchWinner === 2 ? `${boss.name} Won!` : "It's a Draw!");
+    let msg = matchWinner === -1 ? `${GAME.player.name} Won!` : `${boss.name} Won!`;
     GAME.draw.fillText(msg, panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2);
 };
 
@@ -209,7 +301,7 @@ let drawBasePanel = () => {
     GAME.draw.fillText("x", panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
 
     // Turn
-    if(playing === 1)
+    if(playing === -1)
         GAME.draw.fillText("<", panelPosition.x + panelPosition.width / 2 - 40, panelPosition.y + panelPosition.height - 17, {textBaseline: "bottom"});
     else
         GAME.draw.fillText(">", panelPosition.x + panelPosition.width / 2 + 40, panelPosition.y + panelPosition.height - 17, {textBaseline: "bottom"});
@@ -236,25 +328,34 @@ let drawPanel = () => {
 };
 
 /** Game Loop */
-let start = () => {  
-    //Game
-    drawBoard();
-    drawXY();
+let start = () => {
+    
+    if(tutorial){
+        drawTutorial();
+    }
+    else{
+        //Game
+        drawBoard();
+        drawXY();
 
-    //Panel
-    drawPanel();
+        //Panel
+        drawPanel();
+    }
 };
 
 export default {
     start: () => {
+        tutorial = true;
+        boss.life = 100;
+        gameOver = false;
+
+        clearBoard();
+
         GAME.events.addClick(click);
-        startMatch();
+        
         GAME.start(start)
     },
     stop: () => {
-        boss.life = 100;
-        resetBoard();
-        gameOver = false;
         GAME.stop();
     }
 };
