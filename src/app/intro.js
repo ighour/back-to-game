@@ -41,7 +41,7 @@ let makeNameInput = () => {
 let beginGame = name => {
     GAME.player.name = name;
     nameInput.style.display = "none";
-    GAME.next("pong");
+    GAME.gameOver(true);
 };
 
 /** State Functions */
@@ -61,7 +61,7 @@ let drawNew = () => {
     GAME.draw.fillTextBlock(texts, GAME.canvas.width / 2, GAME.canvas.height * 2 / 5, 70);
 
     //Start Game
-    GAME.draw.fillText("Back to 1972", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
+    GAME.draw.fillText("Start Game", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
     GAME.draw.strokeRect(startPosition.x, startPosition.y, startPosition.width, startPosition.height);
 };
 

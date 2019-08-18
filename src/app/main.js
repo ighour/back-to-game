@@ -178,6 +178,9 @@ export default {
         }
         
         switch(current){
+            case "intro":
+                next("tictactoe");
+            break;
             case "pong":
                 next("tictactoe");
             break;
