@@ -1,7 +1,6 @@
 const GAME = require('./main').default;
 
 /** Variables */
-let nameInput = document.querySelector("#game-form");
 let creating = false;
 let name = "";
 
