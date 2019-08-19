@@ -5,20 +5,20 @@ let tutorial = true;
 let boss = {
     name: "Evil Pong",
     life: 100,
-    damage: 25
+    damage: 1
 };
 let gameOver = false;
 let playerThink;
+let playerMove;
+let ballMove;
 let damageTimer;
 let p1Bar = {
     x: 0,
-    y: 0,
-    move: null
+    y: 0
 };
 let p2Bar = {
     x: 0,
-    y: 0,
-    move: null
+    y: 0
 };
 let ball = {
     x: 0,
@@ -131,26 +131,21 @@ let clearBoard = () => {
     barSize.height = gamePosition.height / 5;
     p1Bar = {
         x: gamePosition.x + 3,
-        y: gamePosition.y + gamePosition.height / 2,
-        move: null,
-        think: null
+        y: gamePosition.y + gamePosition.height / 2
     };
     p2Bar = {
         x: gamePosition.x + gamePosition.width - 3 - barSize.width,
-        y: p1Bar.y,
-        move: null,
-        think: null
+        y: p1Bar.y
     };
     ball = {
         x: gamePosition.x + gamePosition.width / 2,
         y: gamePosition.y + gamePosition.height / 2,
         radius: 7,
-        directionX: 0,
-        directionY: 0,
+        directionX: Math.random(),
+        directionY: Math.random(),
         forceX: 0,
         forceY: 0,
-        speed: 1,
-        move: null
+        speed: 1
     };
 };
 
@@ -166,7 +161,7 @@ let checkTouch = () => {
 
     if(touch === "rb" || touch === "lb"){
         clearTimeout(damageTimer);
-        damageTimer = setTimeout(() => doDamage(GAME.player, 1), 100);
+        damageTimer = setTimeout(() => doDamage(GAME.player, boss.damage), 100);
 
         ball.speed += Math.random() - 0.5;
 
@@ -177,7 +172,7 @@ let checkTouch = () => {
     }
     else if(touch === "r" || touch === "l"){
         clearTimeout(damageTimer);
-        damageTimer = setTimeout(() => doDamage(boss, 10), 100);
+        damageTimer = setTimeout(() => doDamage(boss, GAME.player.damage), 100);
     }
 };
 
@@ -216,36 +211,33 @@ let moveBall = () => {
     ball.y += ball.directionY * ball.speed;
 };
 
-let moveNPC = (player, target) => {
-    let result = target - player.y;
+let moveNPC = target => {
+    let result = target - p1Bar.y;
 
     let distance = Math.random() * 2 + 1;
 
-    if(result < -1 || result > 1)
-        player.y += result > 0 ? distance : -distance;
+    if(result < -1 || result > 1){
+        p1Bar.y += result > 0 ? distance : -distance;
+        p2Bar.y = p1Bar.y;
+    }  
 };
 
 let thinkNPC = () => {
     let target = getBarY(ball.y + Math.random() * 10 - 5);
-    clearInterval(p1Bar.move);
-    p1Bar.move = setInterval(() => moveNPC(p1Bar, target), Math.random() * 4 + 1);
-
-    target = getBarY(ball.y + Math.random() * 10 - 5);
-    clearInterval(p2Bar.move);
-    p2Bar.move = setInterval(() => moveNPC(p2Bar, target), Math.random() * 4 + 1);
+    clearInterval(playerMove);
+    playerMove = setInterval(() => moveNPC(target), Math.random() * 4 + 1);
 };
 
 let startMatch = () => {
     playerThink = setInterval(thinkNPC, 100);
-    ball.move = setInterval(moveBall, 3);
+    ballMove = setInterval(moveBall, 3);
 };
 
-let onGameOver = result => {
+let onGameOver = () => {
     clearInterval(damageTimer);
     clearInterval(playerThink);
-    clearInterval(p1Bar.move);
-    clearInterval(p2Bar.move);
-    clearInterval(ball.move);
+    clearInterval(playerMove);
+    clearInterval(ballMove);
 
     gameOver = true;
 
@@ -310,7 +302,7 @@ let drawBasePanel = () => {
     GAME.draw.fillText(boss.name, panelPosition.x + panelPosition.width * 3 / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
     GAME.draw.fillText("x", panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
 
-    //Lives
+    // Lives
     let maxSize = panelPosition.x + panelPosition.width / 4;
     let playerLifeSize = GAME.player.life / 100 * maxSize;
     let bossLifeSize = boss.life / 100 * maxSize;
@@ -347,6 +339,8 @@ let start = () => {
 
 export default {
     start: () => {
+        GAME.player.damage = 10;
+
         tutorial = true;
         boss.life = 100;
         gameOver = false;
@@ -359,6 +353,11 @@ export default {
         GAME.start(start)
     },
     stop: () => {
+        clearInterval(damageTimer);
+        clearInterval(playerThink);
+        clearInterval(playerMove);
+        clearInterval(ballMove);
+
         GAME.stop();
     }
 };

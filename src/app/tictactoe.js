@@ -5,7 +5,7 @@ let tutorial = true;
 let boss = {
     name: "Evil Tic",
     life: 100,
-    damage: 25
+    damage: 20
 };
 let gameOver = false;
 let matchWinner = 0;
@@ -357,6 +357,8 @@ let start = () => {
 
 export default {
     start: () => {
+        GAME.player.damage = 25;
+        
         tutorial = true;
         boss.life = 100;
         gameOver = false;
