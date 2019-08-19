@@ -51,9 +51,9 @@ let start = () => {
 };
 
 export default {
-    start: (win = false) => {
+    start: _win => {
         GAME.events.addClick(click);
-        win = win;
+        win = _win;
         GAME.start(start)
     },
     stop: () => {

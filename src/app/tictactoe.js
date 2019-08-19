@@ -195,7 +195,7 @@ let endMatch = winner => {
         GAME.player.life -= boss.damage;
 
     if(boss.life <= 0 || GAME.player.life <= 0){
-        onGameOver(boss.life <= 0 ? true : false);
+        onGameOver();
         return;
     }
 
@@ -204,11 +204,11 @@ let endMatch = winner => {
     setTimeout(() => clearBoard(), 2000);
 };
 
-let onGameOver = result => {
+let onGameOver = () => {
     gameOver = true;
 
     setTimeout(() => {
-        GAME.gameOver(result);
+        GAME.gameOver(boss.life <= 0 ? true : false);
     }, 3000);
 };
 
