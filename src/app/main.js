@@ -100,9 +100,11 @@ let splitLine = (x1, y1, x2, y2, spacing, styles) => {
     }, styles);
 };
 
-let fillText = (text, x, y, styles) => {
-    tempStyleAction(() => ctx.fillText(text, x, y), styles);
+let drawText = (type, text, x, y, styles) => {
+    tempStyleAction(() => ctx[type](text, x, y), styles);
 };
+let fillText = (text, x, y, styles) => drawText("fillText", text, x, y, styles);
+let strokeText = (text, x, y, styles) => drawText("strokeText", text, x, y, styles);
 
 let fillTextBlock = (texts, x, y, spacing, styles) => {
     tempStyleAction(() => {
@@ -111,17 +113,21 @@ let fillTextBlock = (texts, x, y, spacing, styles) => {
     }, styles);
 };
 
-let strokeText = (text, x, y, styles) => {
-    tempStyleAction(() => ctx.strokeText(text, x, y), styles);
+let drawRect = (type, x, y, width, height, styles) => {
+    tempStyleAction(() => ctx[type](x, y, width, height), styles);
 };
+let fillRect = (x, y, width, height, styles) => drawRect("fillRect", x, y, width, height, styles);
+let strokeRect = (x, y, width, height, styles) => drawRect("strokeRect", x, y, width, height, styles);
 
-let fillRect = (x, y, width, height, styles) => {
-    tempStyleAction(() => ctx.fillRect(x, y, width, height), styles);
+let drawCircle = (type, x, y, radius, startAngle = 0, endAngle = 2*Math.PI, styles) => {
+    tempStyleAction(() => {
+        ctx.beginPath();
+        ctx.arc(x, y, radius, startAngle, endAngle);
+        ctx[type]();
+    }, styles);
 };
-
-let strokeRect = (x, y, width, height, styles) => {
-    tempStyleAction(() => ctx.strokeRect(x, y, width, height), styles);
-};
+let fillCircle = (x, y, radius, startAngle, endAngle, styles) => drawCircle("fill", x, y, radius, startAngle, endAngle, styles);
+let strokeCircle = (x, y, radius, startAngle, endAngle, styles) => drawCircle("stroke", x, y, radius, startAngle, endAngle, styles);
 
 /** Game Functions */
 let start = () => {
@@ -160,10 +166,12 @@ export default {
         line,
         splitLine,
         fillText,
-        fillTextBlock,
         strokeText,
+        fillTextBlock,
         fillRect,
-        strokeRect
+        strokeRect,
+        fillCircle,
+        strokeCircle
     },
     start: _gameDraw => {
         styles(ctxStyle);
@@ -189,7 +197,7 @@ export default {
         
         switch(current){
             case "intro":
-                next("tictactoe");
+                next("pong");
             break;
             case "pong":
                 next("tictactoe");

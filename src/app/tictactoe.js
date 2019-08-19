@@ -253,7 +253,7 @@ let markBoard = boardIndex => {
 /** Draw Functions */
 let drawTutorial = () => {
     //Mission
-    GAME.draw.fillText("Mission #1", GAME.canvas.width / 2, GAME.canvas.height / 5, {font: "100px Arial"});
+    GAME.draw.fillText("Last Mission", GAME.canvas.width / 2, GAME.canvas.height / 5, {font: "100px Arial"});
 
     //Brief
     let texts = [
@@ -270,7 +270,7 @@ let drawTutorial = () => {
     GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20 + 100, GAME.canvas.height * 2 / 5, 70, {textAlign: "left", font: "30px Arial"});
 
     texts = [
-        "Evil Tic can act as player 1 (X) and 2 (0).",
+        "The boss act as player 1 (X) and 2 (0).",
         "It loses HP when game result is draw.",
         "You can move only to near positions."
     ];
@@ -342,7 +342,6 @@ let drawPanel = () => {
 
 /** Game Loop */
 let start = () => {
-    
     if(tutorial){
         drawTutorial();
     }
