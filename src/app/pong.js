@@ -2,7 +2,7 @@ const GAME = require('./main').default;
 
 /** Variables */
 let gamePosition, startPosition, panelPosition, barSize;
-let tutorial, boss, gameOver, p1Bar, p2Bar, ball;
+let tutorial, boss, gameOver, p1Bar, p2Bar, ball, magnetic, mouse;
 
 /** Events */
 let click = (event, x, y) => {
@@ -14,19 +14,18 @@ let click = (event, x, y) => {
 };
 
 let mouseMove = (event, x, y) => {
-    if(!tutorial && x > gamePosition.x && x < gamePosition.x + gamePosition.width && y > gamePosition.y && y < gamePosition.y + gamePosition.height){
-        let relativeVector = {
-            x: x - ball.x,
-            y: y - ball.y
-        };
+    if(!tutorial && x > gamePosition.x && x < gamePosition.x + gamePosition.width && y > gamePosition.y && y < gamePosition.y + gamePosition.height)
+        mouse = {x, y};  
+};
 
-        let mag = getMagVector(relativeVector.x, relativeVector.y);
+let mouseDown = (event) => {
+    if(!tutorial)
+        magnetic = true;
+};
 
-        let normalizedVector = getNormalizedVector(relativeVector.x, relativeVector.y, mag);
-
-        ball.forceX = normalizedVector.x;
-        ball.forceY = normalizedVector.y;
-    }   
+let mouseUp = (event) => {
+    if(!tutorial)
+        magnetic = false;
 };
 
 /** Helper Functions */
@@ -60,9 +59,26 @@ let getNormalizedVector = (x, y, mag) => {
 /** State Functions */
 let setBallDirection = () => {
     let tempDir = {
-        x: ball.directionX + ball.forceX / 50,
-        y: ball.directionY + ball.forceY / 50
+        x: ball.directionX,
+        y: ball.directionY 
     };
+
+    if(magnetic){
+        let relativeVector = {
+            x: mouse.x - ball.x,
+            y: mouse.y - ball.y
+        };
+
+        let mag = getMagVector(relativeVector.x, relativeVector.y);
+
+        let normalizedVector = getNormalizedVector(relativeVector.x, relativeVector.y, mag);
+
+        ball.forceX = normalizedVector.x;
+        ball.forceY = normalizedVector.y;
+
+        tempDir.x += ball.forceX / 10;
+        tempDir.y += ball.forceY / 10;
+    }
 
     let mag = getMagVector(tempDir.x, tempDir.y);
     let normDir = getNormalizedVector(tempDir.x, tempDir.y, mag);
@@ -78,12 +94,18 @@ let setBallDirection = () => {
 };
 
 let checkBallHit = (self, player) => {
-    //Hit player
-    if(self.B > player.y && self.T < player.y + barSize.height)
-        GAME.functions.doDamage(GAME.player, boss.damage);
-    //Hit wall
-    else
-        GAME.functions.doDamage(boss, GAME.player.damage);
+    if(!gameOver){
+        //Hit player
+        if(self.B > player.y && self.T < player.y + barSize.height){
+            gameOver = GAME.functions.doDamage(GAME.player, boss.damage);
+
+            if(ball.speed < 2)
+                ball.speed += Math.random() * 0.05;
+        }
+        //Hit wall
+        else
+            gameOver = GAME.functions.doDamage(boss, GAME.player.damage);
+    }
 };
 
 let setBallPosition = () => {
@@ -187,8 +209,8 @@ let drawTutorial = () => {
 
     texts = [
         "The boss loses HP when the ball is out.",
-        "Your mouse has a magnetical field.",
-        "Crashing on bars will hurt you."
+        "Your mouse has a magnetical field when clicked down.",
+        "Crashing on bars will hurt you and push the ball."
     ];
     GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20 + 100, GAME.canvas.height * 2 / 5 + 140, 35, {textAlign: "left", font: "30px Arial"});
 
@@ -232,6 +254,16 @@ let drawBasePanel = () => {
 
     GAME.draw.fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize, panelPosition.y + panelPosition.height / 2, bossLifeSize, 20);
     GAME.draw.fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize + bossLifeSize, panelPosition.y + panelPosition.height / 2, maxSize - bossLifeSize, 20, {fillStyle: "black"});
+
+    //Magnetic
+    if(magnetic){
+        let magX = panelPosition.x + panelPosition.width / 2;
+        let magY = panelPosition.y + panelPosition.height / 2 - 50;
+        GAME.draw.fillCircle(magX, magY, 10);
+        GAME.draw.strokeCircle(magX + ball.forceX * 10, magY + ball.forceY * 10, 20);
+    }
+    else
+        GAME.draw.strokeCircle(panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2 - 50, 10);
 };
 
 let drawPanel = () => {
@@ -293,11 +325,18 @@ let onStart = _win => {
         forceY: 0,
         speed: 1
     };
+    magnetic = false;
+    mouse = {
+        x: ball.x,
+        y: ball.y
+    };
 
     //Engine
     GAME.player.damage = 10;
     GAME.events.addMouseMove(mouseMove);
     GAME.events.addClick(click);
+    GAME.events.addMouseDown(mouseDown);
+    GAME.events.addMouseUp(mouseUp);
 };
 
 let onUpdate = () => {

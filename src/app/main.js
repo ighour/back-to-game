@@ -3,6 +3,8 @@ let canvas = document.querySelector("canvas"), ctx = canvas.getContext("2d"), in
 let events = {
     click: [],
     mouseMove: [],
+    mouseDown: [],
+    mouseUp: [],
     keyDown: []
 };
 let ctxStyle = {
@@ -49,6 +51,16 @@ canvas.addEventListener("mousemove", event => {
     let y = event.clientY - rect.top;
 
     events.mouseMove.forEach(e => e(event, x, y));
+});
+
+let addMouseDown = event => events.mouseDown.push(event);
+canvas.addEventListener("mousedown", event => {
+    events.mouseDown.forEach(e => e(event));
+});
+
+let addMouseUp = event => events.mouseUp.push(event);
+canvas.addEventListener("mouseup", event => {
+    events.mouseUp.forEach(e => e(event));
 });
 
 let addKeyDown = event => events.keyDown.push(event);
@@ -175,6 +187,8 @@ let stop = () => {
     events = {
         click: [],
         mouseMove: [],
+        mouseDown: [],
+        mouseUp: [],
         keyDown: []
     };
 };
@@ -194,6 +208,8 @@ const MAIN = {
     events: {
         addClick,
         addMouseMove,
+        addMouseDown,
+        addMouseUp,
         addKeyDown
     },
     draw: {

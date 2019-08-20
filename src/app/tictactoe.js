@@ -134,9 +134,10 @@ let endMatch = winner => {
     else
         end = GAME.functions.doDamage(GAME.player, boss.damage);
 
-    if(!end){
+    if(end)
+        gameOver = true;
+    else{
         matchWinner = winner;
-
         setTimeout(onReset, 2000);
     }
 };
