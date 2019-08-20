@@ -1,13 +1,10 @@
 /** Variables */
-let canvas = document.querySelector("canvas");
-let ctx = canvas.getContext("2d");
+let canvas = document.querySelector("canvas"), ctx = canvas.getContext("2d"), gameDraw, animationFrame, current, instances = [];
 let events = {
     click: [],
     mouseMove: [],
     keyDown: []
 };
-let gameDraw;
-let animationFrame;
 let ctxStyle = {
     fillStyle: "white",
     strokeStyle: "white",
@@ -22,10 +19,11 @@ canvas.height = 768;
 
 /** Context Config */
 ctx.lineWidth = 2;
-
-/** Game Config */
-let current = "intro";
-let instances = {};
+ctx.fillStyle = ctxStyle.fillStyle;
+ctx.strokeStyle = ctxStyle.strokeStyle;
+ctx.font = ctxStyle.font;
+ctx.textAlign = ctxStyle.textAlign;
+ctx.textBaseline = ctxStyle.textBaseline;
 
 /** Events */
 let addClick = event => events.click.push(event);
@@ -129,28 +127,50 @@ let drawCircle = (type, x, y, radius, startAngle = 0, endAngle = 2*Math.PI, styl
 let fillCircle = (x, y, radius, startAngle, endAngle, styles) => drawCircle("fill", x, y, radius, startAngle, endAngle, styles);
 let strokeCircle = (x, y, radius, startAngle, endAngle, styles) => drawCircle("stroke", x, y, radius, startAngle, endAngle, styles);
 
+/** Helper Functions */
+let doDamage = (player, damage) => {
+    player.life -= damage;
+
+    if(player.life <= 0){
+        setTimeout(() => {
+            MAIN.next(player === MAIN.player ? false : true);
+        }, 3000);
+
+        return true;
+    }
+
+    return false;
+};
+
 /** Game Functions */
-let start = () => {
+let startCanvas = () => {
     clearCanvas();
     gameDraw();
-    animationFrame = requestAnimationFrame(start);
+    animationFrame = requestAnimationFrame(startCanvas);
 };
 
-let next = (name, state) => {
-    instances[current].stop();
-    current = name;
-    instances[current].start(state);
+let start = proceed => {
+    instances[current].onStart(proceed);
+    gameDraw = instances[current].loop;
+    startCanvas();
 };
 
-export default {
+let stop = () => {
+    cancelAnimationFrame(animationFrame);
+    events = {
+        click: [],
+        mouseMove: [],
+        keyDown: []
+    };
+};
+
+const MAIN = {
     canvas: {
         x: 0,
         y: 0,
         width: canvas.width,
         height: canvas.height
     },
-    current,
-    instances,
     player: {
         name: "",
         life: 100,
@@ -173,38 +193,32 @@ export default {
         fillCircle,
         strokeCircle
     },
-    start: _gameDraw => {
-        styles(ctxStyle);
-        gameDraw = _gameDraw;
+    functions: {
+        doDamage
+    },
+    current,
+    add: game => instances.push(game),
+    next: proceed => {
+        stop();
+
+        if(instances[current].onStop)
+            instances[current].onStop();
+
+        let lastIndex = instances.length - 1;
+
+        current = proceed !== false ? (current === lastIndex ? 0 : current + 1) : lastIndex;
+
+        start(proceed);
+    },
+    start: () => {
+        if(instances.length === 0)
+            return false;
+
+        current = 0;
         start();
-    },
-    stop: () => {
-        cancelAnimationFrame(animationFrame);
-        events = {
-            click: [],
-            mouseMove: [],
-            keyDown: []
-        };
-        gameDraw = null;
-        clearCanvas();
-    },
-    next,
-    gameOver: win => {
-        if(!win) {
-            next("gameover", win);
-            return;
-        }
-        
-        switch(current){
-            case "intro":
-                next("pong");
-            break;
-            case "pong":
-                next("tictactoe");
-            break;
-            case "tictactoe":
-                next("gameover", win);
-            break;
-        }
+
+        return true;
     }
 };
+
+export default MAIN;

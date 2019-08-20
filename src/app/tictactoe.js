@@ -1,60 +1,8 @@
 const GAME = require('./main').default;
 
 /** Variables */
-let tutorial = true;
-let boss = {
-    name: "Evil Tic",
-    life: 100,
-    damage: 20
-};
-let gameOver = false;
-let matchWinner = 0;
-let winCombos = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-];
-let board = [
-    0, 0, 0,
-    0, 0, 0,
-    0, 0, 0 
-];
-let playing = -1;
-
-/** UI */
-let gamePosition = {
-    x: GAME.canvas.width / 5,
-    y: GAME.canvas.height / 10,
-    width: GAME.canvas.width * 3 / 5,
-    height: GAME.canvas.height * 3 / 5
-};
-let startPosition = {
-    x: GAME.canvas.width / 2 - 90,
-    y: GAME.canvas.height * 5 / 6 - 30,
-    width: 180,
-    height: 60
-};
-let cellSize = {
-    x: gamePosition.width  / 3,
-    y: gamePosition.height / 3 
-};
-let panelPosition = {
-    x: 0,
-    y: gamePosition.y + gamePosition.height + 20,
-    width: GAME.canvas.width,
-    height: GAME.canvas.height - (gamePosition.y + gamePosition.height + 20) - 1
-};
-let signs = {
-    "-1": "P",
-    0: "",
-    1: "X",
-    2: "0"
-};
+let gamePosition, startPosition, cellSize, panelPosition;
+let boss, tutorial, gameOver, signs, matchWinner, winCombos, board, playing;
 
 /** Events */
 let click = (event, x, y) => {
@@ -178,38 +126,19 @@ let getNPCMove = () => {
 };
 
 /** State Functions */
-let clearBoard = () => {
-    board = [
-        0, 0, 0,
-        0, 0, 0,
-        0, 0, 0  
-    ];
-    matchWinner = 0;
-    playing = -1;
-};
-
 let endMatch = winner => {
+    let end = false;
+
     if(winner === -1)
-        boss.life -= GAME.player.damage;
+        end = GAME.functions.doDamage(boss, GAME.player.damage);
     else
-        GAME.player.life -= boss.damage;
+        end = GAME.functions.doDamage(GAME.player, boss.damage);
 
-    if(boss.life <= 0 || GAME.player.life <= 0){
-        onGameOver();
-        return;
+    if(!end){
+        matchWinner = winner;
+
+        setTimeout(onReset, 2000);
     }
-
-    matchWinner = winner;
-
-    setTimeout(() => clearBoard(), 2000);
-};
-
-let onGameOver = () => {
-    gameOver = true;
-
-    setTimeout(() => {
-        GAME.gameOver(boss.life <= 0 ? true : false);
-    }, 3000);
 };
 
 let makeNPCMove = () => {
@@ -341,7 +270,7 @@ let drawPanel = () => {
 };
 
 /** Game Loop */
-let start = () => {
+let loop = () => {
     if(tutorial){
         drawTutorial();
     }
@@ -355,21 +284,76 @@ let start = () => {
     }
 };
 
-export default {
-    start: () => {
-        GAME.player.damage = 25;
-        
-        tutorial = true;
-        boss.life = 100;
-        gameOver = false;
+/** Lifecycle */
+let onStart = _win => {
+    //UI
+    gamePosition = {
+        x: GAME.canvas.width / 5,
+        y: GAME.canvas.height / 10,
+        width: GAME.canvas.width * 3 / 5,
+        height: GAME.canvas.height * 3 / 5
+    };
+    startPosition = {
+        x: GAME.canvas.width / 2 - 90,
+        y: GAME.canvas.height * 5 / 6 - 30,
+        width: 180,
+        height: 60
+    };
+    cellSize = {
+        x: gamePosition.width  / 3,
+        y: gamePosition.height / 3 
+    };
+    panelPosition = {
+        x: 0,
+        y: gamePosition.y + gamePosition.height + 20,
+        width: GAME.canvas.width,
+        height: GAME.canvas.height - (gamePosition.y + gamePosition.height + 20) - 1
+    };
 
-        clearBoard();
+    //State
+    boss = {
+        name: "Evil Tic",
+        life: 100,
+        damage: 20
+    };
+    tutorial = true;
+    gameOver = false;
+    signs = {
+        "-1": "P",
+        0: "",
+        1: "X",
+        2: "0"
+    };
+    winCombos = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
 
-        GAME.events.addClick(click);
-        
-        GAME.start(start)
-    },
-    stop: () => {
-        GAME.stop();
-    }
+    //Engine
+    GAME.player.damage = 25;
+    GAME.events.addClick(click);
+
+    onReset();
 };
+
+let onReset = () => {
+    board = [
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0  
+    ];
+    matchWinner = 0;
+    playing = -1;
+};
+
+// let onStop = () => {
+
+// };
+
+export default {loop, onStart};

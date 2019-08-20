@@ -1,59 +1,8 @@
 const GAME = require('./main').default;
 
 /** Variables */
-let tutorial = true;
-let boss = {
-    name: "Evil Pong",
-    life: 100,
-    damage: 1
-};
-let gameOver = false;
-let playerThink;
-let playerMove;
-let ballMove;
-let damageTimer;
-let p1Bar = {
-    x: 0,
-    y: 0
-};
-let p2Bar = {
-    x: 0,
-    y: 0
-};
-let ball = {
-    x: 0,
-    y: 0,
-    radius: 0,
-    directionX: 0,
-    directionY: 0,
-    forceX: 0,
-    forceY: 0,
-    speed: 0
-};
-
-/** UI */
-let gamePosition = {
-    x: GAME.canvas.width / 10,
-    y: GAME.canvas.height / 10,
-    width: GAME.canvas.width * 4 / 5,
-    height: GAME.canvas.height * 3 / 5
-};
-let startPosition = {
-    x: GAME.canvas.width / 2 - 90,
-    y: GAME.canvas.height * 5 / 6 - 30,
-    width: 180,
-    height: 60
-};
-let panelPosition = {
-    x: 0,
-    y: gamePosition.y + gamePosition.height + 20,
-    width: GAME.canvas.width,
-    height: GAME.canvas.height - (gamePosition.y + gamePosition.height + 20) - 1
-};
-let barSize = {
-    width: 10,
-    height: gamePosition.height / 5
-};
+let gamePosition, startPosition, panelPosition, barSize;
+let tutorial, boss, gameOver, playerThink, playerMove, ballMove, p1Bar, p2Bar, ball, invincible;
 
 /** Events */
 let click = (event, x, y) => {
@@ -127,57 +76,33 @@ let touchBorder = () => {
 };
 
 /** State Functions */
-let clearBoard = () => {
-    barSize.height = gamePosition.height / 5;
-    p1Bar = {
-        x: gamePosition.x + 3,
-        y: gamePosition.y + gamePosition.height / 2
-    };
-    p2Bar = {
-        x: gamePosition.x + gamePosition.width - 3 - barSize.width,
-        y: p1Bar.y
-    };
-    ball = {
-        x: gamePosition.x + gamePosition.width / 2,
-        y: gamePosition.y + gamePosition.height / 2,
-        radius: 7,
-        directionX: Math.random(),
-        directionY: Math.random(),
-        forceX: 0,
-        forceY: 0,
-        speed: 1
-    };
-};
-
-let doDamage = (player, damage) => {
-    player.life -= damage;
-
-    if(player.life <= 0)
-        onGameOver();
-};
-
 let checkTouch = () => {
-    let touch = touchBorder();
+    if(invincible <= 0) {
+        let touch = touchBorder();
 
-    if(touch === "rb" || touch === "lb"){
-        clearTimeout(damageTimer);
-        damageTimer = setTimeout(() => doDamage(GAME.player, boss.damage), 100);
-
-        ball.speed += Math.random() - 0.5;
-
-        if(ball.speed < 2.5)
-            ball.speed += 0.5;
-        else if(ball.speed > 4)
-            ball.speed -= 0.5;
+        if(touch === "rb" || touch === "lb"){
+            invincible = 100;
+            gameOver = GAME.functions.doDamage(GAME.player, boss.damage);
+    
+            ball.speed += Math.random() - 0.5;
+    
+            if(ball.speed < 2.5)
+                ball.speed += 0.5;
+            else if(ball.speed > 4)
+                ball.speed -= 0.5;
+        }
+        else if(touch === "r" || touch === "l"){
+            invincible = 100;
+            gameOver = GAME.functions.doDamage(boss, GAME.player.damage);
+        }
     }
-    else if(touch === "r" || touch === "l"){
-        clearTimeout(damageTimer);
-        damageTimer = setTimeout(() => doDamage(boss, GAME.player.damage), 100);
-    }
+    else
+        invincible -= 1;
 };
 
 let moveBall = () => {
-    checkTouch();
+    if(!gameOver)
+        checkTouch();
 
     let tempDir = {
         x: ball.directionX + ball.forceX / 50,
@@ -231,19 +156,6 @@ let thinkNPC = () => {
 let startMatch = () => {
     playerThink = setInterval(thinkNPC, 100);
     ballMove = setInterval(moveBall, 3);
-};
-
-let onGameOver = () => {
-    clearInterval(damageTimer);
-    clearInterval(playerThink);
-    clearInterval(playerMove);
-    clearInterval(ballMove);
-
-    gameOver = true;
-
-    setTimeout(() => {
-        GAME.gameOver(boss.life <= 0 ? true : false);
-    }, 3000);
 };
 
 /** Draw Functions */
@@ -322,10 +234,9 @@ let drawPanel = () => {
 };
 
 /** Game Loop */
-let start = () => {  
-    if(tutorial){
+let loop = () => {  
+    if(tutorial)
         drawTutorial();
-    }
     else{
         //Game
         drawBoard();
@@ -337,27 +248,74 @@ let start = () => {
     }
 };
 
-export default {
-    start: () => {
-        GAME.player.damage = 10;
+/** Lifecycle */
+let onStart = _win => {
+    //UI
+    gamePosition = {
+        x: GAME.canvas.width / 10,
+        y: GAME.canvas.height / 10,
+        width: GAME.canvas.width * 4 / 5,
+        height: GAME.canvas.height * 3 / 5
+    };
+    startPosition = {
+        x: GAME.canvas.width / 2 - 90,
+        y: GAME.canvas.height * 5 / 6 - 30,
+        width: 180,
+        height: 60
+    };
+    panelPosition = {
+        x: 0,
+        y: gamePosition.y + gamePosition.height + 20,
+        width: GAME.canvas.width,
+        height: GAME.canvas.height - (gamePosition.y + gamePosition.height + 20) - 1
+    };
+    barSize = {
+        width: 10,
+        height: gamePosition.height / 5
+    };
 
-        tutorial = true;
-        boss.life = 100;
-        gameOver = false;
+    //State
+    boss = {
+        name: "Evil Pong",
+        life: 100,
+        damage: 1
+    };
+    tutorial = true;
+    gameOver = false;
+    p1Bar = {
+        x: gamePosition.x + 3,
+        y: gamePosition.y + gamePosition.height / 2
+    };
+    p2Bar = {
+        x: gamePosition.x + gamePosition.width - 3 - barSize.width,
+        y: p1Bar.y
+    };
+    ball = {
+        x: gamePosition.x + gamePosition.width / 2,
+        y: gamePosition.y + gamePosition.height / 2,
+        radius: 7,
+        directionX: Math.random(),
+        directionY: Math.random(),
+        forceX: 0,
+        forceY: 0,
+        speed: 1
+    };
+    invincible = 0;
 
-        clearBoard();
-
-        GAME.events.addMouseMove(mouseMove);
-        GAME.events.addClick(click);
-
-        GAME.start(start)
-    },
-    stop: () => {
-        clearInterval(damageTimer);
-        clearInterval(playerThink);
-        clearInterval(playerMove);
-        clearInterval(ballMove);
-
-        GAME.stop();
-    }
+    //Engine
+    GAME.player.damage = 10;
+    GAME.events.addMouseMove(mouseMove);
+    GAME.events.addClick(click);
 };
+
+// let onReset = () => {
+
+// };
+
+let onStop = () => {
+    clearInterval(playerThink);
+    clearInterval(playerMove);
+    clearInterval(ballMove);
+};
+
+export default {loop, onStart, onStop};

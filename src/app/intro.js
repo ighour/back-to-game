@@ -1,16 +1,8 @@
 const GAME = require('./main').default;
 
 /** Variables */
-let creating = false;
-let name = "";
-
-/** UI */
-let startPosition = {
-    x: GAME.canvas.width / 2 - 180,
-    y: GAME.canvas.height * 5 / 6 - 30,
-    width: 360,
-    height: 60
-};
+let startPosition;
+let creating, name;
 
 /** Events */
 let click = (event, x, y) => {
@@ -37,7 +29,7 @@ let keyDown = (event) => {
 /** Helper Functions */
 let beginGame = () => {
     GAME.player.name = name;
-    GAME.gameOver(true);
+    GAME.next(true);
 };
 
 let validKeyForName = key => {
@@ -85,21 +77,38 @@ let drawCreate = () => {
 };
 
 /** Game Loop */
-let start = () => {  
+let loop = () => {  
     if(creating === false)
         drawNew();
     else
         drawCreate();  
 };
 
-export default {
-    start: () => {
-        GAME.events.addClick(click);
-        GAME.events.addKeyDown(keyDown);
-        GAME.start(start)
-    },
-    stop: () => {
-        creating = false;
-        GAME.stop()
-    }
+/** Lifecycle */
+let onStart = () => {
+    //UI
+    startPosition = {
+        x: GAME.canvas.width / 2 - 180,
+        y: GAME.canvas.height * 5 / 6 - 30,
+        width: 360,
+        height: 60
+    };
+
+    //State
+    creating = false;
+    name = "";
+
+    //Engine
+    GAME.events.addClick(click);
+    GAME.events.addKeyDown(keyDown);
 };
+
+// let onReset = () => {
+
+// };
+
+// let onStop = () => {
+    
+// };
+
+export default {loop, onStart};

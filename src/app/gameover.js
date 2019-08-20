@@ -1,31 +1,17 @@
 const GAME = require('./main').default;
 
 /** Variables */
-let win = false;
-
-/** UI */
-let newGame = {
-    x: GAME.canvas.width / 2 - 180,
-    y: GAME.canvas.height * 2 / 3,
-    width: 360,
-    height: 60
-};
+let newGame;
+let win;
 
 /** Events */
 let click = (event, x, y) => {
     //New Game
-    if(x > newGame.x && x < newGame.x + newGame.width && y > newGame.y && y < newGame.y + newGame.height){
-        reset();
-        GAME.next("intro");
-    }
+    if(x > newGame.x && x < newGame.x + newGame.width && y > newGame.y && y < newGame.y + newGame.height)
+        GAME.next();
 };
 
 /** Helper Functions */
-let reset = () => {
-    GAME.player.name = "";
-    GAME.player.life = 100;
-    GAME.next("intro");
-};
 
 /** State Functions */
 
@@ -39,7 +25,7 @@ let drawLose = () => {
 };
 
 /** Game Loop */
-let start = () => {  
+let loop = () => {  
     if(win)
         drawWin();
     else
@@ -50,14 +36,30 @@ let start = () => {
     GAME.draw.strokeRect(newGame.x, newGame.y, newGame.width, newGame.height);
 };
 
-export default {
-    start: _win => {
-        GAME.events.addClick(click);
-        win = _win;
-        GAME.start(start)
-    },
-    stop: () => {
-        win = false;
-        GAME.stop()
-    }
+/** Lifecycle */
+let onStart = _win => {
+    //UI
+    newGame = {
+        x: GAME.canvas.width / 2 - 180,
+        y: GAME.canvas.height * 2 / 3,
+        width: 360,
+        height: 60
+    };
+
+    //State
+    win = _win;
+
+    //Engine
+    GAME.events.addClick(click);
 };
+
+// let onReset = () => {
+
+// };
+
+let onStop = () => {
+    GAME.player.name = "";
+    GAME.player.life = 100;
+};
+
+export default {loop, onStart, onStop};
