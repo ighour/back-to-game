@@ -109,7 +109,7 @@ let checkBallHit = (self, player) => {
 };
 
 let setBallPosition = () => {
-    let move = ball.speed * GAME.timing.delta / 2;
+    let move = ball.speed * GAME.delta / 1.5;
 
     let newX = ball.x + ball.directionX * move;
     let newY = ball.y + ball.directionY * move;
@@ -171,7 +171,7 @@ let moveNPC = (player, targetY) => {
     if(normVector.y >= -0.1 && normVector.y <= 0.1)
         return;
 
-    let newY = player.y + normVector.y * GAME.timing.delta / 1.5;
+    let newY = player.y + normVector.y * GAME.delta;
 
     if(newY < gamePosition.y)
         newY = gamePosition.y;

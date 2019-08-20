@@ -18,8 +18,9 @@ let ctxStyle = {
 /** Timing Config */
 let timing = {
     lastTimeUpdate: 0, //last time update was run in ms
-    maxFPS: 30,  //max FPS
-    delta: 0    //time between frames in ms
+    maxFPS: 60,  //max FPS
+    delta: 0,    //time between frames in ms
+    unit: 1000 / 60,    //simulate time per frame
 };
 
 /** Canvas Config */
@@ -163,14 +164,20 @@ let doDamage = (player, damage) => {
 
 /** Game Functions */
 let update = timestamp => {
-    //Control frame rate
+    //Frame rate limit
     if(timestamp < timing.lastTimeUpdate + (1000 / timing.maxFPS)){
         animationFrame = requestAnimationFrame(update);
         return;
     }
-    timing.delta = timestamp - timing.lastTimeUpdate,
+
+    //Delta
+    timing.delta += timestamp - timing.lastTimeUpdate,
     timing.lastTimeUpdate = timestamp;
 
+    while(timing.delta >= timing.unit)
+        timing.delta -= timing.unit;
+ 
+    //Draw
     clearCanvas();
     instanceUpdate();
     animationFrame = requestAnimationFrame(update);
@@ -227,7 +234,7 @@ const MAIN = {
     functions: {
         doDamage
     },
-    timing,
+    delta: timing.unit,
     current,
     add: game => instances.push(game),
     next: proceed => {
