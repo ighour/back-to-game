@@ -24,18 +24,6 @@ let drawLose = () => {
     GAME.draw.fillText("You were defeated by Evil Games!", GAME.canvas.width / 2, GAME.canvas.height / 3);
 };
 
-/** Game Loop */
-let loop = () => {  
-    if(win)
-        drawWin();
-    else
-        drawLose();
-
-    //New Game
-    GAME.draw.fillText("Back to Future", newGame.x + newGame.width / 2, newGame.y + newGame.height / 2);
-    GAME.draw.strokeRect(newGame.x, newGame.y, newGame.width, newGame.height);
-};
-
 /** Lifecycle */
 let onStart = _win => {
     //UI
@@ -53,6 +41,17 @@ let onStart = _win => {
     GAME.events.addClick(click);
 };
 
+let onUpdate = () => {  
+    if(win)
+        drawWin();
+    else
+        drawLose();
+
+    //New Game
+    GAME.draw.fillText("Back to Future", newGame.x + newGame.width / 2, newGame.y + newGame.height / 2);
+    GAME.draw.strokeRect(newGame.x, newGame.y, newGame.width, newGame.height);
+};
+
 // let onReset = () => {
 
 // };
@@ -62,4 +61,4 @@ let onStop = () => {
     GAME.player.life = 100;
 };
 
-export default {loop, onStart, onStop};
+export default {onStart, onUpdate, onStop};

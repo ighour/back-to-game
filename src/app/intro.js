@@ -76,14 +76,6 @@ let drawCreate = () => {
     }
 };
 
-/** Game Loop */
-let loop = () => {  
-    if(creating === false)
-        drawNew();
-    else
-        drawCreate();  
-};
-
 /** Lifecycle */
 let onStart = () => {
     //UI
@@ -103,6 +95,13 @@ let onStart = () => {
     GAME.events.addKeyDown(keyDown);
 };
 
+let onUpdate = () => {  
+    if(creating === false)
+        drawNew();
+    else
+        drawCreate();  
+};
+
 // let onReset = () => {
 
 // };
@@ -111,4 +110,4 @@ let onStart = () => {
     
 // };
 
-export default {loop, onStart};
+export default {onStart, onUpdate};

@@ -143,16 +143,16 @@ let doDamage = (player, damage) => {
 };
 
 /** Game Functions */
-let startCanvas = () => {
+let update = () => {
     clearCanvas();
     gameDraw();
-    animationFrame = requestAnimationFrame(startCanvas);
+    animationFrame = requestAnimationFrame(update);
 };
 
 let start = proceed => {
     instances[current].onStart(proceed);
-    gameDraw = instances[current].loop;
-    startCanvas();
+    gameDraw = instances[current].onUpdate;
+    update();
 };
 
 let stop = () => {

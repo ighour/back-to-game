@@ -233,21 +233,6 @@ let drawPanel = () => {
         drawBasePanel();
 };
 
-/** Game Loop */
-let loop = () => {  
-    if(tutorial)
-        drawTutorial();
-    else{
-        //Game
-        drawBoard();
-        drawBars();
-        drawBall();
-
-        //Panel
-        drawPanel();
-    }
-};
-
 /** Lifecycle */
 let onStart = _win => {
     //UI
@@ -308,6 +293,20 @@ let onStart = _win => {
     GAME.events.addClick(click);
 };
 
+let onUpdate = () => {  
+    if(tutorial)
+        drawTutorial();
+    else{
+        //Game
+        drawBoard();
+        drawBars();
+        drawBall();
+
+        //Panel
+        drawPanel();
+    }
+};
+
 // let onReset = () => {
 
 // };
@@ -318,4 +317,4 @@ let onStop = () => {
     clearInterval(ballMove);
 };
 
-export default {loop, onStart, onStop};
+export default {onStart, onUpdate, onStop};

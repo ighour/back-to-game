@@ -269,21 +269,6 @@ let drawPanel = () => {
         drawBasePanel();
 };
 
-/** Game Loop */
-let loop = () => {
-    if(tutorial){
-        drawTutorial();
-    }
-    else{
-        //Game
-        drawBoard();
-        drawXY();
-
-        //Panel
-        drawPanel();
-    }
-};
-
 /** Lifecycle */
 let onStart = _win => {
     //UI
@@ -342,6 +327,20 @@ let onStart = _win => {
     onReset();
 };
 
+let onUpdate = () => {
+    if(tutorial){
+        drawTutorial();
+    }
+    else{
+        //Game
+        drawBoard();
+        drawXY();
+
+        //Panel
+        drawPanel();
+    }
+};
+
 let onReset = () => {
     board = [
         0, 0, 0,
@@ -356,4 +355,4 @@ let onReset = () => {
 
 // };
 
-export default {loop, onStart};
+export default {onStart, onUpdate};
