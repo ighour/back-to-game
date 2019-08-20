@@ -1,5 +1,5 @@
 /** Variables */
-let canvas = document.querySelector("canvas"), ctx = canvas.getContext("2d"), gameDraw, animationFrame, current, instances = [];
+let canvas = document.querySelector("canvas"), ctx = canvas.getContext("2d"), instanceUpdate, animationFrame, current, instances = [];
 let events = {
     click: [],
     mouseMove: [],
@@ -11,6 +11,13 @@ let ctxStyle = {
     font: "50px Arial",
     textAlign: "center",
     textBaseline: "middle"
+};
+
+/** Timing Config */
+let timing = {
+    lastTimeUpdate: 0, //last time update was run in ms
+    maxFPS: 30,  //max FPS
+    delta: 0    //time between frames in ms
 };
 
 /** Canvas Config */
@@ -143,16 +150,24 @@ let doDamage = (player, damage) => {
 };
 
 /** Game Functions */
-let update = () => {
+let update = timestamp => {
+    //Control frame rate
+    if(timestamp < timing.lastTimeUpdate + (1000 / timing.maxFPS)){
+        animationFrame = requestAnimationFrame(update);
+        return;
+    }
+    timing.delta = timestamp - timing.lastTimeUpdate,
+    timing.lastTimeUpdate = timestamp;
+
     clearCanvas();
-    gameDraw();
+    instanceUpdate();
     animationFrame = requestAnimationFrame(update);
 };
 
 let start = proceed => {
     instances[current].onStart(proceed);
-    gameDraw = instances[current].onUpdate;
-    update();
+    instanceUpdate = instances[current].onUpdate;
+    update(0);
 };
 
 let stop = () => {
@@ -196,6 +211,7 @@ const MAIN = {
     functions: {
         doDamage
     },
+    timing,
     current,
     add: game => instances.push(game),
     next: proceed => {

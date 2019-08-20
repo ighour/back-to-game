@@ -2,16 +2,14 @@ const GAME = require('./main').default;
 
 /** Variables */
 let gamePosition, startPosition, panelPosition, barSize;
-let tutorial, boss, gameOver, playerThink, playerMove, ballMove, p1Bar, p2Bar, ball, invincible;
+let tutorial, boss, gameOver, p1Bar, p2Bar, ball;
 
 /** Events */
 let click = (event, x, y) => {
     if(tutorial){
         //Start Button
-        if(x > startPosition.x && x < startPosition.x + startPosition.width && y > startPosition.y && y < startPosition.y + startPosition.height){
+        if(x > startPosition.x && x < startPosition.x + startPosition.width && y > startPosition.y && y < startPosition.y + startPosition.height)
             tutorial = false;
-            startMatch();
-        }
     }
 };
 
@@ -59,51 +57,8 @@ let getNormalizedVector = (x, y, mag) => {
     };
 };
 
-let touchBorder = () => {
-    if(ball.x <= p1Bar.x + barSize.width){
-        if(ball.y >= p1Bar.y - 1 && ball.y <= p1Bar.y + barSize.height + 1)
-            return "lb";
-        else
-            return "l";
-    }
-    else if(ball.x >= p2Bar.x){
-        if(ball.y >= p2Bar.y - 1 && ball.y <= p2Bar.y + barSize.height + 1)
-            return "rb";
-        else
-            return "r";
-    }
-    return "";
-};
-
 /** State Functions */
-let checkTouch = () => {
-    if(invincible <= 0) {
-        let touch = touchBorder();
-
-        if(touch === "rb" || touch === "lb"){
-            invincible = 100;
-            gameOver = GAME.functions.doDamage(GAME.player, boss.damage);
-    
-            ball.speed += Math.random() - 0.5;
-    
-            if(ball.speed < 2.5)
-                ball.speed += 0.5;
-            else if(ball.speed > 4)
-                ball.speed -= 0.5;
-        }
-        else if(touch === "r" || touch === "l"){
-            invincible = 100;
-            gameOver = GAME.functions.doDamage(boss, GAME.player.damage);
-        }
-    }
-    else
-        invincible -= 1;
-};
-
-let moveBall = () => {
-    if(!gameOver)
-        checkTouch();
-
+let setBallDirection = () => {
     let tempDir = {
         x: ball.directionX + ball.forceX / 50,
         y: ball.directionY + ball.forceY / 50
@@ -112,50 +67,103 @@ let moveBall = () => {
     let mag = getMagVector(tempDir.x, tempDir.y);
     let normDir = getNormalizedVector(tempDir.x, tempDir.y, mag);
 
-    if(normDir.x > -0.4 && normDir.x < 0.4)
-        normDir.x = normDir.x <= 0 ? -0.4 : 0.4;
+    if(normDir.x > -0.3 && normDir.x < 0.3)
+        normDir.x = normDir.x <= 0 ? -0.3 : 0.3;
 
-    if(normDir.y > -0.4 && normDir.y < 0.4)
-        normDir.y = normDir.y <= 0 ? -0.4 : 0.4;
+    if(normDir.y > -0.3 && normDir.y < 0.3)
+        normDir.y = normDir.y <= 0 ? -0.3 : 0.3;
 
     ball.directionX = normDir.x;
     ball.directionY = normDir.y;
+};
 
-    let left = ball.x <= gamePosition.x + barSize.width + 2;
-    let right = ball.x >= gamePosition.x + gamePosition.width - barSize.width - 2;
-    let top = ball.y <= gamePosition.y + 2;
-    let bottom = ball.y >= gamePosition.y + gamePosition.height - 2;
+let checkBallHit = (self, player) => {
+    //Hit player
+    if(self.B > player.y && self.T < player.y + barSize.height)
+        GAME.functions.doDamage(GAME.player, boss.damage);
+    //Hit wall
+    else
+        GAME.functions.doDamage(boss, GAME.player.damage);
+};
 
-    if(left && normDir.x < 0 || right && normDir.x > 0)
+let setBallPosition = () => {
+    let move = ball.speed * GAME.timing.delta / 2;
+
+    let newX = ball.x + ball.directionX * move;
+    let newY = ball.y + ball.directionY * move;
+
+    let L = p1Bar.x + barSize.width;
+    let R = p2Bar.x;
+    let T = gamePosition.y;
+    let B = gamePosition.y + gamePosition.height;
+
+    let self = {
+        L: newX - ball.radius,
+        R: newX + ball.radius,
+        T: newY - ball.radius,
+        B: newY + ball.radius
+    };
+
+    //Hit left
+    if(self.L < L){
+        checkBallHit(self, p1Bar);
+        newX = L + ball.radius;
         ball.directionX *= -1;
+    }
+    //Hit right
+    else if(self.R > R){
+        checkBallHit(self, p2Bar);
+        newX = R - ball.radius;
+        ball.directionX *= -1;
+    }
 
-    if(top && normDir.y < 0 || bottom && normDir.y > 0)
+    //Hit top
+    if(self.T < T){
+        newY = T + ball.radius;
         ball.directionY *= -1;
+    }
+    //Hit bottom
+    else if(self.B > B){
+        newY = B - ball.radius;
+        ball.directionY *= -1;
+    }
 
-    ball.x += ball.directionX * ball.speed;
-    ball.y += ball.directionY * ball.speed;
+    ball.x = newX;
+    ball.y = newY;
 };
 
-let moveNPC = target => {
-    let result = target - p1Bar.y;
-
-    let distance = Math.random() * 2 + 1;
-
-    if(result < -1 || result > 1){
-        p1Bar.y += result > 0 ? distance : -distance;
-        p2Bar.y = p1Bar.y;
-    }  
+let moveBall = () => {
+    setBallDirection();
+    setBallPosition();
 };
 
-let thinkNPC = () => {
-    let target = getBarY(ball.y + Math.random() * 10 - 5);
-    clearInterval(playerMove);
-    playerMove = setInterval(() => moveNPC(target), Math.random() * 4 + 1);
+let moveNPC = (player, targetY) => {
+    let target = {
+        x: ball.x - player.x,
+        y: targetY - player.y
+    };
+
+    let mag = getMagVector(target.x, target.y);
+    let normVector = getNormalizedVector(target.x, target.y, mag);
+
+    if(normVector.y >= -0.1 && normVector.y <= 0.1)
+        return;
+
+    let newY = player.y + normVector.y * GAME.timing.delta / 1.5;
+
+    if(newY < gamePosition.y)
+        newY = gamePosition.y;
+    else if(newY + barSize.height > gamePosition.y + gamePosition.height)
+        newY = gamePosition.y + gamePosition.height - barSize.height;
+    
+    player.y = newY;
 };
 
-let startMatch = () => {
-    playerThink = setInterval(thinkNPC, 100);
-    ballMove = setInterval(moveBall, 3);
+let moveNPCs = () => {
+    let targetY = getBarY(ball.y);
+
+    moveNPC(p1Bar, targetY);
+    moveNPC(p2Bar, targetY);
 };
 
 /** Draw Functions */
@@ -285,7 +293,6 @@ let onStart = _win => {
         forceY: 0,
         speed: 1
     };
-    invincible = 0;
 
     //Engine
     GAME.player.damage = 10;
@@ -293,10 +300,14 @@ let onStart = _win => {
     GAME.events.addClick(click);
 };
 
-let onUpdate = () => {  
+let onUpdate = () => {
     if(tutorial)
         drawTutorial();
-    else{
+    else {
+        //Logic
+        moveNPCs();
+        moveBall();
+
         //Game
         drawBoard();
         drawBars();
@@ -311,10 +322,8 @@ let onUpdate = () => {
 
 // };
 
-let onStop = () => {
-    clearInterval(playerThink);
-    clearInterval(playerMove);
-    clearInterval(ballMove);
-};
+// let onStop = () => {
 
-export default {onStart, onUpdate, onStop};
+// };
+
+export default {onStart, onUpdate};
