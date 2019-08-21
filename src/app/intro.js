@@ -17,13 +17,17 @@ let click = (event, x, y) => {
     }
 
     //Keyboard
-    else if(x > keyboardPosition.x && x < keyboardPosition.x + keyboardPosition.width && y > keyboardPosition.y && y < keyboardPosition.y + keyboardPosition.height){
+    else if(creating && x > keyboardPosition.x && x < keyboardPosition.x + keyboardPosition.width && 
+        y > keyboardPosition.y && y < keyboardPosition.y + keyboardPosition.height){
         let keyIndex = getPressedKey(x, y);
         pressKey(keyIndex);
     }
 };
 
 let keyDown = (event) => {
+    if(!creating)
+        return;
+        
     let key = event.key;
 
     if(validKeyForName(key) && name.length < nameRules.max)
