@@ -39,38 +39,61 @@ ctx.textAlign = ctxStyle.textAlign;
 ctx.textBaseline = ctxStyle.textBaseline;
 
 /** Events */
+let getCanvasCoords = (x, y) => {
+    let rect = canvas.getBoundingClientRect();
+    return {
+        x: x - rect.left,
+        y: y - rect.top
+    };
+};
+
 let addClick = event => events.click.push(event);
 canvas.addEventListener("click", event => {
-    let rect = canvas.getBoundingClientRect();
-    let x = event.clientX - rect.left;
-    let y = event.clientY - rect.top;
-
-    events.click.forEach(e => e(event, x, y));
+    let coords = getCanvasCoords(event.clientX, event.clientY);
+    events.click.forEach(e => e(event, coords.x, coords.y));
 });
 
 let addMouseMove = event => events.mouseMove.push(event);
 canvas.addEventListener("mousemove", event => {
-    let rect = canvas.getBoundingClientRect();
-    let x = event.clientX - rect.left;
-    let y = event.clientY - rect.top;
-
-    events.mouseMove.forEach(e => e(event, x, y));
+    let coords = getCanvasCoords(event.clientX, event.clientY);
+    events.mouseMove.forEach(e => e(event, coords.x, coords.y));
 });
 
 let addMouseDown = event => events.mouseDown.push(event);
-canvas.addEventListener("mousedown", event => {
-    events.mouseDown.forEach(e => e(event));
-});
+canvas.addEventListener("mousedown", event => events.mouseDown.forEach(e => e(event)));
 
 let addMouseUp = event => events.mouseUp.push(event);
-canvas.addEventListener("mouseup", event => {
-    events.mouseUp.forEach(e => e(event));
+canvas.addEventListener("mouseup", event => events.mouseUp.forEach(e => e(event)));
+
+canvas.addEventListener("touchmove", event => {
+    event.preventDefault();
+    let touch = event.touches[0];
+    canvas.dispatchEvent(new MouseEvent("mousemove", {clientX: touch.clientX, clientY: touch.clientY}));
+});
+
+canvas.addEventListener("touchstart", event => {
+    event.preventDefault();
+    let touch = event.touches[0];
+    let coords = getCanvasCoords(touch.clientX, touch.clientY);
+    canvas.dispatchEvent(new MouseEvent("mousedown", {clientX: coords.x, clientY: coords.y}));
+});
+
+canvas.addEventListener("touchend", event => {
+    event.preventDefault();
+
+    let touch = event.changedTouches[0];
+    let coords = getCanvasCoords(touch.clientX, touch.clientY);
+
+    canvas.dispatchEvent(new MouseEvent("mouseup", {clientX: coords.x, clientY: coords.y}));
+    canvas.dispatchEvent(new MouseEvent("click", {clientX: coords.x, clientY: coords.y}));    
 });
 
 let addKeyDown = event => events.keyDown.push(event);
 document.addEventListener("keydown", event => {
     events.keyDown.forEach(e => e(event));
 });
+
+document.addEventListener("contextmenu", event => event.preventDefault());
 
 /** Draw Functions */
 let tempStyleAction = (callback, newStyles) => {
