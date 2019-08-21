@@ -122,7 +122,7 @@ let drawKeyboard = () => {
         let y = keyboardPosition.y + keySize.height / 2 + keySize.height * Math.floor(i / 10);
         let key = keyboard[i];
 
-        if(!capsLock && i > 10 && !["Caps", "_", "Space", "Del"].includes(key))
+        if(!capsLock && i > 9 && !["Caps", "_", "Space", "Del"].includes(key))
             key = key.toLowerCase();
 
         GAME.draw.fillText(key, x, y, {font: "25px Arial"});    
