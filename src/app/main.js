@@ -21,7 +21,7 @@ let timing = {
     maxFPS: 60,  //max FPS
     delta: 0,    //time between frames in ms
     unit: 1000 / 60,    //simulate time per frame
-    FPS: 30, //current FPS
+    FPS: 60, //current FPS
     framesNow: 0,   //frames on that second
     lastFPS: 0,    //last FPS update
 };
@@ -279,13 +279,17 @@ auxCanvas.width = canvas.width;
 auxCanvas.height = 50;
 auxCtx.lineWidth = 2;
 auxCtx.font = "20px Arial";
-auxCtx.textAlign = "right";
+auxCtx.textAlign = "left";
 auxCtx.textBaseline = "center";
-let minFPS = timing.maxFPS / 2;
+auxCtx.fillStyle = "lightgrey";
+
+auxCtx.fillText("Back To #", 0, auxCanvas.height / 2);
+
+auxCtx.textAlign = "right";
 
 let auxUpdate = () => {
-    auxCtx.clearRect(0, 0, auxCanvas.width, auxCanvas.height);
-    auxCtx.fillStyle = timing.FPS < minFPS ? "red" : "lightgrey";
+    auxCtx.clearRect(auxCanvas.width / 2, 0, auxCanvas.width / 2, auxCanvas.height);
+    auxCtx.fillStyle = timing.FPS < timing.maxFPS / 2 ? "red" : "lightgrey";
     auxCtx.fillText(`${timing.FPS} FPS`, auxCanvas.width, auxCanvas.height / 2);
 };
 
