@@ -60,17 +60,17 @@ let setBallDirection = () => {
         ball.forceX = normalizedVector.x;
         ball.forceY = normalizedVector.y;
 
-        tempDir.x += ball.forceX / 10;
-        tempDir.y += ball.forceY / 10;
+        tempDir.x += ball.forceX / 50;
+        tempDir.y += ball.forceY / 50;
     }
 
     let normDir = GAME.functions.getNormalizedVector(tempDir.x, tempDir.y);
 
-    if(normDir.x > -0.3 && normDir.x < 0.3)
-        normDir.x = normDir.x <= 0 ? -0.3 : 0.3;
+    if(normDir.x > -0.5 && normDir.x < 0.5)
+        normDir.x = normDir.x <= 0 ? -0.5 : 0.5;
 
-    if(normDir.y > -0.3 && normDir.y < 0.3)
-        normDir.y = normDir.y <= 0 ? -0.3 : 0.3;
+    if(normDir.y > -0.5 && normDir.y < 0.5)
+        normDir.y = normDir.y <= 0 ? -0.5 : 0.5;
 
     ball.directionX = normDir.x;
     ball.directionY = normDir.y;
