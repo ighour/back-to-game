@@ -1,5 +1,5 @@
 /** Variables */
-let canvas = document.querySelector("canvas"), ctx = canvas.getContext("2d"), instanceUpdate, animationFrame, current, instances = [];
+let canvas = document.querySelector("#game-canvas"), ctx = canvas.getContext("2d"), animationFrame, current, instances = [];
 let events = {
     click: [],
     mouseMove: [],
@@ -21,6 +21,9 @@ let timing = {
     maxFPS: 60,  //max FPS
     delta: 0,    //time between frames in ms
     unit: 1000 / 60,    //simulate time per frame
+    FPS: 30, //current FPS
+    framesNow: 0,   //frames on that second
+    lastFPS: 0,    //last FPS update
 };
 
 /** Canvas Config */
@@ -170,6 +173,16 @@ let update = timestamp => {
         return;
     }
 
+    //FPS
+    if(timestamp > timing.lastFPS + 1000){
+        timing.FPS = Math.floor(0.25 * timing.framesNow + 0.75 * timing.FPS);
+        timing.lastFPS = timestamp;
+        timing.framesNow = 0;
+
+        auxUpdate();
+    }
+    timing.framesNow++;
+
     //Delta
     timing.delta += timestamp - timing.lastTimeUpdate,
     timing.lastTimeUpdate = timestamp;
@@ -179,13 +192,12 @@ let update = timestamp => {
  
     //Draw
     clearCanvas();
-    instanceUpdate();
+    instances[current].onUpdate();
     animationFrame = requestAnimationFrame(update);
 };
 
 let start = proceed => {
     instances[current].onStart(proceed);
-    instanceUpdate = instances[current].onUpdate;
     update(0);
 };
 
@@ -235,6 +247,7 @@ const MAIN = {
         doDamage
     },
     delta: timing.unit,
+    FPS: timing.FPS,
     current,
     add: game => instances.push(game),
     next: proceed => {
@@ -258,6 +271,22 @@ const MAIN = {
 
         return true;
     }
+};
+
+/** Aux Canvas */
+let auxCanvas = document.querySelector("#game-aux"), auxCtx = auxCanvas.getContext("2d");
+auxCanvas.width = canvas.width;
+auxCanvas.height = 50;
+auxCtx.lineWidth = 2;
+auxCtx.font = "20px Arial";
+auxCtx.textAlign = "right";
+auxCtx.textBaseline = "center";
+let minFPS = timing.maxFPS / 2;
+
+let auxUpdate = () => {
+    auxCtx.clearRect(0, 0, auxCanvas.width, auxCanvas.height);
+    auxCtx.fillStyle = timing.FPS < minFPS ? "red" : "lightgrey";
+    auxCtx.fillText(`${timing.FPS} FPS`, auxCanvas.width, auxCanvas.height / 2);
 };
 
 export default MAIN;

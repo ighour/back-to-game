@@ -16,9 +16,11 @@ body {
 #game {
     text-align: center;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
-canvas {
-    margin: 5px;
+#game-canvas {
+    margin: 5px 5px 0 5px;
     border: 1px solid white;
 }
