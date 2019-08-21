@@ -207,18 +207,17 @@ let drawPlayerPanel = (panelPosition, boss) => {
     // Names
     fillText(MAIN.player.name, panelPosition.x + panelPosition.width / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
     fillText(boss.name, panelPosition.x + panelPosition.width * 3 / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
-    fillText("x", panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
 
     //Life    
     let maxSize = panelPosition.x + panelPosition.width / 4;
     let playerLifeSize = MAIN.player.life / 100 * maxSize;
     let bossLifeSize = boss.life / 100 * maxSize;
 
-    fillRect(panelPosition.x + panelPosition.width / 8, panelPosition.y + panelPosition.height / 2, playerLifeSize, 20);
-    fillRect(panelPosition.x + panelPosition.width / 8 + playerLifeSize, panelPosition.y + panelPosition.height / 2, maxSize - playerLifeSize, 20, {fillStyle: "black"});
+    fillRect(panelPosition.x + panelPosition.width / 8, panelPosition.y + panelPosition.height - 100, playerLifeSize, 20);
+    fillRect(panelPosition.x + panelPosition.width / 8 + playerLifeSize, panelPosition.y + panelPosition.height - 100, maxSize - playerLifeSize, 20, {fillStyle: "black"});
 
-    fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize, panelPosition.y + panelPosition.height / 2, bossLifeSize, 20);
-    fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize + bossLifeSize, panelPosition.y + panelPosition.height / 2, maxSize - bossLifeSize, 20, {fillStyle: "black"});
+    fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize, panelPosition.y + panelPosition.height - 100, bossLifeSize, 20);
+    fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize + bossLifeSize, panelPosition.y + panelPosition.height - 100, maxSize - bossLifeSize, 20, {fillStyle: "black"});
 };
 
 /** Helper Functions */

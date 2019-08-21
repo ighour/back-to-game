@@ -218,6 +218,8 @@ let drawMatchResult = () => {
 
 let drawBasePanel = () => {
     // Turn
+    GAME.draw.fillText("x", panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
+    
     if(playing === -1)
         GAME.draw.fillText("<", panelPosition.x + panelPosition.width / 2 - 40, panelPosition.y + panelPosition.height - 17, {textBaseline: "bottom"});
     else

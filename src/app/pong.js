@@ -178,7 +178,7 @@ let drawTutorial = () => {
         "Crashing on bars will hurt you and push the ball."
     ];
 
-    GAME.draw.drawTutorial("Mission #1", "1972", boss.name, intel, startPosition);
+    GAME.draw.drawTutorial("Mission #2", "1972", boss.name, intel, startPosition);
 };
 
 let drawBoard = () => {
@@ -206,12 +206,12 @@ let drawBasePanel = () => {
     //Magnetic
     if(magnetic){
         let magX = panelPosition.x + panelPosition.width / 2;
-        let magY = panelPosition.y + panelPosition.height / 2 - 50;
+        let magY = panelPosition.y + panelPosition.height / 2;
         GAME.draw.fillCircle(magX, magY, 10);
         GAME.draw.strokeCircle(magX + ball.forceX * 10, magY + ball.forceY * 10, 20);
     }
     else
-        GAME.draw.strokeCircle(panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2 - 50, 10);
+        GAME.draw.strokeCircle(panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2, 10);
 };
 
 let drawPanel = () => {
