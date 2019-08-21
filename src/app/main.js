@@ -150,6 +150,54 @@ let drawCircle = (type, x, y, radius, startAngle = 0, endAngle = 2*Math.PI, styl
 let fillCircle = (x, y, radius, startAngle, endAngle, styles) => drawCircle("fill", x, y, radius, startAngle, endAngle, styles);
 let strokeCircle = (x, y, radius, startAngle, endAngle, styles) => drawCircle("stroke", x, y, radius, startAngle, endAngle, styles);
 
+let drawTutorial = (title, year, boss, intel, startPosition) => {
+    //Mission
+    fillText(title, canvas.width / 2, canvas.height / 5, {font: "100px Arial"});
+
+    //Brief
+    let texts = [
+        "Year:",
+        `Boss:`,
+        "Intel:"
+    ];
+    fillTextBlock(texts, canvas.width / 20, canvas.height * 2 / 5, 70, {textAlign: "left", font: "30px Arial"});
+
+    texts = [
+        year,
+        boss
+    ];
+    fillTextBlock(texts, canvas.width / 20 + 100, canvas.height * 2 / 5, 70, {textAlign: "left", font: "30px Arial"});
+
+    fillTextBlock(intel, canvas.width / 20 + 100, canvas.height * 2 / 5 + 140, 35, {textAlign: "left", font: "30px Arial"});
+
+    //Start
+    fillText("Travel", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
+    strokeRect(startPosition.x, startPosition.y, startPosition.width, startPosition.height);
+};
+
+let drawGameOver = (panelPosition, boss) => {
+    let msg = boss.life <= 0 ? `${boss.name} was Defeated!` : `${MAIN.player.name} was Defeated!`;
+    fillText(msg, panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2);
+};
+
+let drawPlayerPanel = (panelPosition, boss) => {
+    // Names
+    fillText(MAIN.player.name, panelPosition.x + panelPosition.width / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
+    fillText(boss.name, panelPosition.x + panelPosition.width * 3 / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
+    fillText("x", panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
+
+    //Life    
+    let maxSize = panelPosition.x + panelPosition.width / 4;
+    let playerLifeSize = MAIN.player.life / 100 * maxSize;
+    let bossLifeSize = boss.life / 100 * maxSize;
+
+    fillRect(panelPosition.x + panelPosition.width / 8, panelPosition.y + panelPosition.height / 2, playerLifeSize, 20);
+    fillRect(panelPosition.x + panelPosition.width / 8 + playerLifeSize, panelPosition.y + panelPosition.height / 2, maxSize - playerLifeSize, 20, {fillStyle: "black"});
+
+    fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize, panelPosition.y + panelPosition.height / 2, bossLifeSize, 20);
+    fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize + bossLifeSize, panelPosition.y + panelPosition.height / 2, maxSize - bossLifeSize, 20, {fillStyle: "black"});
+};
+
 /** Helper Functions */
 let doDamage = (player, damage) => {
     player.life -= damage;
@@ -163,6 +211,23 @@ let doDamage = (player, damage) => {
     }
 
     return false;
+};
+
+let getMagVector = (x, y) => {
+    return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+};
+
+let getNormalizedVector = (x, y, mag) => {
+    if(!mag)
+        mag = getMagVector(x, y);
+
+    if(mag === 0)
+        return {x: 0, y: 0};
+
+    return {
+        x: x / mag,
+        y: y / mag
+    };
 };
 
 /** Game Functions */
@@ -241,10 +306,15 @@ const MAIN = {
         fillRect,
         strokeRect,
         fillCircle,
-        strokeCircle
+        strokeCircle,
+        drawTutorial,
+        drawGameOver,
+        drawPlayerPanel
     },
     functions: {
-        doDamage
+        doDamage,
+        getMagVector,
+        getNormalizedVector
     },
     delta: timing.unit,
     FPS: timing.FPS,

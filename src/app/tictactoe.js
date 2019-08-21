@@ -182,33 +182,13 @@ let markBoard = boardIndex => {
 
 /** Draw Functions */
 let drawTutorial = () => {
-    //Mission
-    GAME.draw.fillText("Last Mission", GAME.canvas.width / 2, GAME.canvas.height / 5, {font: "100px Arial"});
-
-    //Brief
-    let texts = [
-        "Year:",
-        `Boss:`,
-        "Intel:"
-    ];
-    GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20, GAME.canvas.height * 2 / 5, 70, {textAlign: "left", font: "30px Arial"});
-
-    texts = [
-        "1950",
-        boss.name
-    ];
-    GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20 + 100, GAME.canvas.height * 2 / 5, 70, {textAlign: "left", font: "30px Arial"});
-
-    texts = [
+    let intel = [
         "The boss act as player 1 (X) and 2 (0).",
         "It loses HP when game result is draw.",
         "You can move only to near positions."
     ];
-    GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20 + 100, GAME.canvas.height * 2 / 5 + 140, 35, {textAlign: "left", font: "30px Arial"});
 
-    //Start
-    GAME.draw.fillText("Travel", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
-    GAME.draw.strokeRect(startPosition.x, startPosition.y, startPosition.width, startPosition.height);
+    GAME.draw.drawTutorial("Last Mission", "1950", boss.name, intel, startPosition);
 };
 
 let drawBoard = () => {
@@ -228,8 +208,7 @@ let drawXY = () => {
 };
 
 let drawGameOver = () => {
-    let msg = GAME.player.life <= 0 ? `${GAME.player.name} was Defeated!` : `${boss.name} was Defeated!`;
-    GAME.draw.fillText(msg, panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2);
+    GAME.draw.drawGameOver(panelPosition, boss);
 };
 
 let drawMatchResult = () => {
@@ -238,27 +217,14 @@ let drawMatchResult = () => {
 };
 
 let drawBasePanel = () => {
-    // Names
-    GAME.draw.fillText(GAME.player.name, panelPosition.x + panelPosition.width / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
-    GAME.draw.fillText(boss.name, panelPosition.x + panelPosition.width * 3 / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
-    GAME.draw.fillText("x", panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
-
     // Turn
     if(playing === -1)
         GAME.draw.fillText("<", panelPosition.x + panelPosition.width / 2 - 40, panelPosition.y + panelPosition.height - 17, {textBaseline: "bottom"});
     else
         GAME.draw.fillText(">", panelPosition.x + panelPosition.width / 2 + 40, panelPosition.y + panelPosition.height - 17, {textBaseline: "bottom"});
 
-    //Lives
-    let maxSize = panelPosition.x + panelPosition.width / 4;
-    let playerLifeSize = GAME.player.life / 100 * maxSize;
-    let bossLifeSize = boss.life / 100 * maxSize;
-
-    GAME.draw.fillRect(panelPosition.x + panelPosition.width / 8, panelPosition.y + panelPosition.height / 2, playerLifeSize, 20);
-    GAME.draw.fillRect(panelPosition.x + panelPosition.width / 8 + playerLifeSize, panelPosition.y + panelPosition.height / 2, maxSize - playerLifeSize, 20, {fillStyle: "black"});
-
-    GAME.draw.fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize, panelPosition.y + panelPosition.height / 2, bossLifeSize, 20);
-    GAME.draw.fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize + bossLifeSize, panelPosition.y + panelPosition.height / 2, maxSize - bossLifeSize, 20, {fillStyle: "black"});
+    //Players
+    GAME.draw.drawPlayerPanel(panelPosition, boss);
 };
 
 let drawPanel = () => {

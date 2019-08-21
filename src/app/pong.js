@@ -42,20 +42,6 @@ let getBarY = y => {
     return newY;
 };
 
-let getMagVector = (x, y) => {
-    return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
-};
-
-let getNormalizedVector = (x, y, mag) => {
-    if(mag === 0)
-        return {x: 0, y: 0};
-
-    return {
-        x: x / mag,
-        y: y / mag
-    };
-};
-
 /** State Functions */
 let setBallDirection = () => {
     let tempDir = {
@@ -69,9 +55,7 @@ let setBallDirection = () => {
             y: mouse.y - ball.y
         };
 
-        let mag = getMagVector(relativeVector.x, relativeVector.y);
-
-        let normalizedVector = getNormalizedVector(relativeVector.x, relativeVector.y, mag);
+        let normalizedVector = GAME.functions.getNormalizedVector(relativeVector.x, relativeVector.y);
 
         ball.forceX = normalizedVector.x;
         ball.forceY = normalizedVector.y;
@@ -80,8 +64,7 @@ let setBallDirection = () => {
         tempDir.y += ball.forceY / 10;
     }
 
-    let mag = getMagVector(tempDir.x, tempDir.y);
-    let normDir = getNormalizedVector(tempDir.x, tempDir.y, mag);
+    let normDir = GAME.functions.getNormalizedVector(tempDir.x, tempDir.y);
 
     if(normDir.x > -0.3 && normDir.x < 0.3)
         normDir.x = normDir.x <= 0 ? -0.3 : 0.3;
@@ -165,8 +148,7 @@ let moveNPC = (player, targetY) => {
         y: targetY - player.y
     };
 
-    let mag = getMagVector(target.x, target.y);
-    let normVector = getNormalizedVector(target.x, target.y, mag);
+    let normVector = GAME.functions.getNormalizedVector(target.x, target.y);
 
     if(normVector.y >= -0.1 && normVector.y <= 0.1)
         return;
@@ -190,33 +172,13 @@ let moveNPCs = () => {
 
 /** Draw Functions */
 let drawTutorial = () => {
-    //Mission
-    GAME.draw.fillText("Mission #1", GAME.canvas.width / 2, GAME.canvas.height / 5, {font: "100px Arial"});
-
-    //Brief
-    let texts = [
-        "Year:",
-        `Boss:`,
-        "Intel:"
-    ];
-    GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20, GAME.canvas.height * 2 / 5, 70, {textAlign: "left", font: "30px Arial"});
-
-    texts = [
-        "1972",
-        boss.name
-    ];
-    GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20 + 100, GAME.canvas.height * 2 / 5, 70, {textAlign: "left", font: "30px Arial"});
-
-    texts = [
+    let intel = [
         "The boss loses HP when the ball is out.",
         "Your mouse has a magnetical field when clicked down.",
         "Crashing on bars will hurt you and push the ball."
     ];
-    GAME.draw.fillTextBlock(texts, GAME.canvas.width / 20 + 100, GAME.canvas.height * 2 / 5 + 140, 35, {textAlign: "left", font: "30px Arial"});
 
-    //Start
-    GAME.draw.fillText("Travel", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
-    GAME.draw.strokeRect(startPosition.x, startPosition.y, startPosition.width, startPosition.height);
+    GAME.draw.drawTutorial("Mission #1", "1972", boss.name, intel, startPosition);
 };
 
 let drawBoard = () => {
@@ -234,26 +196,12 @@ let drawBall = () => {
 };
 
 let drawGameOver = () => {
-    let msg = GAME.player.life <= 0 ? `${GAME.player.name} was Defeated!` : `${boss.name} was Defeated!`;
-    GAME.draw.fillText(msg, panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2);
+    GAME.draw.drawGameOver(panelPosition, boss);
 };
 
 let drawBasePanel = () => {
-    // Names
-    GAME.draw.fillText(GAME.player.name, panelPosition.x + panelPosition.width / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
-    GAME.draw.fillText(boss.name, panelPosition.x + panelPosition.width * 3 / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
-    GAME.draw.fillText("x", panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
-
-    // Lives
-    let maxSize = panelPosition.x + panelPosition.width / 4;
-    let playerLifeSize = GAME.player.life / 100 * maxSize;
-    let bossLifeSize = boss.life / 100 * maxSize;
-
-    GAME.draw.fillRect(panelPosition.x + panelPosition.width / 8, panelPosition.y + panelPosition.height / 2, playerLifeSize, 20);
-    GAME.draw.fillRect(panelPosition.x + panelPosition.width / 8 + playerLifeSize, panelPosition.y + panelPosition.height / 2, maxSize - playerLifeSize, 20, {fillStyle: "black"});
-
-    GAME.draw.fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize, panelPosition.y + panelPosition.height / 2, bossLifeSize, 20);
-    GAME.draw.fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize + bossLifeSize, panelPosition.y + panelPosition.height / 2, maxSize - bossLifeSize, 20, {fillStyle: "black"});
+    // Players
+    GAME.draw.drawPlayerPanel(panelPosition, boss);
 
     //Magnetic
     if(magnetic){
