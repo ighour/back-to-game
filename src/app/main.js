@@ -224,7 +224,7 @@ let drawPlayerPanel = (panelPosition, boss) => {
 let doDamage = (player, damage) => {
     player.life -= damage;
 
-    if(player.life <= 0){
+    if(Math.floor(player.life) <= 0){
         setTimeout(() => {
             MAIN.next(player === MAIN.player ? false : true);
         }, 3000);
