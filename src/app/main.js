@@ -220,6 +220,13 @@ let drawPlayerPanel = (panelPosition, boss) => {
     fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize + bossLifeSize, panelPosition.y + panelPosition.height - 100, maxSize - bossLifeSize, 20, {fillStyle: "black"});
 };
 
+let drawMouseDirection = (panelPosition, x, y) => {
+    let dirX = panelPosition.x + panelPosition.width / 2;
+    let dirY = panelPosition.y + panelPosition.height / 2;
+    fillCircle(dirX, dirY, 10);
+    strokeCircle(dirX + x * 10, dirY + y * 10, 20);
+};
+
 /** Helper Functions */
 let doDamage = (player, damage) => {
     player.life -= damage;
@@ -331,7 +338,8 @@ const MAIN = {
         strokeCircle,
         drawTutorial,
         drawGameOver,
-        drawPlayerPanel
+        drawPlayerPanel,
+        drawMouseDirection
     },
     functions: {
         doDamage,

@@ -204,12 +204,8 @@ let drawBasePanel = () => {
     GAME.draw.drawPlayerPanel(panelPosition, boss);
 
     //Magnetic
-    if(magnetic){
-        let magX = panelPosition.x + panelPosition.width / 2;
-        let magY = panelPosition.y + panelPosition.height / 2;
-        GAME.draw.fillCircle(magX, magY, 10);
-        GAME.draw.strokeCircle(magX + ball.forceX * 10, magY + ball.forceY * 10, 20);
-    }
+    if(magnetic)
+        GAME.draw.drawMouseDirection(panelPosition, ball.forceX, ball.forceY);
     else
         GAME.draw.strokeCircle(panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2, 10);
 };
