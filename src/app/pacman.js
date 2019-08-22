@@ -1,7 +1,7 @@
 const GAME = require('./main').default;
 
 /** Variables */
-let gamePosition, startPosition, panelPosition, unit, map;
+let gamePosition, startPosition, panelPosition, unit, map, bossAnimation;
 let tutorial, boss, gameOver, mapPlayers, mapBoss, mapFoods, time;
 
 /** Events */
@@ -54,6 +54,17 @@ let canMove = index => {
 let logic = () => {
     time += GAME.delta;
 
+    if(time >= 400)
+        bossAnimation.bite = 2;
+    else if(time >= 320)
+        bossAnimation.bite = 1;
+    else if(time >= 240)
+        bossAnimation.bite = 0;
+    else if(time >= 160)
+        bossAnimation.bite = 2;
+    else if(time >= 80)
+        bossAnimation.bite = 1;
+
     if(time >= 500){  //1000ms
         bossMove();
 
@@ -86,6 +97,14 @@ let bossMove = () => {
     //Random
     let targets = Object.values(can).filter(e => e !== -1);
     let target = targets[Math.floor(Math.random() * targets.length)];
+
+    //Animation
+    switch(target){
+        case can.l: bossAnimation.dir = "l"; break;
+        case can.r: bossAnimation.dir = "r"; break;
+        case can.t: bossAnimation.dir = "t"; break;
+        case can.b: bossAnimation.dir = "b"; break;
+    }
 
     mapBoss = target;
 
@@ -141,7 +160,20 @@ let drawTargets = () => {
 
     //Boss
     let bossCoords = getUnitXY(mapBoss);
-    GAME.draw.fillRect(bossCoords.x, bossCoords.y, unit.width, unit.height, {fillStyle: "yellow"});
+    let bossX = bossCoords.x + unit.width / 2, bossY = bossCoords.y + unit.height / 2;
+    let radius = unit.width >= unit.height ? unit.height / 2 : unit.width / 2;
+    let bossStartAngle = Math.PI, bossStartAngle2 = Math.PI, bossEyeX, bossEyeY, biteAngle = Math.PI / 8 * bossAnimation.bite;
+    switch(bossAnimation.dir){
+        case "l": bossStartAngle *= 1.25; bossStartAngle2 *= 1.75; bossEyeX = bossX + unit.width / 20; bossEyeY = bossY - unit.width / 5; break;
+        case "r": bossStartAngle *= 0.25; bossStartAngle2 *= 0.75; bossEyeX = bossX - unit.width / 20; bossEyeY = bossY - unit.width / 5;  break;
+        case "t": bossStartAngle *= 1.75; bossStartAngle2 *= 0.25; bossEyeX = bossX - unit.width / 5; bossEyeY = bossY - unit.height / 20;  break;
+        case "b": bossStartAngle *= 0.75; bossStartAngle2 *= 1.25; bossEyeX = bossX - unit.width / 5; bossEyeY = bossY + unit.height / 20;  break;
+        default: bossStartAngle = 0; break;
+    }
+
+    GAME.draw.fillCircle(bossX, bossY, radius, bossStartAngle - biteAngle, bossStartAngle + Math.PI + biteAngle, {fillStyle: "yellow"});
+    GAME.draw.fillCircle(bossX, bossY, radius, bossStartAngle2 - biteAngle, bossStartAngle2 + Math.PI + biteAngle, {fillStyle: "yellow"});
+    GAME.draw.fillCircle(bossEyeX, bossEyeY, radius / 7, undefined, undefined, {fillStyle: "black"});
 };
 
 let drawBoard = () => {
@@ -215,6 +247,10 @@ let onStart = _win => {
     };
     unit.width = gamePosition.width / unit.count;
     unit.height = gamePosition.height * unit.width / gamePosition.width;
+    bossAnimation = {
+        dir: "c",
+        bite: 0
+    };
 
     //State
     tutorial = true;
