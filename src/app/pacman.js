@@ -2,7 +2,7 @@ const GAME = require('./main').default;
 
 /** Variables */
 let gamePosition, startPosition, panelPosition, unit, map;
-let tutorial, boss, gameOver;
+let tutorial, boss, gameOver, mapPlayers, mapBoss, mapFoods, time;
 
 /** Events */
 let click = (event, x, y) => {
@@ -20,8 +20,87 @@ let mouseMove = (event, x, y) => {
 };
 
 /** Helper Functions */
+let getUnitXY = index => {
+    return {
+        x: gamePosition.x + unit.width * (index % unit.count),
+        y: gamePosition.y + unit.height * Math.floor(index / unit.count)
+    };
+};
+
+let getNearIndex = (dir, index) => {
+    switch(dir){
+        case "l": return index % unit.count === 0 ? index + unit.count - 1 : index - 1;
+        case "r": return index % unit.count === unit.count - 1 ? index - unit.count + 1 : index + 1;
+        case "t": return Math.floor(index / unit.count) === 0 ? index + unit.count * (unit.count - 1) : index - unit.count;
+        case "b": return Math.floor(index / unit.count) === unit.count - 1 ? index - unit.count * (unit.count - 1) : index + unit.count;
+    };
+};
+
+let canMoveSide = (side, index) => {
+    let nearIndex = getNearIndex(side, index);
+    return map[nearIndex] === 1 ? -1 : nearIndex;
+};
+
+let canMove = index => {
+    return {
+        l: canMoveSide("l", index),
+        r: canMoveSide("r", index),
+        t: canMoveSide("t", index),
+        b: canMoveSide("b", index),
+    };
+};
 
 /** State Functions */
+let logic = () => {
+    time += GAME.delta;
+
+    if(time >= 500){  //1000ms
+        bossMove();
+
+        time = 0;
+    }
+};
+
+let bossThink = () => {
+    if(boss.target !== mapBoss || mapFoods.length === 0)
+        return;
+
+    let bossCoords = getUnitXY(mapBoss);
+
+    boss.target = mapFoods.map(e => {
+        let coords = getUnitXY(e);
+        let mag = GAME.functions.getMagVector(coords.x - bossCoords.x, coords.y - bossCoords.y);
+        return {
+            index: e,
+            mag
+        };
+    })
+    .sort((a, b) => a.mag === b.mag ? 0 : (a.mag < b.mag ? -1 : 1))
+    .shift()
+    .index;
+};
+
+let bossMove = () => {
+    let can = canMove(mapBoss);
+    
+    //Random
+    let targets = Object.values(can).filter(e => e !== -1);
+    let target = targets[Math.floor(Math.random() * targets.length)];
+
+    mapBoss = target;
+
+    //Eat food?
+    mapFoods = mapFoods.filter(e => {
+        if(e === mapBoss){
+            gameOver = GAME.functions.doDamage(GAME.player, boss.damage);
+            if(!gameOver)
+                bossThink();
+            return false;
+        }
+
+        return true;
+    });
+};
 
 /** Draw Functions */
 let drawTutorial = () => {
@@ -34,26 +113,40 @@ let drawTutorial = () => {
     GAME.draw.drawTutorial("Mission #1", "1980", boss.name, intel, startPosition);
 };
 
-let drawBoard = () => {
+let drawMap = () => {
     for(let i = 0; i < map.length; i++){
-        let x = gamePosition.x + unit.width * (i % unit.count);
-        let y = gamePosition.y + unit.height * Math.floor(i / unit.count);
+        let coords = getUnitXY(i);
 
-        let current = map[i];
-
-        if(current === 0)   //Empty
-            GAME.draw.fillRect(x, y, unit.width, unit.height, {fillStyle: "#666666"});
-        else if(current === 1){  //Wall
-            GAME.draw.fillRect(x, y, unit.width, unit.height);
-            GAME.draw.strokeRect(x, y, unit.width, unit.height, {strokeStyle: "#EEEEEE"});
+        if(map[i] === 1){
+            GAME.draw.fillRect(coords.x, coords.y, unit.width, unit.height);
+            GAME.draw.strokeRect(coords.x, coords.y, unit.width, unit.height, {strokeStyle: "#EEEEEE"});
         }
-        else if(current === 2)  //Pacman
-            GAME.draw.fillRect(x, y, unit.width, unit.height, {fillStyle: "yellow"});
-        else if(current === 3)  //Player
-            GAME.draw.fillRect(x, y, unit.width, unit.height, {fillStyle: "lightgreen"});
-        else if(current === 4)  //Pacman Target
-            GAME.draw.fillRect(x, y, unit.width, unit.height, {fillStyle: "purple"});
+        else
+            GAME.draw.fillRect(coords.x, coords.y, unit.width, unit.height, {fillStyle: "#666666"});
     }
+};
+
+let drawTargets = () => {
+    //Foods
+    mapFoods.forEach(e => {
+        let coords = getUnitXY(e);
+        GAME.draw.fillRect(coords.x, coords.y, unit.width, unit.height, {fillStyle: "purple"});
+    });
+
+    //Players
+    Object.values(mapPlayers).forEach(e => {
+        let coords = getUnitXY(e);
+        GAME.draw.fillRect(coords.x, coords.y, unit.width, unit.height, {fillStyle: "blue"});
+    });
+
+    //Boss
+    let bossCoords = getUnitXY(mapBoss);
+    GAME.draw.fillRect(bossCoords.x, bossCoords.y, unit.width, unit.height, {fillStyle: "yellow"});
+};
+
+let drawBoard = () => {
+    drawMap();
+    drawTargets();
 };
 
 let drawGameOver = () => {
@@ -93,26 +186,26 @@ let onStart = _win => {
         width: GAME.canvas.width,
         height: GAME.canvas.height - (gamePosition.y + gamePosition.height + 20) - 1
     };
-    map = [ // 0 = empty, 1 = wall, 2 = pacman, 3 = player, 4 = pacman target
+    map = [ // 0 = empty, 1 = wall
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 3, 4, 0, 0, 0, 4, 0, 0, 1, 1, 0, 0, 4, 0, 0, 0, 4, 3, 1,
-        1, 0, 1, 1, 4, 1, 1, 1, 4, 0, 0, 4, 1, 1, 1, 4, 1, 1, 0, 1,
-        1, 4, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 4, 1,
-        1, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 1,
-        1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1,
-        1, 4, 0, 0, 4, 1, 4, 0, 0, 0, 0, 0, 0, 4, 1, 4, 0, 0, 4, 1,
-        1, 1, 1, 1, 0, 1, 1, 1, 4, 1, 1, 4, 1, 1, 1, 0, 1, 1, 1, 1,
-        1, 1, 1, 1, 0, 1, 4, 0, 0, 1, 1, 0, 0, 4, 1, 0, 1, 1, 1, 1,
-        0, 4, 0, 0, 4, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 4, 0, 0, 4, 0,
-        1, 1, 1, 1, 0, 1, 0, 0, 4, 0, 2, 4, 0, 0, 1, 0, 1, 1, 1, 1,
-        1, 1, 1, 1, 0, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 0, 1, 1, 1, 1,
-        1, 4, 0, 0, 4, 0, 0, 0, 4, 1, 1, 4, 0, 0, 0, 4, 0, 0, 4, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1,
         1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1,
-        1, 0, 4, 1, 0, 0, 4, 0, 0, 0, 0, 0, 0, 4, 0, 0, 1, 4, 0, 1,
-        1, 1, 0, 1, 4, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 4, 1, 0, 1, 1,
-        1, 4, 0, 0, 0, 1, 0, 4, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1,
+        1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+        1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1,
+        1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1,
+        0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1,
+        1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1,
+        1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+        1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1,
+        1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
         1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1,
-        1, 3, 4, 0, 0, 4, 0, 0, 4, 0, 0, 4, 0, 0, 4, 0, 0, 4, 3, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     ];
     unit = {
@@ -124,25 +217,57 @@ let onStart = _win => {
     unit.height = gamePosition.height * unit.width / gamePosition.width;
 
     //State
+    tutorial = true;
+    gameOver = false;
+    mapPlayers = {
+        p1: 21,
+        p2: 38,
+        p3: 361,
+        p4: 378
+    };
+    mapBoss = 210;
+    mapFoods = [
+            22, 26, 33, 37,
+            44, 48, 51, 55,
+            61, 78, 
+            83, 87, 92, 96, 
+
+            121, 124, 126, 133, 135, 138,
+            148, 151,
+            166, 174, 
+            181, 184, 195, 198, 
+            208, 211,
+            226, 233,
+            241, 244, 248, 251, 255, 258,
+
+            282, 286, 293, 297,
+            304, 315,
+            321, 327, 332, , 338,
+
+            362, 365, 368, 371, 374, 377
+    ];
     boss = {
         name: "Evil Pac",
         life: 100,
-        damage: 1
+        damage: 100 / mapFoods.length,
+        target: mapBoss
     };
-    tutorial = true;
-    gameOver = false;
+    time = 0;
 
     //Engine
     GAME.player.damage = 100;
     GAME.events.addMouseMove(mouseMove);
     GAME.events.addClick(click);
+
+    bossThink();
 };
 
 let onUpdate = () => {
     if(tutorial)
         drawTutorial();
     else {
-        //Logic
+        if(!gameOver)
+            logic();
 
         //Game
         drawBoard();
