@@ -14,10 +14,8 @@ let click = (event, x, y) => {
 };
 
 let mouseMove = (event, x, y) => {
-    if(!tutorial && x > gamePosition.x && x < gamePosition.x + gamePosition.width && y > gamePosition.y && y < gamePosition.y + gamePosition.height){
-        let relative = {x: gamePosition.x + gamePosition.width / 2, y: gamePosition.y + gamePosition.height / 2};
-        moving = GAME.functions.getNormalizedVector(x - relative.x, y - relative.y);
-    }
+    if(!tutorial && x > gamePosition.x && x < gamePosition.x + gamePosition.width && y > gamePosition.y && y < gamePosition.y + gamePosition.height)
+        moving = GAME.functions.getNormalizedVector(x - (gamePosition.x + gamePosition.width / 2), y - (gamePosition.y + gamePosition.height / 2));
 };
 
 /** Helper Functions */
@@ -167,7 +165,9 @@ let playersMove = () => {
 };
 
 let makeCollisionDamage = () => {
-    if(mapPlayers.length === 1)
+    if(gameOver)
+        return false;
+    else if(mapPlayers.length === 1)
         return GAME.functions.doDamage(boss, GAME.player.damage);
     else
         return GAME.functions.doDamage(GAME.player, boss.damage2);
@@ -204,9 +204,9 @@ let checkCollisions = () => {
 /** Draw Functions */
 let drawTutorial = () => {
     let intel = [
-        "...",
-        "...",
-        "..."
+        "Boss is eating your life and you can do nothing",
+        "Except if you join all ghosts together and eat him",
+        "But they are confused with your orders"
     ];
 
     GAME.draw.drawTutorial("Mission #1", "1980", boss.name, intel, startPosition);
@@ -296,6 +296,9 @@ let drawGameOver = () => {
 let drawBasePanel = () => {
     // Players
     GAME.draw.drawPlayerPanel(panelPosition, boss);
+
+    //Mouse Direction
+    GAME.draw.drawMouseDirection(panelPosition, moving.x, moving.y);
 };
 
 let drawPanel = () => {
