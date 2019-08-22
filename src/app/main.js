@@ -1,3 +1,5 @@
+const { Graph } = require("./datastructures");
+
 /** Variables */
 let canvas = document.querySelector("#game-canvas"), ctx = canvas.getContext("2d"), animationFrame, current, instances = [];
 let events = {
@@ -345,6 +347,9 @@ const MAIN = {
         doDamage,
         getMagVector,
         getNormalizedVector
+    },
+    dataStructures: {
+        graph: Graph
     },
     delta: timing.unit,
     FPS: timing.FPS,
