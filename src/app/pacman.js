@@ -2,7 +2,7 @@ const GAME = require('./main').default;
 
 /** Variables */
 let gamePosition, startPosition, panelPosition, unit, map, bossAnimation, foodAnimation;
-let tutorial, boss, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, moving;
+let tutorial, boss, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, moving, graph;
 
 /** Events */
 let click = (event, x, y) => {
@@ -33,6 +33,11 @@ let getNearIndex = (dir, index) => {
         case "t": return Math.floor(index / unit.count) === 0 ? index + unit.count * (unit.count - 1) : index - unit.count;
         case "b": return Math.floor(index / unit.count) === unit.count - 1 ? index - unit.count * (unit.count - 1) : index + unit.count;
     };
+};
+
+let getNearValidIndex = (dir, index) => {
+    let near = getNearIndex(dir, index);
+    return map[near] === 0 ? near : -1;
 };
 
 let canMoveSide = (side, index) => {
@@ -96,40 +101,32 @@ let logic = () => {
 };
 
 let bossThink = () => {
-    let bossCoords = getUnitXY(mapBoss);
+    let target = graph.iteratorBFS(mapBoss, index => mapFoods.includes(index)).pop();
 
-    boss.target = mapFoods.map(e => {
-        let coords = getUnitXY(e);
-        let mag = GAME.functions.getMagVector(coords.x - bossCoords.x, coords.y - bossCoords.y);
-        return {
-            index: e,
-            mag
-        };
-    })
-    .sort((a, b) => a.mag === b.mag ? 0 : (a.mag < b.mag ? -1 : 1))
-    .shift()
-    .index;
+    if(target !== undefined)
+        boss.path = graph.iteratorShortestPath(mapBoss, target);
 };
 
 let bossMove = () => {
-    if(!gameOver && mapFoods.length > 0 && boss.target === mapBoss)
+    if(!gameOver && mapFoods.length > 0 && boss.path.length === 0)
         bossThink();
 
-    let can = canMove(mapBoss);
-    
-    //Random
-    let targets = Object.values(can).filter(e => e !== -1);
-    let target = targets[Math.floor(Math.random() * targets.length)];
+    //Pursuit
+    if(boss.path.length > 0){
+        let target = boss.path.shift();
 
-    lastMapBoss = mapBoss;
-    mapBoss = target;
+        lastMapBoss = mapBoss;
+        mapBoss = target;
 
-    //Animation
-    switch(target){
-        case can.l: bossAnimation.dir = "l"; break;
-        case can.r: bossAnimation.dir = "r"; break;
-        case can.t: bossAnimation.dir = "t"; break;
-        case can.b: bossAnimation.dir = "b"; break;
+        //Animation
+        if(mapBoss === getNearIndex("l", lastMapBoss))
+            bossAnimation.dir = "l";
+        else if(mapBoss === getNearIndex("r", lastMapBoss))
+            bossAnimation.dir = "r";
+        else if(mapBoss === getNearIndex("t", lastMapBoss))
+            bossAnimation.dir = "t";
+        else if(mapBoss === getNearIndex("b", lastMapBoss))
+            bossAnimation.dir = "b";
     }
 };
 
@@ -201,6 +198,22 @@ let checkCollisions = () => {
     });
 };
 
+let generateGraph = () => {
+    graph = new GAME.dataStructures.graph();
+
+    for(let i = 0; i < map.length; i++){
+        if(map[i] === 0){   //movable
+            graph.addVertex(i);
+
+            ["l", "r", "t", "b"].forEach(e => {
+                let neighbor = getNearValidIndex(e, i);
+                if(neighbor !== -1)
+                    graph.addEdge(i, neighbor);
+            });
+        }
+    }
+};
+
 /** Draw Functions */
 let drawTutorial = () => {
     let intel = [
@@ -232,8 +245,6 @@ let drawTargets = () => {
     mapFoods.forEach(e => {
         let coords = getUnitXY(e);
         GAME.draw.fillCircle(coords.x + unit.width / 2, coords.y + unit.height / 2, radius / 8);
-        if(map[e] === 1)
-            console.log(e)
     });
 
     //Players
@@ -386,8 +397,8 @@ let onStart = _win => {
 
             121, 124, 126, 133, 135, 138,
             148,
-            166, 170, 173, 
-            181, 184, 195, 198, 
+            166, 170, 173, 176, 
+            181, 184, 198, 
             208, 211,
             226, 233,
             241, 244, 248, 251, 255, 258,
@@ -403,18 +414,21 @@ let onStart = _win => {
         life: 100,
         damage: 100 / mapFoods.length,
         damage2: 100 / mapPlayers.length - 1,
-        target: mapBoss
+        path: []
     };
     time = 0;
     moving = {
         x: gamePosition.x + gamePosition.width / 2,
         y: gamePosition.y + gamePosition.height / 2
     };
+    graph = {};
 
     //Engine
     GAME.player.damage = 100;
     GAME.events.addMouseMove(mouseMove);
     GAME.events.addClick(click);
+
+    generateGraph();
 };
 
 let onUpdate = () => {
