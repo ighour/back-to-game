@@ -18,6 +18,8 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 
 * **Pong** : get away from the field or die trying. Be carefull with the boss bars.
 
+* **Pacman** : run from Pacman until you have enough power.
+
 ## Versions
 
 ### v1.0
@@ -45,6 +47,16 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 * Improved Tic Tac Toe and Pong gameplay.
 
 * Added FPS meter.
+
+### v1.2
+
+* Optimized Pong gameplay.
+
+* Added touch support and improved game screen responsivity.
+
+* Added virtual keyboard.
+
+* Added Pacman game.
 
 ## Built With
 
