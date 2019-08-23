@@ -1,7 +1,7 @@
-const GAME = require('../../game').default;
+const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, unit, map, bossAnimation, foodAnimation;
+let gamePosition, startButton, unit, map, bossAnimation, playerAnimation;
 let tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, moving, graph;
 
 /** Events */
@@ -9,23 +9,23 @@ let clickStart = () => tutorial = false;
 
 let mouseMove = (event, x, y) => {
     if(!tutorial)
-        moving = GAME.functions.getNormalizedVector(x - (gamePosition.x + gamePosition.width / 2), y - (gamePosition.y + gamePosition.height / 2));
+        moving = GAME.f.norm(x - (gamePosition.x + gamePosition.w / 2), y - (gamePosition.y + gamePosition.h / 2));
 };
 
 /** Helper Functions */
 let getUnitXY = index => {
     return {
-        x: gamePosition.x + unit.width * (index % unit.count),
-        y: gamePosition.y + unit.height * Math.floor(index / unit.count)
+        x: gamePosition.x + unit.w * (index % unit.c),
+        y: gamePosition.y + unit.h * Math.floor(index / unit.c)
     };
 };
 
 let getNearIndex = (dir, index) => {
     switch(dir){
-        case "l": return index % unit.count === 0 ? index + unit.count - 1 : index - 1;
-        case "r": return index % unit.count === unit.count - 1 ? index - unit.count + 1 : index + 1;
-        case "t": return Math.floor(index / unit.count) === 0 ? index + unit.count * (unit.count - 1) : index - unit.count;
-        case "b": return Math.floor(index / unit.count) === unit.count - 1 ? index - unit.count * (unit.count - 1) : index + unit.count;
+        case "l": return index % unit.c === 0 ? index + unit.c - 1 : index - 1;
+        case "r": return index % unit.c === unit.c - 1 ? index - unit.c + 1 : index + 1;
+        case "t": return Math.floor(index / unit.c) === 0 ? index + unit.c * (unit.c - 1) : index - unit.c;
+        case "b": return Math.floor(index / unit.c) === unit.c - 1 ? index - unit.c * (unit.c - 1) : index + unit.c;
     };
 };
 
@@ -61,31 +61,31 @@ let logic = () => {
     if(tutorial || gameOver)
         return;
 
-    time += GAME.delta;
+    time += GAME.dt;
 
     if(time >= 250){
-        bossAnimation.bite = 0;
-        foodAnimation = {bgColor: "royalblue", color: "white"};
+        bossAnimation.b = 0;
+        playerAnimation.c = 1;
     }
     else if(time >= 200){
-        bossAnimation.bite = 2;
-        foodAnimation = {bgColor: "blue", color: "white"};
+        bossAnimation.b = 2;
+        playerAnimation.c = 0;
     }
     else if(time >= 150){
-        bossAnimation.bite = 1;
-        foodAnimation = {bgColor: "royalblue", color: "white"};
+        bossAnimation.b = 1;
+        playerAnimation.c = 1;
     }
     else if(time >= 100){
-        bossAnimation.bite = 0;
-        foodAnimation = {bgColor: "blue", color: "white"};
+        bossAnimation.b = 0;
+        playerAnimation.c = 0;
     }
     else if(time >= 50){
-        bossAnimation.bite = 2;
-        foodAnimation = {bgColor: "royalblue", color: "white"};
+        bossAnimation.b = 2;
+        playerAnimation.c = 1;
     }
     else if(time >= 0){
-        bossAnimation.bite = 1;
-        foodAnimation = {bgColor: "blue", color: "white"};
+        bossAnimation.b = 1;
+        playerAnimation.c = 0;
     }
  
     if(time >= 300){  //300ms
@@ -98,33 +98,33 @@ let logic = () => {
 };
 
 let bossMove = () => {
-    if(!gameOver && mapFoods.length > 0 && GAME.boss.path.length === 0)
+    if(!gameOver && mapFoods.length > 0 && GAME.b.p.length === 0)
         bossThink();
 
     //Pursuit
-    if(GAME.boss.path.length > 0){
-        let target = GAME.boss.path.shift();
+    if(GAME.b.p.length > 0){
+        let target = GAME.b.p.shift();
 
         lastMapBoss = mapBoss;
         mapBoss = target;
 
         //Animation
         if(mapBoss === getNearIndex("l", lastMapBoss))
-            bossAnimation.dir = "l";
+            bossAnimation.d = "l";
         else if(mapBoss === getNearIndex("r", lastMapBoss))
-            bossAnimation.dir = "r";
+            bossAnimation.d = "r";
         else if(mapBoss === getNearIndex("t", lastMapBoss))
-            bossAnimation.dir = "t";
+            bossAnimation.d = "t";
         else if(mapBoss === getNearIndex("b", lastMapBoss))
-            bossAnimation.dir = "b";
+            bossAnimation.d = "b";
     }
 };
 
 let bossThink = () => {
-    let target = graph.iteratorBFS(mapBoss, index => mapFoods.includes(index)).pop();
+    let target = graph.BFS(mapBoss, index => mapFoods.includes(index)).pop();
 
     if(target !== undefined)
-        GAME.boss.path = graph.iteratorShortestPath(mapBoss, target);
+        GAME.b.p = graph.shortestPath(mapBoss, target);
 };
 
 let playersMove = () => {
@@ -152,7 +152,7 @@ let playersMove = () => {
         //Avoid swiping with boss
         if(e === lastMapBoss){
             if(!gameOver)
-                gameOver = mapPlayers.length === 1 ? GAME.functions.doDamageBoss() : GAME.functions.doDamagePlayer(GAME.boss.damage2);
+                gameOver = mapPlayers.length === 1 ? GAME.f.db() : GAME.f.dp(GAME.b.d2);
             return false;
         }
         return true;
@@ -165,12 +165,12 @@ let checkCollisions = () => {
 
     //Eat player?
     if(mapPlayers.length === 1 && mapPlayers[0] === mapBoss)
-        gameOver = GAME.functions.doDamageBoss();
+        gameOver = GAME.f.db();
     else
         mapPlayers = mapPlayers.filter(e => {
             if(e === mapBoss){
                 if(!gameOver)
-                    gameOver = GAME.functions.doDamagePlayer(GAME.boss.damage2);
+                    gameOver = GAME.f.dp(GAME.b.d2);
                 return false;
             }
     
@@ -181,7 +181,7 @@ let checkCollisions = () => {
     mapFoods = mapFoods.filter(e => {
         if(e === mapBoss){
             if(!gameOver)
-                gameOver = GAME.functions.doDamagePlayer();
+                gameOver = GAME.f.dp();
             return false;
         }
 
@@ -190,7 +190,7 @@ let checkCollisions = () => {
 };
 
 let generateGraph = () => {
-    graph = new GAME.dataStructures.graph();
+    graph = new GAME.ds.g();
 
     for(let i = 0; i < map.length; i++){
         if(map[i] === 0){   //movable
@@ -213,7 +213,7 @@ let draw = () => {
             "Except if you join all ghosts together and eat him",
             "But they are confused with your orders"
         ];
-        GAME.draw.drawTutorial("Mission #1", "1980", intel, startButton);
+        GAME.d.dt("Mission #1", "1980", intel, startButton);
     }
     else {
         drawMap();
@@ -227,32 +227,33 @@ let drawMap = () => {
         let coords = getUnitXY(i);
 
         if(map[i] === 1){
-            GAME.draw.fillRect(coords.x, coords.y, unit.width, unit.height);
-            GAME.draw.strokeRect(coords.x, coords.y, unit.width, unit.height, {strokeStyle: "#EEEEEE"});
+            GAME.d.fr(coords.x, coords.y, unit.w, unit.h);
+            GAME.d.sr(coords.x, coords.y, unit.w, unit.h, {ss: "#EEEEEE"});
         }
         else
-            GAME.draw.fillRect(coords.x, coords.y, unit.width, unit.height, {fillStyle: "#666666"});
+            GAME.d.fr(coords.x, coords.y, unit.w, unit.h, {fs: "#666666"});
     }
 };
 
 let drawTargets = () => {
-    let radius = unit.width >= unit.height ? unit.height / 2 : unit.width / 2;
+    let radius = unit.w >= unit.h ? unit.h / 2 : unit.w / 2;
 
     //Foods
     mapFoods.forEach(e => {
         let coords = getUnitXY(e);
-        GAME.draw.fillCircle(coords.x + unit.width / 2, coords.y + unit.height / 2, radius / 8);
+        GAME.d.fc(coords.x + unit.w / 2, coords.y + unit.h / 2, radius / 8);
     });
 
     //Players
     mapPlayers.forEach(e => {
         let coords = getUnitXY(e);
-        let playerX = coords.x + unit.width / 2, playerY = coords.y + unit.height / 2;
-        let bgColor = mapPlayers.length === 1 ? "orange" : foodAnimation.bgColor;
-        let color = mapPlayers.length === 1 ? "royalblue" : foodAnimation.color;
+        let playerX = coords.x + unit.w / 2, playerY = coords.y + unit.h / 2;
 
-        GAME.draw.fillCircle(playerX, playerY, radius, undefined, undefined, {fillStyle: bgColor});
-        GAME.draw.fillRect(playerX - radius, playerY, radius * 2, radius * 9 / 10, {fillStyle: bgColor});
+        let bgColor = mapPlayers.length === 1 ? "orange" : playerAnimation.t[playerAnimation.c][0];
+        let color = mapPlayers.length === 1 ? "royalblue" : playerAnimation.t[playerAnimation.c][1];
+
+        GAME.d.fc(playerX, playerY, radius, undefined, undefined, {fs: bgColor});
+        GAME.d.fr(playerX - radius, playerY, radius * 2, radius * 9 / 10, {fs: bgColor});
 
         if(mapPlayers.length !== 1){
             let mouthY = playerY + radius / 4;
@@ -267,39 +268,40 @@ let drawTargets = () => {
             ];
     
             mouth.forEach(m => {
-                GAME.draw.line(m[0], m[1], m[2], m[3], {strokeStyle: color});
+                GAME.d.l(m[0], m[1], m[2], m[3], {ss: color});
             });
         }
 
-        GAME.draw.fillCircle(playerX - radius / 3, playerY - radius / 2, radius / 8, undefined, undefined, {fillStyle: color});
-        GAME.draw.fillCircle(playerX + radius / 3, playerY - radius / 2, radius / 8, undefined, undefined, {fillStyle: color});
+        GAME.d.fc(playerX - radius / 3, playerY - radius / 2, radius / 8, undefined, undefined, {fs: color});
+        GAME.d.fc(playerX + radius / 3, playerY - radius / 2, radius / 8, undefined, undefined, {fs: color});
     });
 
     //Boss
-    if(GAME.boss.life > 0){
+    if(GAME.b.l > 0){
         let bossCoords = getUnitXY(mapBoss);
-        let bossX = bossCoords.x + unit.width / 2, bossY = bossCoords.y + unit.height / 2;
-        let bossStartAngle = Math.PI, bossStartAngle2 = Math.PI, bossEyeX, bossEyeY, biteAngle = Math.PI / 8 * bossAnimation.bite;
-        switch(bossAnimation.dir){
-            case "l": bossStartAngle *= 1.25; bossStartAngle2 *= 1.75; bossEyeX = bossX + unit.width / 20; bossEyeY = bossY - unit.width / 5; break;
-            case "r": bossStartAngle *= 0.25; bossStartAngle2 *= 0.75; bossEyeX = bossX - unit.width / 20; bossEyeY = bossY - unit.width / 5;  break;
-            case "t": bossStartAngle *= 1.75; bossStartAngle2 *= 0.25; bossEyeX = bossX - unit.width / 5; bossEyeY = bossY - unit.height / 20;  break;
-            case "b": bossStartAngle *= 0.75; bossStartAngle2 *= 1.25; bossEyeX = bossX - unit.width / 5; bossEyeY = bossY + unit.height / 20;  break;
+        let bossX = bossCoords.x + unit.w / 2, bossY = bossCoords.y + unit.h / 2;
+        let bossStartAngle = Math.PI, bossStartAngle2 = Math.PI, bossEyeX, bossEyeY, biteAngle = Math.PI / 8 * bossAnimation.b;
+        switch(bossAnimation.d){
+            case "l": bossStartAngle *= 1.25; bossStartAngle2 *= 1.75; bossEyeX = bossX + unit.w / 20; bossEyeY = bossY - unit.h / 5; break;
+            case "r": bossStartAngle *= 0.25; bossStartAngle2 *= 0.75; bossEyeX = bossX - unit.w / 20; bossEyeY = bossY - unit.h / 5;  break;
+            case "t": bossStartAngle *= 1.75; bossStartAngle2 *= 0.25; bossEyeX = bossX - unit.w / 5; bossEyeY = bossY - unit.h / 20;  break;
+            case "b": bossStartAngle *= 0.75; bossStartAngle2 *= 1.25; bossEyeX = bossX - unit.w / 5; bossEyeY = bossY + unit.h / 20;  break;
             default: bossStartAngle = 0; break;
         }
     
-        GAME.draw.fillCircle(bossX, bossY, radius, bossStartAngle - biteAngle, bossStartAngle + Math.PI + biteAngle, {fillStyle: "yellow"});
-        GAME.draw.fillCircle(bossX, bossY, radius, bossStartAngle2 - biteAngle, bossStartAngle2 + Math.PI + biteAngle, {fillStyle: "yellow"});
-        GAME.draw.fillCircle(bossEyeX, bossEyeY, radius / 7, undefined, undefined, {fillStyle: "black"});
+        let fs = "yellow";
+        GAME.d.fc(bossX, bossY, radius, bossStartAngle - biteAngle, bossStartAngle + Math.PI + biteAngle, {fs});
+        GAME.d.fc(bossX, bossY, radius, bossStartAngle2 - biteAngle, bossStartAngle2 + Math.PI + biteAngle, {fs});
+        GAME.d.fc(bossEyeX, bossEyeY, radius / 7, undefined, undefined, {fs: "black"});
     }
 };
 
 let drawPanel = () => {
     if(gameOver === true)
-        GAME.draw.drawPanel(GAME.boss.life <= 0 ? `${GAME.boss.name} was Defeated!` : `${GAME.player.name} was Defeated!`);  
+        GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
     else{
-        GAME.draw.drawPanel();
-        GAME.draw.drawMouseDirection(moving.x, moving.y); 
+        GAME.d.dp();
+        GAME.d.dmd(moving.x, moving.y);
     }
 };
 
@@ -307,16 +309,16 @@ let drawPanel = () => {
 let onStart = _win => {
     //UI
     gamePosition = {
-        x: GAME.canvas.width / 8,
-        y: GAME.canvas.height / 20,
-        width: GAME.canvas.width * 3 / 4,
-        height: GAME.canvas.height * 3 / 4
+        x: GAME.c.w / 8,
+        y: GAME.c.h / 20,
+        w: GAME.c.w * 3 / 4,
+        h: GAME.c.h * 3 / 4
     };
     startButton = {
-        x: GAME.canvas.width / 2 - 90,
-        y: GAME.canvas.height * 9 / 10 - 30,
-        width: 180,
-        height: 60
+        x: GAME.c.w / 2 - 90,
+        y: GAME.c.h * 9 / 10 - 30,
+        w: 180,
+        h: 60
     };
     map = [ // 0 = empty, 1 = wall
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -341,19 +343,22 @@ let onStart = _win => {
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     ];
     unit = {
-        count: Math.sqrt(map.length),
-        width: 0,
-        height: 0
+        c: Math.sqrt(map.length),
+        w: 0,
+        h: 0
     };
-    unit.width = gamePosition.width / unit.count;
-    unit.height = gamePosition.height * unit.width / gamePosition.width;
+    unit.w = gamePosition.w / unit.c;
+    unit.h = gamePosition.h * unit.w / gamePosition.w;
     bossAnimation = {
-        dir: "c",
-        bite: 0
+        d: "c",
+        b: 0
     };
-    foodAnimation = {
-        bgColor: "blue",
-        color: "white"
+    playerAnimation = {
+        c: 0,  //current
+        t: [    //types
+            ["blue", "white"],
+            ["royalblue", "white"]
+        ]
     };
 
     //State
@@ -387,21 +392,21 @@ let onStart = _win => {
     ];
     time = 0;
     moving = {
-        x: gamePosition.x + gamePosition.width / 2,
-        y: gamePosition.y + gamePosition.height / 2
+        x: gamePosition.x + gamePosition.w / 2,
+        y: gamePosition.y + gamePosition.h / 2
     };
     graph = {};
 
     //Engine
-    GAME.player.damage = 100;
-    GAME.boss.name = "Evil Pac";
-    GAME.boss.life = 100;
-    GAME.boss.damage = 100 / mapFoods.length;
-    GAME.boss.damage2 = 100 / mapPlayers.length - 1;
-    GAME.boss.path = [];
+    GAME.p.d = 100;
+    GAME.b.n = "Evil Pac";
+    GAME.b.l = 100;
+    GAME.b.d = 100 / mapFoods.length;
+    GAME.b.d2 = 100 / mapPlayers.length - 1;
+    GAME.b.p = [];
 
-    GAME.addEvent("click", clickStart, startButton.x, startButton.y, startButton.width, startButton.height);
-    GAME.addEvent("mousemove", mouseMove);
+    GAME.e("click", clickStart, startButton.x, startButton.y, startButton.w, startButton.h);
+    GAME.e("mousemove", mouseMove);
 
     //Other
     generateGraph();
@@ -420,4 +425,4 @@ let onUpdate = () => {
 
 // };
 
-export default {onStart, onUpdate};
+export const PACMAN = {os: onStart, ou: onUpdate};

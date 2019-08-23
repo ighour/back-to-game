@@ -9,13 +9,13 @@ body {
     color: white;
 }
 
-#game {
+#g {
     text-align: center;
     display: flex;
     flex-direction: column;
 }
 
-#game-canvas {
+#gc {
     margin: 5px 5px 0 5px;
     border: 1px solid white;
 }

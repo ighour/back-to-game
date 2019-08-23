@@ -1,6 +1,4 @@
-const c = require("./canvas");
-const canvas = c.primary
-const auxCanvas = c.secondary;
+const {cp, ca} = require("./canvas");
 const { Graph } = require("./datastructures");
 
 /** Variables */
@@ -15,42 +13,42 @@ let events = {
 
 /** Players Config */
 let player = {
-    name: "",
-    life: 100,
-    damage: 0
+    n: "",
+    l: 100,
+    d: 0
 };
 let boss = {
-    name: "",
-    life: 0,
-    damage: 0
+    n: "",
+    l: 0,
+    d: 0
 };
 
 /** Timing Config */
 let timing = {
-    lastTimeUpdate: 0, //last time update was run in ms
-    maxFPS: 60,  //max FPS
-    delta: 0,    //time between frames in ms
-    unit: 1000 / 60,    //simulate time per frame
-    FPS: 60, //current FPS
-    framesNow: 0,   //frames on that second
-    lastFPS: 0,    //last FPS update
+    ltu: 0, //last time update was run in ms
+    mfps: 60,  //max FPS
+    d: 0,    //time between frames in ms
+    u: 1000 / 60,    //simulate time per frame
+    fps: 60, //current FPS
+    fn: 0,   //frames on that second
+    lfps: 0,    //last FPS update
 };
 
 /** Events */
 let getCanvasCoords = (x, y) => {
-    let rect = canvas.instance.getBoundingClientRect();
+    let rect = cp.i.getBoundingClientRect();
     return {
         x: x - rect.left,
         y: y - rect.top
     };
 };
 
-let eventCanRun = (coords, target) => coords.x >= target.x && coords.x <= target.x + target.width && coords.y >= target.y && coords.y <= target.y + target.height;
+let eventCanRun = (coords, target) => coords.x >= target.x && coords.x <= target.x + target.w && coords.y >= target.y && coords.y <= target.y + target.h;
 
-let addEvent = (type, event, x = 0, y = 0, width = canvas.instance.width, height = canvas.instance.height) => events[type].push([event, {x, y, width, height}]);
+let addEvent = (type, event, x = 0, y = 0, w = cp.i.width, h = cp.i.height) => events[type].push([event, {x, y, w, h}]);
 
 ["click", "mousemove", "mousedown", "mouseup"].forEach(type => {
-    canvas.instance.addEventListener(type, event => {
+    cp.i.addEventListener(type, event => {
         let coords = getCanvasCoords(event.clientX, event.clientY);
         events[type].forEach(e => {if(eventCanRun(coords, e[1])) e[0](event, coords.x, coords.y)});
     });
@@ -62,11 +60,10 @@ let addEvent = (type, event, x = 0, y = 0, width = canvas.instance.width, height
     ["touchend", ["mouseup", "click"]]
 
 ].forEach(type => {
-    canvas.instance.addEventListener(type[0], event => {
+    cp.i.addEventListener(type[0], event => {
         event.preventDefault();
         let touch = event.touches[0];
-        let coords = getCanvasCoords(touch.clientX, touch.clientY);
-        type[1].forEach(target => canvas.instance.dispatchEvent(new MouseEvent(target, {clientX: coords.clientX, clientY: coords.clientY})));
+        type[1].forEach(target => cp.i.dispatchEvent(new MouseEvent(target, {clientX: touch.clientX, clientY: touch.clientY})));
     });
 });
 
@@ -76,9 +73,9 @@ document.addEventListener("contextmenu", event => event.preventDefault());
 
 /** Helper Functions */
 let doDamage = (p, damage) => {
-    p.life -= damage;
+    p.l -= damage;
 
-    if(Math.floor(p.life) <= 0){
+    if(Math.floor(p.l) <= 0){
         setTimeout(() => {
             next(p === player ? false : true);
         }, 3000);
@@ -88,8 +85,8 @@ let doDamage = (p, damage) => {
 
     return false;
 };
-let doDamagePlayer = damage => doDamage(player, damage ? damage : boss.damage);
-let doDamageBoss = damage => doDamage(boss, damage ? damage : player.damage);
+let doDamagePlayer = damage => doDamage(player, damage ? damage : boss.d);
+let doDamageBoss = damage => doDamage(boss, damage ? damage : player.d);
 
 let getMagVector = (x, y) => Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 
@@ -109,36 +106,36 @@ let getNormalizedVector = (x, y, mag) => {
 /** Game Functions */
 let update = timestamp => {
     //Frame rate limit
-    if(timestamp < timing.lastTimeUpdate + (1000 / timing.maxFPS)){
+    if(timestamp < timing.ltu + (1000 / timing.mfps)){
         animationFrame = requestAnimationFrame(update);
         return;
     }
 
     //FPS
-    if(timestamp > timing.lastFPS + 1000){
-        timing.FPS = Math.floor(0.25 * timing.framesNow + 0.75 * timing.FPS);
-        timing.lastFPS = timestamp;
-        timing.framesNow = 0;
+    if(timestamp > timing.lfps + 1000){
+        timing.fps = Math.floor(0.25 * timing.fn + 0.75 * timing.fps);
+        timing.lfps = timestamp;
+        timing.fn = 0;
 
-        auxCanvas.update(timing.FPS, timing.maxFPS);
+        ca.u(timing.fps, timing.mfps);   //Auxiliar Canvas Update
     }
-    timing.framesNow++;
+    timing.fn++;
 
     //Delta
-    timing.delta += timestamp - timing.lastTimeUpdate,
-    timing.lastTimeUpdate = timestamp;
+    timing.d += timestamp - timing.ltu,
+    timing.ltu = timestamp;
 
-    while(timing.delta >= timing.unit)
-        timing.delta -= timing.unit;
+    while(timing.d >= timing.u)
+        timing.d -= timing.u;
  
     //Draw
-    canvas.draw.clearCanvas(0, 0, canvas.instance.width, canvas.instance.height);
-    instances[current].onUpdate();
+    cp.d.cc(0, 0, cp.i.width, cp.i.height);
+    instances[current].ou();    //onUpdate
     animationFrame = requestAnimationFrame(update);
 };
 
 let start = proceed => {
-    instances[current].onStart(proceed);
+    instances[current].os(proceed); //onStart
     update(0);
 };
 
@@ -154,53 +151,53 @@ let stop = () => {
 let next = proceed => {
     stop();
 
-    if(instances[current].onStop)
-        instances[current].onStop();
+    if(instances[current].ost)   //onStop
+        instances[current].ost();
 
     current = proceed !== false ? (current + 1) % instances.length : instances.length - 1;
 
     start(proceed);
 };
 
-export default {
-    canvas: {
-        x: canvas.instance.x,
-        y: canvas.instance.y,
-        width: canvas.instance.width,
-        height: canvas.instance.height,
-        panelPosition: canvas.panelPosition
+export const GAME = {
+    c: {    //canvas
+        x: 0,
+        y: 0,
+        w: cp.i.width,  //width
+        h: cp.i.height,  //height
+        p: cp.p //panel
     },
-    current,
-    player,
-    boss,
-    delta: timing.unit,
-    addEvent,
-    draw: {
-        line: canvas.draw.line,
-        splitLine: canvas.draw.splitLine,
-        fillText: canvas.draw.fillText,
-        strokeText: canvas.draw.strokeText,
-        fillTextBlock: canvas.draw.fillTextBlock,
-        fillRect: canvas.draw.fillRect,
-        strokeRect: canvas.draw.strokeRect,
-        fillCircle: canvas.draw.fillCircle,
-        strokeCircle: canvas.draw.strokeCircle,
-        drawButton: canvas.UI.drawButton,
-        drawTutorial: (title, year, intel, startPosition) => canvas.UI.drawTutorial(title, year, boss, intel, startPosition),
-        drawPanel: text => canvas.UI.drawPanel(player, boss, text),
-        drawMouseDirection: canvas.UI.drawMouseDirection,
+    cu: current, //current
+    p: player,  //player
+    b: boss,  //boss
+    dt: timing.u, //delta
+    e: addEvent,  //add event
+    d: {    //draw
+        l: cp.d.l,
+        sl: cp.d.sl,
+        ft: cp.d.ft,
+        st: cp.d.st,
+        ftb: cp.d.ftb,
+        fr: cp.d.fr,
+        sr: cp.d.sr,
+        fc: cp.d.fc,
+        sc: cp.d.sc,
+        db: cp.UI.b,
+        dt: (title, year, intel, startPosition) => cp.UI.t(title, year, boss, intel, startPosition),
+        dp: text => cp.UI.p(player, boss, text),
+        dmd: cp.UI.md,
     },
-    functions: {
-        doDamagePlayer,
-        doDamageBoss,
-        getMagVector,
-        getNormalizedVector
+    f: {    //functions
+        dp: doDamagePlayer,
+        db: doDamageBoss,
+        mag: getMagVector,
+        norm: getNormalizedVector
     },
-    dataStructures: {
-        graph: Graph
+    ds: {   //data structures
+        g: Graph
     },
-    next,
-    start: () => {
+    n: next,
+    s: () => {  //start
         if(instances.length === 0)
             return false;
 
@@ -209,5 +206,5 @@ export default {
 
         return true;
     },
-    add: instance => instances.push(instance)
+    a: instance => instances.push(instance) //add instance
 };

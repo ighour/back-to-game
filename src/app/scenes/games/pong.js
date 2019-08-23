@@ -1,4 +1,4 @@
-const GAME = require('../../game').default;
+const { GAME } = require('../../game');
 
 /** Variables */
 let gamePosition, startButton, barSize;
@@ -12,14 +12,14 @@ let mouseUp = () => {if(!tutorial) magnetic = false};
 
 /** Helper Functions */
 let getBarY = y => {
-    let halfBar = barSize.height / 2;
+    let halfBar = barSize.h / 2;
 
     let newY = y - halfBar;
 
     if(newY < gamePosition.y)
         newY = gamePosition.y;
-    else if(newY + barSize.height > gamePosition.y + gamePosition.height)
-        newY = gamePosition.y + gamePosition.height - barSize.height;
+    else if(newY + barSize.h > gamePosition.y + gamePosition.h)
+        newY = gamePosition.y + gamePosition.h - barSize.h;
 
     return newY;
 };
@@ -46,17 +46,17 @@ let moveNPC = (player, targetY) => {
         y: targetY - player.y
     };
 
-    let normVector = GAME.functions.getNormalizedVector(target.x, target.y);
+    let normVector = GAME.f.norm(target.x, target.y);
 
     if(normVector.y >= -0.1 && normVector.y <= 0.1)
         return;
 
-    let newY = player.y + normVector.y * GAME.delta;
+    let newY = player.y + normVector.y * GAME.dt;
 
     if(newY < gamePosition.y)
         newY = gamePosition.y;
-    else if(newY + barSize.height > gamePosition.y + gamePosition.height)
-        newY = gamePosition.y + gamePosition.height - barSize.height;
+    else if(newY + barSize.h > gamePosition.y + gamePosition.h)
+        newY = gamePosition.y + gamePosition.h - barSize.h;
     
     player.y = newY;
 };
@@ -68,8 +68,8 @@ let moveBall = () => {
 
 let setBallDirection = () => {
     let tempDir = {
-        x: ball.directionX,
-        y: ball.directionY 
+        x: ball.dx,
+        y: ball.dy 
     };
 
     if(magnetic){
@@ -78,16 +78,16 @@ let setBallDirection = () => {
             y: mouse.y - ball.y
         };
 
-        let normalizedVector = GAME.functions.getNormalizedVector(relativeVector.x, relativeVector.y);
+        let normalizedVector = GAME.f.norm(relativeVector.x, relativeVector.y);
 
-        ball.forceX = normalizedVector.x;
-        ball.forceY = normalizedVector.y;
+        ball.fx = normalizedVector.x;
+        ball.fy = normalizedVector.y;
 
-        tempDir.x += ball.forceX / 50;
-        tempDir.y += ball.forceY / 50;
+        tempDir.x += ball.fx / 50;
+        tempDir.y += ball.fy / 50;
     }
 
-    let normDir = GAME.functions.getNormalizedVector(tempDir.x, tempDir.y);
+    let normDir = GAME.f.norm(tempDir.x, tempDir.y);
 
     if(normDir.x > -0.5 && normDir.x < 0.5)
         normDir.x = normDir.x <= 0 ? -0.5 : 0.5;
@@ -95,50 +95,50 @@ let setBallDirection = () => {
     if(normDir.y > -0.5 && normDir.y < 0.5)
         normDir.y = normDir.y <= 0 ? -0.5 : 0.5;
 
-    ball.directionX = normDir.x;
-    ball.directionY = normDir.y;
+    ball.dx = normDir.x;
+    ball.dy = normDir.y;
 };
 
 let setBallPosition = () => {
-    let move = ball.speed * GAME.delta / 1.5;
+    let move = ball.s * GAME.dt / 1.5;
 
-    let newX = ball.x + ball.directionX * move;
-    let newY = ball.y + ball.directionY * move;
+    let newX = ball.x + ball.dx * move;
+    let newY = ball.y + ball.dy * move;
 
-    let L = p1Bar.x + barSize.width;
+    let L = p1Bar.x + barSize.w;
     let R = p2Bar.x;
     let T = gamePosition.y;
-    let B = gamePosition.y + gamePosition.height;
+    let B = gamePosition.y + gamePosition.h;
 
     let self = {
-        L: newX - ball.radius,
-        R: newX + ball.radius,
-        T: newY - ball.radius,
-        B: newY + ball.radius
+        L: newX - ball.r,
+        R: newX + ball.r,
+        T: newY - ball.r,
+        B: newY + ball.r
     };
 
     //Hit left
     if(self.L < L){
         checkBallHit(self, p1Bar);
-        newX = L + ball.radius;
-        ball.directionX *= -1;
+        newX = L + ball.r;
+        ball.dx *= -1;
     }
     //Hit right
     else if(self.R > R){
         checkBallHit(self, p2Bar);
-        newX = R - ball.radius;
-        ball.directionX *= -1;
+        newX = R - ball.r;
+        ball.dx *= -1;
     }
 
     //Hit top
     if(self.T < T){
-        newY = T + ball.radius;
-        ball.directionY *= -1;
+        newY = T + ball.r;
+        ball.dy *= -1;
     }
     //Hit bottom
     else if(self.B > B){
-        newY = B - ball.radius;
-        ball.directionY *= -1;
+        newY = B - ball.r;
+        ball.dy *= -1;
     }
 
     ball.x = newX;
@@ -148,15 +148,15 @@ let setBallPosition = () => {
 let checkBallHit = (self, player) => {
     if(!gameOver){
         //Hit player
-        if(self.B > player.y && self.T < player.y + barSize.height){
-            gameOver = GAME.functions.doDamagePlayer();
+        if(self.B > player.y && self.T < player.y + barSize.h){
+            gameOver = GAME.f.dp();
 
-            if(ball.speed < 2)
-                ball.speed += Math.random() * 0.05;
+            if(ball.s < 2)
+                ball.s += Math.random() * 0.05;
         }
         //Hit wall
         else
-            gameOver = GAME.functions.doDamageBoss();
+            gameOver = GAME.f.db();
     }
 }
 
@@ -168,7 +168,7 @@ let draw = () => {
             "Your mouse has a magnetical field when clicked down.",
             "Crashing on bars will hurt you and push the ball."
         ];
-        GAME.draw.drawTutorial("Mission #2", "1972", intel, startButton);
+        GAME.d.dt("Mission #2", "1972", intel, startButton);
     }
     else {
         drawBoard();
@@ -179,29 +179,29 @@ let draw = () => {
 };
 
 let drawBoard = () => {
-    GAME.draw.strokeRect(gamePosition.x, gamePosition.y, gamePosition.width, gamePosition.height);
-    GAME.draw.splitLine(gamePosition.x + gamePosition.width / 2, gamePosition.y, gamePosition.x + gamePosition.width / 2, gamePosition.y + gamePosition.height, 30);
+    GAME.d.sr(gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
+    GAME.d.sl(gamePosition.x + gamePosition.w / 2, gamePosition.y, gamePosition.x + gamePosition.w / 2, gamePosition.y + gamePosition.h, 30);
 };
 
 let drawBars = () => {
-    GAME.draw.fillRect(p1Bar.x, p1Bar.y, barSize.width, barSize.height);
-    GAME.draw.fillRect(p2Bar.x, p2Bar.y, barSize.width, barSize.height);
+    GAME.d.fr(p1Bar.x, p1Bar.y, barSize.w, barSize.h);
+    GAME.d.fr(p2Bar.x, p2Bar.y, barSize.w, barSize.h);
 };
 
 let drawBall = () => {
-    GAME.draw.fillCircle(ball.x, ball.y, ball.radius);
+    GAME.d.fc(ball.x, ball.y, ball.r);
 };
 
 let drawPanel = () => {
     if(gameOver === true)
-        GAME.draw.drawPanel(GAME.boss.life <= 0 ? `${GAME.boss.name} was Defeated!` : `${GAME.player.name} was Defeated!`);  
+        GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
     else{
-        GAME.draw.drawPanel();
+        GAME.d.dp();
 
         if(magnetic)
-            GAME.draw.drawMouseDirection(ball.forceX, ball.forceY);
+            GAME.d.dmd(ball.fx, ball.fy);
         else
-            GAME.draw.strokeCircle(GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height / 2, 10);
+            GAME.d.sc(GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 2, 10);
     }
 };
 
@@ -209,20 +209,20 @@ let drawPanel = () => {
 let onStart = _win => {
     //UI
     gamePosition = {
-        x: GAME.canvas.width / 10,
-        y: GAME.canvas.height / 10,
-        width: GAME.canvas.width * 4 / 5,
-        height: GAME.canvas.height * 3 / 5
+        x: GAME.c.w / 10,
+        y: GAME.c.h / 10,
+        w: GAME.c.w * 4 / 5,
+        h: GAME.c.h * 3 / 5
     };
     startButton = {
-        x: GAME.canvas.width / 2 - 90,
-        y: GAME.canvas.height * 9 / 10 - 30,
-        width: 180,
-        height: 60
+        x: GAME.c.w / 2 - 90,
+        y: GAME.c.h * 9 / 10 - 30,
+        w: 180,
+        h: 60
     };
     barSize = {
-        width: 10,
-        height: gamePosition.height / 5
+        w: 10,
+        h: gamePosition.h / 5
     };
 
     //State
@@ -230,21 +230,21 @@ let onStart = _win => {
     gameOver = false;
     p1Bar = {
         x: gamePosition.x + 3,
-        y: gamePosition.y + gamePosition.height / 2
+        y: gamePosition.y + gamePosition.h / 2
     };
     p2Bar = {
-        x: gamePosition.x + gamePosition.width - 3 - barSize.width,
+        x: gamePosition.x + gamePosition.w - 3 - barSize.w,
         y: p1Bar.y
     };
     ball = {
-        x: gamePosition.x + gamePosition.width / 2,
-        y: gamePosition.y + gamePosition.height / 2,
-        radius: 7,
-        directionX: Math.random(),
-        directionY: Math.random(),
-        forceX: 0,
-        forceY: 0,
-        speed: 1
+        x: gamePosition.x + gamePosition.w / 2,
+        y: gamePosition.y + gamePosition.h / 2,
+        r: 7,
+        dx: Math.random(),
+        dy: Math.random(),
+        fx: 0,
+        fy: 0,
+        s: 1
     };
     magnetic = false;
     mouse = {
@@ -253,15 +253,15 @@ let onStart = _win => {
     };
 
     //Engine
-    GAME.player.damage = 10;
-    GAME.boss.name = "Evil Pong";
-    GAME.boss.life = 100;
-    GAME.boss.damage = 1;
+    GAME.p.d = 10;
+    GAME.b.n = "Evil Pong";
+    GAME.b.l = 100;
+    GAME.b.d = 1;
 
-    GAME.addEvent("click", clickStart, startButton.x, startButton.y, startButton.width, startButton.height);
-    GAME.addEvent("mousemove", mouseMove);
-    GAME.addEvent("mousedown", mouseDown);
-    GAME.addEvent("mouseup", mouseUp);
+    GAME.e("click", clickStart, startButton.x, startButton.y, startButton.w, startButton.h);
+    GAME.e("mousemove", mouseMove);
+    GAME.e("mousedown", mouseDown);
+    GAME.e("mouseup", mouseUp);
 };
 
 let onUpdate = () => {
@@ -277,4 +277,4 @@ let onUpdate = () => {
 
 // };
 
-export default {onStart, onUpdate};
+export const PONG = {os: onStart, ou: onUpdate};

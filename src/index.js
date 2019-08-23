@@ -1,20 +1,20 @@
 require('./style.css');
-const GAME = require('./app/game').default;
-const INTRO = require('./app/scenes/intro').default;
-const PACMAN = require('./app/scenes/games/pacman').default;
-const PONG = require('./app/scenes/games/pong').default;
-const TICTACTOE = require('./app/scenes/games/tictactoe').default;
-const GAMEOVER = require('./app/scenes/gameover').default;
+const { GAME } = require('./app/game');
+const { INTRO } = require('./app/scenes/intro');
+const { PACMAN } = require('./app/scenes/games/pacman');
+const { PONG } = require('./app/scenes/games/pong');
+const { TICTACTOE } = require('./app/scenes/games/tictactoe');
+const { GAMEOVER } = require('./app/scenes/gameover');
 
 /** Game Instances */
-GAME.add(INTRO);
-GAME.add(PACMAN);
-GAME.add(PONG);
-GAME.add(TICTACTOE);
-GAME.add(GAMEOVER);
+GAME.a(INTRO);
+GAME.a(PACMAN);
+GAME.a(PONG);
+GAME.a(TICTACTOE);
+GAME.a(GAMEOVER);
 
 /** Start */
 (function BOOT(){
-    if(!GAME.start())
+    if(!GAME.s())
         setTimeout(BOOT, 500);
 })();

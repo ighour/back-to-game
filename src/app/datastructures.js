@@ -1,17 +1,17 @@
 export class Graph {
     constructor(){
-        this._graph = {};
+        this._g = {};
     };
 
     addVertex(index){
-        this._graph[index] = [];
+        this._g[index] = [];
     };
 
     addEdge(index1, index2){
-        this._graph[index1].push(index2);
+        this._g[index1].push(index2);
     };
 
-    iteratorBFS(index, stopCondition){
+    BFS(index, stopCondition){
         let result = [];
         let queue = [];
         let visited = [];
@@ -19,17 +19,17 @@ export class Graph {
         queue.push(index);
         visited.push(index);
 
-        this._iteratorBFSRecursion(result, queue, visited, stopCondition);
+        this._ib(result, queue, visited, stopCondition);
 
         return result;
     };
 
-    _iteratorBFSRecursion(result, queue, visited, stopCondition){
+    _ib(result, queue, visited, stopCondition){
         if(queue.length === 0)
             return;
 
         let current = queue.shift();
-        let neighbors = this._graph[current];
+        let neighbors = this._g[current];
 
         result.push(current);
 
@@ -48,10 +48,10 @@ export class Graph {
             }
         }
 
-        this._iteratorBFSRecursion(result, queue, visited, stopCondition);
+        this._ib(result, queue, visited, stopCondition);
     };
 
-    iteratorShortestPath(index1, index2){
+    shortestPath(index1, index2){
         let result = [];
         let queue = [];
         let visited = [];
@@ -63,7 +63,7 @@ export class Graph {
         pathLength[index1] = 0;
         antecessor[index1] = -1;
 
-        this._iteratorShortestPathRecursion(queue, visited, pathLength, antecessor, index2);
+        this._is(queue, visited, pathLength, antecessor, index2);
 
         if(antecessor[index2] !== undefined){
             let currentIndex = index2;
@@ -76,12 +76,12 @@ export class Graph {
         return result;
     };
 
-    _iteratorShortestPathRecursion(queue, visited, pathLength, antecessor, target){
+    _is(queue, visited, pathLength, antecessor, target){
         if(queue.length <= 0)
             return;
 
         let current = queue.shift();
-        let neighbors = this._graph[current];
+        let neighbors = this._g[current];
 
         if(neighbors === undefined)
             return;
@@ -106,6 +106,6 @@ export class Graph {
             }
         }
 
-        this._iteratorShortestPathRecursion(queue, visited, pathLength, antecessor, target);
+        this._is(queue, visited, pathLength, antecessor, target);
     };
 };

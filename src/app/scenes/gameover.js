@@ -1,11 +1,10 @@
-const GAME = require('../game').default;
+const { GAME } = require('../game');
 
 /** Variables */
-let newGame;
-let win;
+let newGame, win;
 
 /** Events */
-let clickNew = () => GAME.next();
+let clickNew = () => GAME.n();
 
 /** Helper Functions */
 
@@ -15,29 +14,29 @@ let clickNew = () => GAME.next();
 /** Draw */
 let draw = () => {
     if(win)
-        GAME.draw.fillText("You defeated all Evil Games!", GAME.canvas.width / 2, GAME.canvas.height / 3);
+        GAME.d.ft("You defeated all Evil Games!", GAME.c.w / 2, GAME.c.h / 3);
     else
-        GAME.draw.fillText("You were defeated by Evil Games!", GAME.canvas.width / 2, GAME.canvas.height / 3);
+        GAME.d.ft("You were defeated by Evil Games!", GAME.c.w / 2, GAME.c.h / 3);
 
     //New Game
-    GAME.draw.drawButton(newGame, "Back to Future");
+    GAME.d.db(newGame, "Back to Future");
 };
 
 /** Lifecycle */
 let onStart = _win => {
     //UI
     newGame = {
-        x: GAME.canvas.width / 2 - 180,
-        y: GAME.canvas.height * 2 / 3,
-        width: 360,
-        height: 60
+        x: GAME.c.w / 2 - 180,
+        y: GAME.c.h * 2 / 3,
+        w: 360,
+        h: 60
     };
 
     //State
     win = _win;
 
     //Engine
-    GAME.addEvent("click", clickNew, newGame.x, newGame.y, newGame.width, newGame.height);
+    GAME.e("click", clickNew, newGame.x, newGame.y, newGame.w, newGame.h);
 };
 
 let onUpdate = () => {  
@@ -50,8 +49,8 @@ let onUpdate = () => {
 // };
 
 let onStop = () => {
-    GAME.player.name = "";
-    GAME.player.life = 100;
+    GAME.p.n = "";
+    GAME.p.l = 100;
 };
 
-export default {onStart, onUpdate, onStop};
+export const GAMEOVER = {os: onStart, ou: onUpdate, ost: onStop};

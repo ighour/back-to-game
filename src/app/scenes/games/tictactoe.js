@@ -1,4 +1,4 @@
-const GAME = require('../../game').default;
+const { GAME } = require('../../game');
 
 /** Variables */
 let gamePosition, startButton, cellSize;
@@ -69,8 +69,8 @@ let playerCanMove = () => {
 
 let getSelectedSquare = (x, y) => {
     return {
-        x: Math.floor((x - gamePosition.x) / cellSize.width),
-        y: Math.floor((y - gamePosition.y) / cellSize.height)
+        x: Math.floor((x - gamePosition.x) / cellSize.w),
+        y: Math.floor((y - gamePosition.y) / cellSize.h)
     };
 };
 
@@ -135,9 +135,9 @@ let endMatch = winner => {
     let end = false;
 
     if(winner === -1)
-        end = GAME.functions.doDamageBoss();
+        end = GAME.f.db();
     else
-        end = GAME.functions.doDamagePlayer();
+        end = GAME.f.dp();
 
     if(end)
         gameOver = true;
@@ -193,7 +193,7 @@ let draw = () => {
             "It loses HP when game result is draw.",
             "You can move only to near positions."
         ];
-        GAME.draw.drawTutorial("Last Mission", "1950", intel, startButton);
+        GAME.d.dt("Last Mission", "1950", intel, startButton);
     }
     else{
         drawBoard();
@@ -203,10 +203,10 @@ let draw = () => {
 };
 
 let drawBoard = () => {
-    GAME.draw.line(gamePosition.x, gamePosition.y + cellSize.height, gamePosition.x + gamePosition.width, gamePosition.y + cellSize.height);
-    GAME.draw.line(gamePosition.x, gamePosition.y + cellSize.height * 2, gamePosition.x + gamePosition.width, gamePosition.y + cellSize.height * 2);
-    GAME.draw.line(gamePosition.x + cellSize.width, gamePosition.y, gamePosition.x + cellSize.width, gamePosition.y + gamePosition.height);
-    GAME.draw.line(gamePosition.x + cellSize.width * 2, gamePosition.y, gamePosition.x + cellSize.width * 2, gamePosition.y + gamePosition.height);
+    GAME.d.l(gamePosition.x, gamePosition.y + cellSize.h, gamePosition.x + gamePosition.w, gamePosition.y + cellSize.h);
+    GAME.d.l(gamePosition.x, gamePosition.y + cellSize.h * 2, gamePosition.x + gamePosition.w, gamePosition.y + cellSize.h * 2);
+    GAME.d.l(gamePosition.x + cellSize.w, gamePosition.y, gamePosition.x + cellSize.w, gamePosition.y + gamePosition.h);
+    GAME.d.l(gamePosition.x + cellSize.w * 2, gamePosition.y, gamePosition.x + cellSize.w * 2, gamePosition.y + gamePosition.h);
 };
 
 let drawXY = () => {
@@ -217,26 +217,27 @@ let drawXY = () => {
         let x = i - y * 3;
 
         if(board[i] !== 0)
-            GAME.draw.fillText(signs[board[i]], gamePosition.x + cellSize.width * (0.5 + x), gamePosition.y + cellSize.height * (0.5 + y));
+            GAME.d.ft(signs[board[i]], gamePosition.x + cellSize.w * (0.5 + x), gamePosition.y + cellSize.h * (0.5 + y));
         else if(playing === -1 && (boardIsEmpty() || i === playerIndex - 1 || i === playerIndex + 1 || i === playerIndex + 3 || i === playerIndex - 3))
-            GAME.draw.fillCircle(gamePosition.x + (x + 0.5) * cellSize.width, gamePosition.y + (y + 0.5) * cellSize.height, 2, undefined, undefined, {fillStyle: "#AAAAAA"});
+            GAME.d.fc(gamePosition.x + (x + 0.5) * cellSize.w, gamePosition.y + (y + 0.5) * cellSize.h, 2, undefined, undefined, {fs: "#AAAAAA"});
     }
 };
 
 let drawPanel = () => {
     if(gameOver === true)
-        GAME.draw.drawPanel(GAME.boss.life <= 0 ? `${GAME.boss.name} was Defeated!` : `${GAME.player.name} was Defeated!`);  
+        GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
     else if(matchWinner !== 0)
-        GAME.draw.drawPanel(matchWinner === -1 ? `${GAME.player.damage} damage to ${GAME.boss.name}!` : `${GAME.boss.damage} damage to you!`); 
+        GAME.d.dp(matchWinner === -1 ? `${GAME.p.d} damage to ${GAME.b.n}!` : `${GAME.b.d} damage to you!`); 
     else{
-        GAME.draw.fillText("x", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 20, {textBaseline: "bottom"});
+        let tb = "b";
+        GAME.d.ft("x", GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h - 20, {tb});
         
         if(playing === -1)
-            GAME.draw.fillText("<", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2 - 40, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 17, {textBaseline: "bottom"});
+            GAME.d.ft("<", GAME.c.p.x + GAME.c.p.w / 2 - 40, GAME.c.p.y + GAME.c.p.h - 17, {tb});
         else
-            GAME.draw.fillText(">", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2 + 40, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 17, {textBaseline: "bottom"});
+            GAME.d.ft(">", GAME.c.p.x + GAME.c.p.w / 2 + 40, GAME.c.p.y + GAME.c.p.h - 17, {tb});
 
-        GAME.draw.drawPanel();
+        GAME.d.dp();
     }
 };
 
@@ -244,20 +245,20 @@ let drawPanel = () => {
 let onStart = _win => {
     //UI
     gamePosition = {
-        x: GAME.canvas.width / 5,
-        y: GAME.canvas.height / 10,
-        width: GAME.canvas.width * 3 / 5,
-        height: GAME.canvas.height * 3 / 5
+        x: GAME.c.w / 5,
+        y: GAME.c.h / 10,
+        w: GAME.c.w * 3 / 5,
+        h: GAME.c.h * 3 / 5
     };
     startButton = {
-        x: GAME.canvas.width / 2 - 90,
-        y: GAME.canvas.height * 9 / 10 - 30,
-        width: 180,
-        height: 60
+        x: GAME.c.w / 2 - 90,
+        y: GAME.c.h * 9 / 10 - 30,
+        w: 180,
+        h: 60
     };
     cellSize = {
-        width: gamePosition.width  / 3,
-        height: gamePosition.height / 3 
+        w: gamePosition.w  / 3,
+        h: gamePosition.h / 3 
     };
 
     //State
@@ -281,13 +282,13 @@ let onStart = _win => {
     ];
 
     //Engine
-    GAME.player.damage = 25;
-    GAME.boss.name = "Evil Tic";
-    GAME.boss.life = 100;
-    GAME.boss.damage = 20;
+    GAME.p.d = 25;
+    GAME.b.n = "Evil Tic";
+    GAME.b.l = 100;
+    GAME.b.d = 20;
 
-    GAME.addEvent("click", clickStart, startButton.x, startButton.y, startButton.width, startButton.height);
-    GAME.addEvent("click", clickBoard, gamePosition.x, gamePosition.y, gamePosition.width, gamePosition.height);
+    GAME.e("click", clickStart, startButton.x, startButton.y, startButton.w, startButton.h);
+    GAME.e("click", clickBoard, gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
 
     //Other
     onReset();
@@ -312,4 +313,4 @@ let onReset = () => {
 
 // };
 
-export default {onStart, onUpdate};
+export const TICTACTOE =  {os: onStart, ou: onUpdate};

@@ -1,8 +1,8 @@
-const GAME = require('../game').default;
+const { GAME } = require('../game');
 
 /** Variables */
 let startButton, keyboardPosition, keySize, capsLock;
-let creating, name, keyboard, nameRules;
+let creating, name, keyboard, nameMax, nameRules;
 
 /** Events */
 let clickStart = () => {
@@ -25,7 +25,7 @@ let keyDown = (event) => {
         
     let key = event.key;
 
-    if(validKeyForName(key) && name.length < nameRules.max)
+    if(validKeyForName(key) && name.length < nameMax)
         name += key;
     else if(event.keyCode === 8) //Backspace
         name = name.slice(0, name.length - 1);
@@ -38,21 +38,21 @@ let validKeyForName = key => {
     if(name.length === 0 && key === " ")
         return false;
 
-    return key.length === 1 && nameRules.keys.test(key);
+    return key.length === 1 && nameRules.test(key);
 };
 
 /** Logic */
 // let logic = () => {};
 
 let beginGame = () => {
-    GAME.player.name = name;
-    GAME.next(true);
+    GAME.p.n = name;
+    GAME.n(true);
 };
 
 let pressKey = (x, y) => {
     let target = {
-        x: Math.floor((x - keyboardPosition.x) / keySize.width),
-        y: Math.floor((y - keyboardPosition.y) / keySize.height),
+        x: Math.floor((x - keyboardPosition.x) / keySize.w),
+        y: Math.floor((y - keyboardPosition.y) / keySize.h),
     };
 
     let keyIndex = target.x + target.y * 10;
@@ -60,12 +60,12 @@ let pressKey = (x, y) => {
     if(keyIndex === 29)
         capsLock = !capsLock;
     else if(keyIndex === 38){
-        if(name.length > 0 && name.length < nameRules.max)
+        if(name.length > 0 && name.length < nameMax)
             name += " ";
     }
     else if(keyIndex === 39)
         name = name.slice(0, name.length - 1);
-    else if(name.length < nameRules.max){
+    else if(name.length < nameMax){
         name += capsLock ? keyboard[keyIndex] : keyboard[keyIndex].toLowerCase()
     }
 };
@@ -80,7 +80,7 @@ let draw = () => {
 
 let drawNew = () => {
     //Title
-    GAME.draw.fillText("Back To #", GAME.canvas.width / 2, GAME.canvas.height / 5, {font: "100px Arial"});
+    GAME.d.ft("Back To #", GAME.c.w / 2, GAME.c.h / 5, {f: 100});
 
     //Brief
     let texts = [
@@ -89,10 +89,10 @@ let drawNew = () => {
         "Now only a true gamer",
         "can proceed!"
     ];
-    GAME.draw.fillTextBlock(texts, GAME.canvas.width / 2, GAME.canvas.height * 2 / 5, 70);
+    GAME.d.ftb(texts, GAME.c.w / 2, GAME.c.h * 2 / 5, 70);
 
     //Start Button
-    GAME.draw.drawButton(startButton, "Start Game");
+    GAME.d.db(startButton, "Start Game");
 };
 
 let drawCreate = () => {
@@ -101,32 +101,32 @@ let drawCreate = () => {
         "May I know your name,",
         "Traveler?"
     ];
-    GAME.draw.fillTextBlock(texts, GAME.canvas.width / 2, GAME.canvas.height / 10, 70);
+    GAME.d.ftb(texts, GAME.c.w / 2, GAME.c.h / 10, 70);
 
     //Input
-    GAME.draw.fillRect(GAME.canvas.width/ 3, GAME.canvas.height * 3 / 10, GAME.canvas.width / 3, 46);
-    GAME.draw.fillText(name, GAME.canvas.width / 2, GAME.canvas.height * 3 / 10 + 23, {fillStyle: "#222222"});
+    GAME.d.fr(GAME.c.w/ 3, GAME.c.h * 3 / 10, GAME.c.w / 3, 46);
+    GAME.d.ft(name, GAME.c.w / 2, GAME.c.h * 3 / 10 + 23, {fs: "#222222"});
 
     //Keyboard
     drawKeyboard();
 
     //Send Button
     if(name.length > 0)
-        GAME.draw.drawButton(startButton, "Time Travel");
+        GAME.d.db(startButton, "Time Travel");
 };
 
 let drawKeyboard = () => {
-    GAME.draw.strokeRect(keyboardPosition.x, keyboardPosition.y, keyboardPosition.width, keyboardPosition.height, {strokeStyle: "#555555"});
+    GAME.d.sr(keyboardPosition.x, keyboardPosition.y, keyboardPosition.w, keyboardPosition.h, {ss: "#555555"});
 
     for(let i = 0; i < keyboard.length; i++){
-        let x = keyboardPosition.x + keySize.width / 2 + keySize.width * (i % 10);
-        let y = keyboardPosition.y + keySize.height / 2 + keySize.height * Math.floor(i / 10);
+        let x = keyboardPosition.x + keySize.w / 2 + keySize.w * (i % 10);
+        let y = keyboardPosition.y + keySize.h / 2 + keySize.h * Math.floor(i / 10);
         let key = keyboard[i];
 
         if(!capsLock && i > 9 && !["Caps", "_", "Space", "Del"].includes(key))
             key = key.toLowerCase();
 
-        GAME.draw.fillText(key, x, y, {font: "25px Arial"});    
+        GAME.d.ft(key, x, y, {f: 25});    
     }
 };
 
@@ -134,20 +134,20 @@ let drawKeyboard = () => {
 let onStart = () => {
     //UI
     startButton = {
-        x: GAME.canvas.width / 2 - 180,
-        y: GAME.canvas.height * 9 / 10 - 30,
-        width: 360,
-        height: 60
+        x: GAME.c.w / 2 - 180,
+        y: GAME.c.h * 9 / 10 - 30,
+        w: 360,
+        h: 60
     };
     keyboardPosition = {
-        x: GAME.canvas.width / 10,
-        y: GAME.canvas.height * 3 / 8 + 50,
-        width: GAME.canvas.width * 4 / 5,
-        height: GAME.canvas.height / 3
+        x: GAME.c.w / 10,
+        y: GAME.c.h * 3 / 8 + 50,
+        w: GAME.c.w * 4 / 5,
+        h: GAME.c.h / 3
     };
     keySize = {
-        width: keyboardPosition.width / 10,
-        height: keyboardPosition.height / 4
+        w: keyboardPosition.w / 10,
+        h: keyboardPosition.h / 4
     };
     capsLock = false;
 
@@ -160,15 +160,13 @@ let onStart = () => {
         "A",    "S",    "D",    "F",    "G",    "H",    "J",    "K",    "L",    "Caps",
         "Z",    "X",    "C",    "V",    "B",    "N",    "M",    "_",    "Space","Del"
     ];
-    nameRules = {
-        max: 8,
-        keys: /[a-zA-Z0-9_ ]/
-    };
+    nameMax = 8;
+    nameRules = /[a-zA-Z0-9_ ]/;
 
     //Engine
-    GAME.addEvent("click", clickStart, startButton.x, startButton.y, startButton.width, startButton.height);
-    GAME.addEvent("click", clickKeyboard, keyboardPosition.x, keyboardPosition.y, keyboardPosition.width, keyboardPosition.height);
-    GAME.addEvent("keydown", keyDown);
+    GAME.e("click", clickStart, startButton.x, startButton.y, startButton.w, startButton.h);
+    GAME.e("click", clickKeyboard, keyboardPosition.x, keyboardPosition.y, keyboardPosition.w, keyboardPosition.h);
+    GAME.e("keydown", keyDown);
 };
 
 let onUpdate = () => {  
@@ -184,4 +182,4 @@ let onUpdate = () => {
     
 // };
 
-export default {onStart, onUpdate};
+export const INTRO = {os: onStart, ou: onUpdate};

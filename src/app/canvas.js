@@ -1,35 +1,48 @@
 const { drawButton, drawTutorial, drawPanel, drawMouseDirection } = require("./draw/UI");
 
 /** Canvas Config */
-let canvas = document.querySelector("#game-canvas"), ctx = canvas.getContext("2d");
+let canvas = document.querySelector("#gc"), ctx = canvas.getContext("2d");
 canvas.width = 1024;
 canvas.height = 768;
 
 /** Panel */
-let panelPosition = {
+let p = {
     x: 0,
     y: canvas.height - 100,
-    width: canvas.width,
-    height: 100
+    w: canvas.width,
+    h: 100
 };
 
 /** Context Config */
 let defaultCtx = {
-    fillStyle: "white",
-    strokeStyle: "white",
-    font: "50px Arial",
-    textAlign: "center",
-    textBaseline: "middle",
+    fs: "white",
+    ss: "white",
+    f: 50,
+    ta: "c",
+    tb: "m",
 };
-ctx.lineWidth = defaultCtx.lineWidth;
-ctx.fillStyle = defaultCtx.fillStyle;
-ctx.strokeStyle = defaultCtx.strokeStyle;
-ctx.font = defaultCtx.font;
-ctx.textAlign = defaultCtx.textAlign;
-ctx.textBaseline = defaultCtx.textBaseline;
+let defaultCtxTA = {
+    s: "start",
+    e: "end",
+    l: "left",
+    c: "center",
+    r: "right"
+};
+let defaultCtxTB = {
+    t: "top",
+    b: "bottom",
+    m: "middle",
+    a: "alphabetic",
+    h: "hanging"
+};
+ctx.fillStyle = defaultCtx.fs;
+ctx.strokeStyle = defaultCtx.ss;
+ctx.font = `${defaultCtx.f}px Arial`;
+ctx.textAlign = defaultCtxTA[defaultCtx.ta];
+ctx.textBaseline = defaultCtxTB[defaultCtx.tb];
 
 /** Draw Functions */
-let draw = {};
+let d = {};
 
 let tempStyleAction = (callback, newStyles) => {
     if(newStyles) styles(newStyles);
@@ -37,17 +50,19 @@ let tempStyleAction = (callback, newStyles) => {
     if(newStyles) styles(defaultCtx);
 };
 
-let styles = ({fillStyle, strokeStyle, font, textAlign, textBaseline}) => {
-    if(fillStyle) ctx.fillStyle = fillStyle;
-    if(strokeStyle) ctx.strokeStyle = strokeStyle;
-    if(font) ctx.font = font;
-    if(textAlign) ctx.textAlign = textAlign;
-    if(textBaseline) ctx.textBaseline = textBaseline;
+let styles = ({fs, ss, f, ta, tb}) => {
+    if(fs) ctx.fillStyle = fs;
+    if(ss) ctx.strokeStyle = ss;
+    if(f) ctx.font = `${f}px Arial`;
+    if(ta) ctx.textAlign = defaultCtxTA[ta];
+    if(tb) ctx.textBaseline = defaultCtxTB[tb];
 };
 
-draw.clearCanvas = (x, y, width, height) => ctx.clearRect(x, y, width, height);
+//Clear Canvas
+d.cc = (x, y, w, h) => ctx.clearRect(x, y, w, h);
 
-draw.line = ( x1, y1, x2, y2, styles) => {
+//Line
+d.l = (x1, y1, x2, y2, styles) => {
     tempStyleAction(() => {
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -56,7 +71,8 @@ draw.line = ( x1, y1, x2, y2, styles) => {
     }, styles);
 };
 
-draw.splitLine = ( x1, y1, x2, y2, spacing, styles) => {
+//Split Line
+d.sl = (x1, y1, x2, y2, spacing, styles) => {
     tempStyleAction(() => {
         let x = x1;
         let y = y1;
@@ -79,24 +95,25 @@ draw.splitLine = ( x1, y1, x2, y2, spacing, styles) => {
     }, styles);
 };
 
-let drawText = (type, text, x, y, styles) => {
-    tempStyleAction(() => ctx[type](text, x, y), styles);
-};
-draw.fillText = (text, x, y, styles) => drawText("fillText", text, x, y, styles);
-draw.strokeText = (text, x, y, styles) => drawText("strokeText", text, x, y, styles);
+let drawText = (type, text, x, y, styles) => tempStyleAction(() => ctx[type](text, x, y), styles);
+//Fill Text
+d.ft = (text, x, y, styles) => drawText("fillText", text, x, y, styles);
+//Stroke Text
+d.st = (text, x, y, styles) => drawText("strokeText", text, x, y, styles);
 
-draw.fillTextBlock = (texts, x, y, spacing, styles) => {
+//Fill Text Block
+d.ftb = (texts, x, y, spacing, styles) => {
     tempStyleAction(() => {
         for(let i = 0; i < texts.length; i++)
             ctx.fillText(texts[i], x, y + spacing*i);
     }, styles);
 };
 
-let drawRect = (type, x, y, width, height, styles) => {
-    tempStyleAction(() => ctx[type](x, y, width, height), styles);
-};
-draw.fillRect = (x, y, width, height, styles) => drawRect("fillRect", x, y, width, height, styles);
-draw.strokeRect = (x, y, width, height, styles) => drawRect("strokeRect", x, y, width, height, styles);
+let drawRect = (type, x, y, width, height, styles) => tempStyleAction(() => ctx[type](x, y, width, height), styles);
+//Fill Rect
+d.fr = (x, y, width, height, styles) => drawRect("fillRect", x, y, width, height, styles);
+//Stroke Rect
+d.sr = (x, y, width, height, styles) => drawRect("strokeRect", x, y, width, height, styles);
 
 let drawCircle = (type, x, y, radius, startAngle = 0, endAngle = 2*Math.PI, styles) => {
     tempStyleAction(() => {
@@ -105,48 +122,50 @@ let drawCircle = (type, x, y, radius, startAngle = 0, endAngle = 2*Math.PI, styl
         ctx[type]();
     }, styles);
 };
-draw.fillCircle = (x, y, radius, startAngle, endAngle, styles) => drawCircle("fill", x, y, radius, startAngle, endAngle, styles);
-draw.strokeCircle = (x, y, radius, startAngle, endAngle, styles) => drawCircle("stroke", x, y, radius, startAngle, endAngle, styles);
+//Fill Circle
+d.fc = (x, y, radius, startAngle, endAngle, styles) => drawCircle("fill", x, y, radius, startAngle, endAngle, styles);
+//Stroke Circle
+d.sc = (x, y, radius, startAngle, endAngle, styles) => drawCircle("stroke", x, y, radius, startAngle, endAngle, styles);
 
-export const primary = {
-    instance: canvas,
-    panelPosition,
-    draw,
+export const cp = {
+    i: canvas,  //instance
+    p,  //panel 
+    d,  //draw
     UI: {
-        drawButton: (position, text, styles) => drawButton(draw, position, text, styles),
-        drawTutorial: (title, year, boss, intel, startPosition) => drawTutorial(draw, canvas.width, canvas.height, title, year, boss, intel, startPosition),
-        drawPanel: (player, boss, text) => drawPanel(draw, panelPosition, player, boss, text),
-        drawMouseDirection: (x, y) => drawMouseDirection(draw, panelPosition, x, y),
+        b: (position, text, styles) => drawButton(d, position, text, styles),
+        t: (title, year, boss, intel, startPosition) => drawTutorial(d, canvas.width, canvas.height, title, year, boss, intel, startPosition),
+        p: (player, boss, text) => drawPanel(d, p, player, boss, text),
+        md: (x, y) => drawMouseDirection(d, p, x, y),
     }
 };
 
 /** Variables */
-let auxCanvas = document.querySelector("#game-aux"), auxCtx = canvas.getContext("2d");
+let auxCanvas = document.querySelector("#ga"), auxCtx = auxCanvas.getContext("2d");
 
 /** Canvas Config */
-auxCanvas.width = canvas.width;
-auxCanvas.height = 50;
+let w = canvas.width, h = 50;
+auxCanvas.width = w;
+auxCanvas.height = h;
 
 /** Context Config */
-auxCtx.lineWidth = 2;
 auxCtx.font = "20px Arial";
 auxCtx.textAlign = "left";
 auxCtx.textBaseline = "center";
 auxCtx.fillStyle = "lightgrey";
 
 /** Fixed Draw */
-auxCtx.fillText("Back To #", 0, auxCanvas.height / 2);
+auxCtx.fillText("Back To #", 0, h / 2);
 
 auxCtx.textAlign = "right";
 
 /** Update */
 let update = (FPS, maxFPS) => {
-    auxCtx.clearRect(auxCanvas.width / 2, 0, auxCanvas.width / 2, auxCanvas.height);
+    auxCtx.clearRect(w / 2, 0, w / 2, h);
     auxCtx.fillStyle = FPS < maxFPS / 2 ? "red" : "lightgrey";
-    auxCtx.fillText(`${FPS} FPS`, auxCanvas.width, auxCanvas.height / 2);
+    auxCtx.fillText(`${FPS} FPS`, w, h / 2);
 };
 
-export const secondary = {
-    instance: auxCanvas,
-    update
+export const ca = {
+    i: auxCanvas,   //instance
+    u: update   //update canvas
 };
