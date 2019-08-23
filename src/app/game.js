@@ -1,11 +1,17 @@
-const canvas = require("./canvas/primary").default;
-const auxCanvas = require("./canvas/secondary").default;
-const events = require("./events").default;
-const { getMagVector, getNormalizedVector } = require("./utils");
+const c = require("./canvas");
+const canvas = c.primary
+const auxCanvas = c.secondary;
 const { Graph } = require("./datastructures");
 
 /** Variables */
 let animationFrame, instances = [], current;
+let events = {
+    click: [],
+    mouseMove: [],
+    mouseDown: [],
+    mouseUp: [],
+    keyDown: []
+};
 
 /** Player Config */
 let player = {
@@ -25,6 +31,63 @@ let timing = {
     lastFPS: 0,    //last FPS update
 };
 
+/** Events */
+let getCanvasCoords = (x, y) => {
+    let rect = canvas.instance.getBoundingClientRect();
+    return {
+        x: x - rect.left,
+        y: y - rect.top
+    };
+};
+
+let addClick = event => events.click.push(event);
+canvas.instance.addEventListener("click", event => {
+    let coords = getCanvasCoords(event.clientX, event.clientY);
+    events.click.forEach(e => e(event, coords.x, coords.y));
+});
+
+let addMouseMove = event => events.mouseMove.push(event);
+canvas.instance.addEventListener("mousemove", event => {
+    let coords = getCanvasCoords(event.clientX, event.clientY);
+    events.mouseMove.forEach(e => e(event, coords.x, coords.y));
+});
+
+let addMouseDown = event => events.mouseDown.push(event);
+canvas.instance.addEventListener("mousedown", event => events.mouseDown.forEach(e => e(event)));
+
+let addMouseUp = event => events.mouseUp.push(event);
+canvas.instance.addEventListener("mouseup", event => events.mouseUp.forEach(e => e(event)));
+
+canvas.instance.addEventListener("touchmove", event => {
+    event.preventDefault();
+    let touch = event.touches[0];
+    canvas.instance.dispatchEvent(new MouseEvent("mousemove", {clientX: touch.clientX, clientY: touch.clientY}));
+});
+
+canvas.instance.addEventListener("touchstart", event => {
+    event.preventDefault();
+    let touch = event.touches[0];
+    let coords = getCanvasCoords(touch.clientX, touch.clientY);
+    canvas.instance.dispatchEvent(new MouseEvent("mousedown", {clientX: coords.x, clientY: coords.y}));
+});
+
+canvas.instance.addEventListener("touchend", event => {
+    event.preventDefault();
+
+    let touch = event.changedTouches[0];
+    let coords = getCanvasCoords(touch.clientX, touch.clientY);
+
+    canvas.instance.dispatchEvent(new MouseEvent("mouseup", {clientX: coords.x, clientY: coords.y}));
+    canvas.instance.dispatchEvent(new MouseEvent("click", {clientX: coords.x, clientY: coords.y}));    
+});
+
+let addKeyDown = event => events.keyDown.push(event);
+document.addEventListener("keydown", event => {
+    events.keyDown.forEach(e => e(event));
+});
+
+document.addEventListener("contextmenu", event => event.preventDefault());
+
 /** Helper Functions */
 let doDamage = (p, damage) => {
     p.life -= damage;
@@ -38,6 +101,23 @@ let doDamage = (p, damage) => {
     }
 
     return false;
+};
+
+let getMagVector = (x, y) => {
+    return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+};
+
+let getNormalizedVector = (x, y, mag) => {
+    if(!mag)
+        mag = getMagVector(x, y);
+
+    if(mag === 0)
+        return {x: 0, y: 0};
+
+    return {
+        x: x / mag,
+        y: y / mag
+    };
 };
 
 /** Game Functions */
@@ -78,7 +158,13 @@ let start = proceed => {
 
 let stop = () => {
     cancelAnimationFrame(animationFrame);
-    events.clearEvents();
+    events = {
+        click: [],
+        mouseMove: [],
+        mouseDown: [],
+        mouseUp: [],
+        keyDown: []
+    };
 };
 
 let next = proceed => {
@@ -94,17 +180,6 @@ let next = proceed => {
     start(proceed);
 };
 
-/** Events */
-events.addClickEventListener(canvas.instance);
-events.addMouseMoveEventListener(canvas.instance);
-events.addMouseDownEventListener(canvas.instance);
-events.addMouseUpEventListener(canvas.instance);
-events.addTouchMoveEventListener(canvas.instance);
-events.addTouchStartEventListener(canvas.instance);
-events.addTouchEndEventListener(canvas.instance);
-events.addKeyDownEventListener(document);
-events.addContextMenuEventListener(document);
-
 export default {
     canvas: {
         x: canvas.instance.x,
@@ -116,11 +191,11 @@ export default {
     player,
     delta: timing.unit,
     events: {
-        addClick: e => events.addClick(e),
-        addMouseMove: e => events.addMouseMove(e),
-        addMouseDown: e => events.addMouseDown(e),
-        addMouseUp: e => events.addMouseUp(e),
-        addKeyDown: e => events.addKeyDown(e),
+        addClick,
+        addMouseMove,
+        addMouseDown,
+        addMouseUp,
+        addKeyDown,
     },
     draw: {
         line: canvas.draw.line,
@@ -132,7 +207,6 @@ export default {
         strokeRect: canvas.draw.strokeRect,
         fillCircle: canvas.draw.fillCircle,
         strokeCircle: canvas.draw.strokeCircle,
-        // styles,
         drawTutorial: canvas.UI.drawTutorial,
         drawGameOver: (panelPosition, boss) => canvas.UI.drawGameOver(panelPosition, player, boss),
         drawPlayerPanel: (panelPosition, boss) => canvas.UI.drawPlayerPanel(panelPosition, player, boss),
