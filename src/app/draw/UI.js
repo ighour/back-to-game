@@ -29,28 +29,26 @@ export const drawTutorial = (draw, width, height, title, year, boss, intel, star
     drawButton(draw, startPosition, "Travel");
 };
 
-/** Game Over */
-export const drawGameOver = (draw, position, player, boss) => {
-    let msg = boss.life <= 0 ? `${boss.name} was Defeated!` : `${player.name} was Defeated!`;
-    draw.fillText(msg, position.x + position.width / 2, position.y + position.height / 2);
-};
-
 /** Panel */
-export const drawPanel = (draw, position, player, boss) => {
-    // Names
-    draw.fillText(player.name, position.x + position.width / 4, position.y + position.height - 20, {textBaseline: "bottom"});
-    draw.fillText(boss.name, position.x + position.width * 3 / 4, position.y + position.height - 20, {textBaseline: "bottom"});
+export const drawPanel = (draw, position, player, boss, text) => {
+    if(text)
+        draw.fillText(text, position.x + position.width / 2, position.y + position.height / 2);
+    else{
+        // Names
+        draw.fillText(player.name, position.x + position.width / 4, position.y + position.height - 20, {textBaseline: "bottom"});
+        draw.fillText(boss.name, position.x + position.width * 3 / 4, position.y + position.height - 20, {textBaseline: "bottom"});
 
-    //Life    
-    let maxSize = position.x + position.width / 4;
-    let playerLifeSize = player.life / 100 * maxSize;
-    let bossLifeSize = boss.life / 100 * maxSize;
+        //Life    
+        let maxSize = position.x + position.width / 4;
+        let playerLifeSize = player.life / 100 * maxSize;
+        let bossLifeSize = boss.life / 100 * maxSize;
 
-    draw.fillRect(position.x + position.width / 8, position.y + position.height - 100, playerLifeSize, 20);
-    draw.fillRect(position.x + position.width / 8 + playerLifeSize, position.y + position.height - 100, maxSize - playerLifeSize, 20, {fillStyle: "black"});
+        draw.fillRect(position.x + position.width / 8, position.y + position.height - 100, playerLifeSize, 20);
+        draw.fillRect(position.x + position.width / 8 + playerLifeSize, position.y + position.height - 100, maxSize - playerLifeSize, 20, {fillStyle: "black"});
 
-    draw.fillRect(position.x + position.width * 7 / 8 - maxSize, position.y + position.height - 100, bossLifeSize, 20);
-    draw.fillRect(position.x + position.width * 7 / 8 - maxSize + bossLifeSize, position.y + position.height - 100, maxSize - bossLifeSize, 20, {fillStyle: "black"});
+        draw.fillRect(position.x + position.width * 7 / 8 - maxSize, position.y + position.height - 100, bossLifeSize, 20);
+        draw.fillRect(position.x + position.width * 7 / 8 - maxSize + bossLifeSize, position.y + position.height - 100, maxSize - bossLifeSize, 20, {fillStyle: "black"});
+    }
 };
 
 /** Mouse Direction */

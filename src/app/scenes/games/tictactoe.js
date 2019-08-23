@@ -225,11 +225,9 @@ let drawXY = () => {
 
 let drawPanel = () => {
     if(gameOver === true)
-        GAME.draw.drawGameOver();
-    else if(matchWinner !== 0){
-        let msg = matchWinner === -1 ? `${GAME.player.damage} damage to ${GAME.boss.name}!` : `${GAME.boss.damage} damage to you!`;
-        GAME.draw.fillText(msg, GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height / 2);
-    }
+        GAME.draw.drawPanel(GAME.boss.life <= 0 ? `${GAME.boss.name} was Defeated!` : `${GAME.player.name} was Defeated!`);  
+    else if(matchWinner !== 0)
+        GAME.draw.drawPanel(matchWinner === -1 ? `${GAME.player.damage} damage to ${GAME.boss.name}!` : `${GAME.boss.damage} damage to you!`); 
     else{
         GAME.draw.fillText("x", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 20, {textBaseline: "bottom"});
         

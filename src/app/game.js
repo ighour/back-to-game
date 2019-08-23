@@ -187,8 +187,7 @@ export default {
         strokeCircle: canvas.draw.strokeCircle,
         drawButton: canvas.UI.drawButton,
         drawTutorial: (title, year, intel, startPosition) => canvas.UI.drawTutorial(title, year, boss, intel, startPosition),
-        drawGameOver: () => canvas.UI.drawGameOver(player, boss),
-        drawPanel: () => canvas.UI.drawPanel(player, boss),
+        drawPanel: text => canvas.UI.drawPanel(player, boss, text),
         drawMouseDirection: canvas.UI.drawMouseDirection,
     },
     functions: {

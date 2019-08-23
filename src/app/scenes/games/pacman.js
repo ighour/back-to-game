@@ -296,7 +296,7 @@ let drawTargets = () => {
 
 let drawPanel = () => {
     if(gameOver === true)
-        GAME.draw.drawGameOver();  
+        GAME.draw.drawPanel(GAME.boss.life <= 0 ? `${GAME.boss.name} was Defeated!` : `${GAME.player.name} was Defeated!`);  
     else{
         GAME.draw.drawPanel();
         GAME.draw.drawMouseDirection(moving.x, moving.y); 
