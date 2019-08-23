@@ -1,6 +1,6 @@
 const merge = require('webpack-merge');
 const webpackBaseConfig = require('./webpack.common.config.js');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ZipPlugin = require('zip-webpack-plugin');
@@ -8,7 +8,13 @@ const ZipPlugin = require('zip-webpack-plugin');
 module.exports = merge(webpackBaseConfig, {
     optimization: {
         minimizer: [
-            new UglifyJsPlugin(),
+            new TerserPlugin({
+                terserOptions: {
+                    ecma: 6,
+                    module: true,
+                    toplevel: true
+                }
+            }),
             new OptimizeCSSAssetsPlugin()
         ]
     },
