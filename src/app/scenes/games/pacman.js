@@ -1,4 +1,4 @@
-const GAME = require('./main').default;
+const GAME = require('../../game').default;
 
 /** Variables */
 let gamePosition, startPosition, panelPosition, unit, map, bossAnimation, foodAnimation;
