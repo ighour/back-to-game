@@ -4,6 +4,12 @@ const GAME = require('../../game').default;
 let gamePosition, startButton, barSize;
 let tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse;
 
+/** Events */
+let clickStart = () => tutorial = false;
+let mouseMove = (event, x, y) => {if(!tutorial) mouse = {x, y}};
+let mouseDown = () => {if(!tutorial) magnetic = true};
+let mouseUp = () => {if(!tutorial) magnetic = false};
+
 /** Helper Functions */
 let getBarY = y => {
     let halfBar = barSize.height / 2;
@@ -18,7 +24,48 @@ let getBarY = y => {
     return newY;
 };
 
-/** State Functions */
+/** Logic */
+let logic = () => {
+    if(tutorial)
+        return;
+
+    moveNPCs();
+    moveBall();
+};
+
+let moveNPCs = () => {
+    let targetY = getBarY(ball.y);
+
+    moveNPC(p1Bar, targetY);
+    moveNPC(p2Bar, targetY);
+};
+
+let moveNPC = (player, targetY) => {
+    let target = {
+        x: ball.x - player.x,
+        y: targetY - player.y
+    };
+
+    let normVector = GAME.functions.getNormalizedVector(target.x, target.y);
+
+    if(normVector.y >= -0.1 && normVector.y <= 0.1)
+        return;
+
+    let newY = player.y + normVector.y * GAME.delta;
+
+    if(newY < gamePosition.y)
+        newY = gamePosition.y;
+    else if(newY + barSize.height > gamePosition.y + gamePosition.height)
+        newY = gamePosition.y + gamePosition.height - barSize.height;
+    
+    player.y = newY;
+};
+
+let moveBall = () => {
+    setBallDirection();
+    setBallPosition();
+};
+
 let setBallDirection = () => {
     let tempDir = {
         x: ball.directionX,
@@ -50,21 +97,6 @@ let setBallDirection = () => {
 
     ball.directionX = normDir.x;
     ball.directionY = normDir.y;
-};
-
-let checkBallHit = (self, player) => {
-    if(!gameOver){
-        //Hit player
-        if(self.B > player.y && self.T < player.y + barSize.height){
-            gameOver = GAME.functions.doDamagePlayer();
-
-            if(ball.speed < 2)
-                ball.speed += Math.random() * 0.05;
-        }
-        //Hit wall
-        else
-            gameOver = GAME.functions.doDamageBoss();
-    }
 };
 
 let setBallPosition = () => {
@@ -113,48 +145,37 @@ let setBallPosition = () => {
     ball.y = newY;
 };
 
-let moveBall = () => {
-    setBallDirection();
-    setBallPosition();
-};
+let checkBallHit = (self, player) => {
+    if(!gameOver){
+        //Hit player
+        if(self.B > player.y && self.T < player.y + barSize.height){
+            gameOver = GAME.functions.doDamagePlayer();
 
-let moveNPC = (player, targetY) => {
-    let target = {
-        x: ball.x - player.x,
-        y: targetY - player.y
-    };
-
-    let normVector = GAME.functions.getNormalizedVector(target.x, target.y);
-
-    if(normVector.y >= -0.1 && normVector.y <= 0.1)
-        return;
-
-    let newY = player.y + normVector.y * GAME.delta;
-
-    if(newY < gamePosition.y)
-        newY = gamePosition.y;
-    else if(newY + barSize.height > gamePosition.y + gamePosition.height)
-        newY = gamePosition.y + gamePosition.height - barSize.height;
-    
-    player.y = newY;
-};
-
-let moveNPCs = () => {
-    let targetY = getBarY(ball.y);
-
-    moveNPC(p1Bar, targetY);
-    moveNPC(p2Bar, targetY);
-};
+            if(ball.speed < 2)
+                ball.speed += Math.random() * 0.05;
+        }
+        //Hit wall
+        else
+            gameOver = GAME.functions.doDamageBoss();
+    }
+}
 
 /** Draw Functions */
-let drawTutorial = () => {
-    let intel = [
-        "The boss loses HP when the ball is out.",
-        "Your mouse has a magnetical field when clicked down.",
-        "Crashing on bars will hurt you and push the ball."
-    ];
-
-    GAME.draw.drawTutorial("Mission #2", "1972", intel, startButton);
+let draw = () => {
+    if(tutorial){
+        let intel = [
+            "The boss loses HP when the ball is out.",
+            "Your mouse has a magnetical field when clicked down.",
+            "Crashing on bars will hurt you and push the ball."
+        ];
+        GAME.draw.drawTutorial("Mission #2", "1972", intel, startButton);
+    }
+    else {
+        drawBoard();
+        drawBars();
+        drawBall();
+        drawPanel();
+    }
 };
 
 let drawBoard = () => {
@@ -175,22 +196,14 @@ let drawPanel = () => {
     if(gameOver === true)
         GAME.draw.drawGameOver();  
     else{
-        // Players
         GAME.draw.drawPanel();
 
-        //Magnetic
         if(magnetic)
             GAME.draw.drawMouseDirection(ball.forceX, ball.forceY);
         else
             GAME.draw.strokeCircle(GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height / 2, 10);
     }
 };
-
-/** Events */
-let clickStart = () => tutorial = false;
-let mouseMove = (event, x, y) => {if(!tutorial) mouse = {x, y}};
-let mouseDown = () => {if(!tutorial) magnetic = true};
-let mouseUp = () => {if(!tutorial) magnetic = false};
 
 /** Lifecycle */
 let onStart = _win => {
@@ -252,21 +265,8 @@ let onStart = _win => {
 };
 
 let onUpdate = () => {
-    if(tutorial)
-        drawTutorial();
-    else {
-        //Logic
-        moveNPCs();
-        moveBall();
-
-        //Game
-        drawBoard();
-        drawBars();
-        drawBall();
-
-        //Panel
-        drawPanel();
-    }
+    logic();
+    draw();
 };
 
 // let onReset = () => {

@@ -4,6 +4,35 @@ const GAME = require('../game').default;
 let startButton, keyboardPosition, keySize, capsLock;
 let creating, name, keyboard, nameRules;
 
+/** Events */
+let clickStart = () => {
+    //Create
+    if(!creating)
+        creating = true;
+    //Start
+    else if(name.length > 0)
+        beginGame();
+};
+
+let clickKeyboard = (event, x, y) => {
+    if(creating)
+        pressKey(x, y);
+};
+
+let keyDown = (event) => {
+    if(!creating)
+        return;
+        
+    let key = event.key;
+
+    if(validKeyForName(key) && name.length < nameRules.max)
+        name += key;
+    else if(event.keyCode === 8) //Backspace
+        name = name.slice(0, name.length - 1);
+    else if(event.keyCode === 20) //Caps Lock
+        capsLock = !capsLock;
+};
+
 /** Helper Functions */
 let validKeyForName = key => {
     if(name.length === 0 && key === " ")
@@ -12,7 +41,9 @@ let validKeyForName = key => {
     return key.length === 1 && nameRules.keys.test(key);
 };
 
-/** State Functions */
+/** Logic */
+// let logic = () => {};
+
 let beginGame = () => {
     GAME.player.name = name;
     GAME.next(true);
@@ -39,7 +70,14 @@ let pressKey = (x, y) => {
     }
 };
 
-/** Draw Functions */
+/** Draw */
+let draw = () => {
+    if(creating === false)
+        drawNew();
+    else
+        drawCreate();  
+};
+
 let drawNew = () => {
     //Title
     GAME.draw.fillText("Back To #", GAME.canvas.width / 2, GAME.canvas.height / 5, {font: "100px Arial"});
@@ -92,35 +130,6 @@ let drawKeyboard = () => {
     }
 };
 
-/** Events */
-let clickStart = () => {
-    //Create
-    if(!creating)
-        creating = true;
-    //Start
-    else if(name.length > 0)
-        beginGame();
-};
-
-let clickKeyboard = (event, x, y) => {
-    if(creating)
-        pressKey(x, y);
-};
-
-let keyDown = (event) => {
-    if(!creating)
-        return;
-        
-    let key = event.key;
-
-    if(validKeyForName(key) && name.length < nameRules.max)
-        name += key;
-    else if(event.keyCode === 8) //Backspace
-        name = name.slice(0, name.length - 1);
-    else if(event.keyCode === 20) //Caps Lock
-        capsLock = !capsLock;
-};
-
 /** Lifecycle */
 let onStart = () => {
     //UI
@@ -163,10 +172,8 @@ let onStart = () => {
 };
 
 let onUpdate = () => {  
-    if(creating === false)
-        drawNew();
-    else
-        drawCreate();  
+    // logic();
+    draw();
 };
 
 // let onReset = () => {

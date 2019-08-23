@@ -4,6 +4,23 @@ const GAME = require('../../game').default;
 let gamePosition, startButton, cellSize;
 let tutorial, gameOver, signs, matchWinner, winCombos, board, playing;
 
+/** Events */
+let clickStart = () => {tutorial = false};
+
+let clickBoard = (event, x, y) => {
+    if(!tutorial && playing === -1 && matchWinner === 0 && !gameOver) {
+        let square = getSelectedSquare(x, y);
+
+        if(!canMoveToSquare(square.x, square.y))
+            return;
+
+        let boardIndex = square.x + square.y*3;
+
+        if(board[boardIndex] === 0)
+            markBoard(boardIndex);
+    }
+};
+
 /** Helper Functions */
 let getPlayerIndex = () => {
     let index;
@@ -111,7 +128,9 @@ let getNPCMove = () => {
     return random[Math.floor(Math.random() * random.length)];
 };
 
-/** State Functions */
+/** Logic */
+// let logic = () => {};
+
 let endMatch = winner => {
     let end = false;
 
@@ -166,15 +185,21 @@ let markBoard = boardIndex => {
         setTimeout(() => makeNPCMove(), Math.random() * 501 + 500);
 };
 
-/** Draw Functions */
-let drawTutorial = () => {
-    let intel = [
-        "The boss act as player 1 (X) and 2 (0).",
-        "It loses HP when game result is draw.",
-        "You can move only to near positions."
-    ];
-
-    GAME.draw.drawTutorial("Last Mission", "1950", intel, startButton);
+/** Draw */
+let draw = () => {
+    if(tutorial){
+        let intel = [
+            "The boss act as player 1 (X) and 2 (0).",
+            "It loses HP when game result is draw.",
+            "You can move only to near positions."
+        ];
+        GAME.draw.drawTutorial("Last Mission", "1950", intel, startButton);
+    }
+    else{
+        drawBoard();
+        drawXY();
+        drawPanel();
+    }
 };
 
 let drawBoard = () => {
@@ -198,19 +223,14 @@ let drawXY = () => {
     }
 };
 
-let drawMatchResult = () => {
-    let msg = matchWinner === -1 ? `${GAME.player.damage} damage to ${GAME.boss.name}!` : `${GAME.boss.damage} damage to you!`;
-    GAME.draw.fillText(msg, GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height / 2);
-};
-
-
 let drawPanel = () => {
     if(gameOver === true)
         GAME.draw.drawGameOver();
-    else if(matchWinner !== 0)
-        drawMatchResult();    
+    else if(matchWinner !== 0){
+        let msg = matchWinner === -1 ? `${GAME.player.damage} damage to ${GAME.boss.name}!` : `${GAME.boss.damage} damage to you!`;
+        GAME.draw.fillText(msg, GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height / 2);
+    }
     else{
-        // Turn
         GAME.draw.fillText("x", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 20, {textBaseline: "bottom"});
         
         if(playing === -1)
@@ -218,25 +238,7 @@ let drawPanel = () => {
         else
             GAME.draw.fillText(">", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2 + 40, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 17, {textBaseline: "bottom"});
 
-        //Players
         GAME.draw.drawPanel();
-    }
-};
-
-/** Events */
-let clickStart = () => {tutorial = false};
-
-let clickBoard = (event, x, y) => {
-    if(!tutorial && playing === -1 && matchWinner === 0 && !gameOver) {
-        let square = getSelectedSquare(x, y);
-
-        if(!canMoveToSquare(square.x, square.y))
-            return;
-
-        let boardIndex = square.x + square.y*3;
-
-        if(board[boardIndex] === 0)
-            markBoard(boardIndex);
     }
 };
 
@@ -294,17 +296,8 @@ let onStart = _win => {
 };
 
 let onUpdate = () => {
-    if(tutorial){
-        drawTutorial();
-    }
-    else{
-        //Game
-        drawBoard();
-        drawXY();
-
-        //Panel
-        drawPanel();
-    }
+    // logic();
+    draw();
 };
 
 let onReset = () => {

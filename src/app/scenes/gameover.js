@@ -4,21 +4,24 @@ const GAME = require('../game').default;
 let newGame;
 let win;
 
-/** Helper Functions */
-
-/** State Functions */
-
-/** Draw Functions */
-let drawWin = () => {
-    GAME.draw.fillText("You defeated all Evil Games!", GAME.canvas.width / 2, GAME.canvas.height / 3);
-};
-
-let drawLose = () => {
-    GAME.draw.fillText("You were defeated by Evil Games!", GAME.canvas.width / 2, GAME.canvas.height / 3);
-};
-
 /** Events */
 let clickNew = () => GAME.next();
+
+/** Helper Functions */
+
+/** Logic */
+// let logic = () => {};
+
+/** Draw */
+let draw = () => {
+    if(win)
+        GAME.draw.fillText("You defeated all Evil Games!", GAME.canvas.width / 2, GAME.canvas.height / 3);
+    else
+        GAME.draw.fillText("You were defeated by Evil Games!", GAME.canvas.width / 2, GAME.canvas.height / 3);
+
+    //New Game
+    GAME.draw.drawButton(newGame, "Back to Future");
+};
 
 /** Lifecycle */
 let onStart = _win => {
@@ -38,13 +41,8 @@ let onStart = _win => {
 };
 
 let onUpdate = () => {  
-    if(win)
-        drawWin();
-    else
-        drawLose();
-
-    //New Game
-    GAME.draw.drawButton(newGame, "Back to Future");
+    // logic();
+    draw();
 };
 
 // let onReset = () => {

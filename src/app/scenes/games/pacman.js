@@ -4,6 +4,14 @@ const GAME = require('../../game').default;
 let gamePosition, startButton, unit, map, bossAnimation, foodAnimation;
 let tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, moving, graph;
 
+/** Events */
+let clickStart = () => tutorial = false;
+
+let mouseMove = (event, x, y) => {
+    if(!tutorial)
+        moving = GAME.functions.getNormalizedVector(x - (gamePosition.x + gamePosition.width / 2), y - (gamePosition.y + gamePosition.height / 2));
+};
+
 /** Helper Functions */
 let getUnitXY = index => {
     return {
@@ -48,8 +56,11 @@ let playerChooseMove = (coord, prev, next) => {
     return -1;
 };
 
-/** State Functions */
+/** Logic */
 let logic = () => {
+    if(tutorial || gameOver)
+        return;
+
     time += GAME.delta;
 
     if(time >= 250){
@@ -86,13 +97,6 @@ let logic = () => {
     }
 };
 
-let bossThink = () => {
-    let target = graph.iteratorBFS(mapBoss, index => mapFoods.includes(index)).pop();
-
-    if(target !== undefined)
-        GAME.boss.path = graph.iteratorShortestPath(mapBoss, target);
-};
-
 let bossMove = () => {
     if(!gameOver && mapFoods.length > 0 && GAME.boss.path.length === 0)
         bossThink();
@@ -114,6 +118,13 @@ let bossMove = () => {
         else if(mapBoss === getNearIndex("b", lastMapBoss))
             bossAnimation.dir = "b";
     }
+};
+
+let bossThink = () => {
+    let target = graph.iteratorBFS(mapBoss, index => mapFoods.includes(index)).pop();
+
+    if(target !== undefined)
+        GAME.boss.path = graph.iteratorShortestPath(mapBoss, target);
 };
 
 let playersMove = () => {
@@ -140,20 +151,12 @@ let playersMove = () => {
     .filter(e => {
         //Avoid swiping with boss
         if(e === lastMapBoss){
-            gameOver = makeCollisionDamage();
+            if(!gameOver)
+                gameOver = mapPlayers.length === 1 ? GAME.functions.doDamageBoss() : GAME.functions.doDamagePlayer(GAME.boss.damage2);
             return false;
         }
         return true;
     });
-};
-
-let makeCollisionDamage = () => {
-    if(gameOver)
-        return false;
-    else if(mapPlayers.length === 1)
-        return GAME.functions.doDamageBoss();
-    else
-        return GAME.functions.doDamagePlayer(GAME.boss.damage2);
 };
 
 let checkCollisions = () => {
@@ -162,11 +165,12 @@ let checkCollisions = () => {
 
     //Eat player?
     if(mapPlayers.length === 1 && mapPlayers[0] === mapBoss)
-        gameOver = makeCollisionDamage();
+        gameOver = GAME.functions.doDamageBoss();
     else
         mapPlayers = mapPlayers.filter(e => {
             if(e === mapBoss){
-                gameOver = makeCollisionDamage();
+                if(!gameOver)
+                    gameOver = GAME.functions.doDamagePlayer(GAME.boss.damage2);
                 return false;
             }
     
@@ -176,7 +180,8 @@ let checkCollisions = () => {
     //Eat food?
     mapFoods = mapFoods.filter(e => {
         if(e === mapBoss){
-            gameOver = GAME.functions.doDamagePlayer();
+            if(!gameOver)
+                gameOver = GAME.functions.doDamagePlayer();
             return false;
         }
 
@@ -200,15 +205,21 @@ let generateGraph = () => {
     }
 };
 
-/** Draw Functions */
-let drawTutorial = () => {
-    let intel = [
-        "Boss is eating your life and you can do nothing",
-        "Except if you join all ghosts together and eat him",
-        "But they are confused with your orders"
-    ];
-
-    GAME.draw.drawTutorial("Mission #1", "1980", intel, startButton);
+/** Draw */
+let draw = () => {
+    if(tutorial){
+        let intel = [
+            "Boss is eating your life and you can do nothing",
+            "Except if you join all ghosts together and eat him",
+            "But they are confused with your orders"
+        ];
+        GAME.draw.drawTutorial("Mission #1", "1980", intel, startButton);
+    }
+    else {
+        drawMap();
+        drawTargets();
+        drawPanel();
+    }
 };
 
 let drawMap = () => {
@@ -283,29 +294,13 @@ let drawTargets = () => {
     }
 };
 
-let drawBoard = () => {
-    drawMap();
-    drawTargets();
-};
-
 let drawPanel = () => {
     if(gameOver === true)
         GAME.draw.drawGameOver();  
     else{
-        // Players
         GAME.draw.drawPanel();
-
-        //Mouse Direction
         GAME.draw.drawMouseDirection(moving.x, moving.y); 
     }
-};
-
-/** Events */
-let clickStart = () => tutorial = false;
-
-let mouseMove = (event, x, y) => {
-    if(!tutorial)
-        moving = GAME.functions.getNormalizedVector(x - (gamePosition.x + gamePosition.width / 2), y - (gamePosition.y + gamePosition.height / 2));
 };
 
 /** Lifecycle */
@@ -413,18 +408,8 @@ let onStart = _win => {
 };
 
 let onUpdate = () => {
-    if(tutorial)
-        drawTutorial();
-    else {
-        if(!gameOver)
-            logic();
-
-        //Game
-        drawBoard();
-
-        //Panel
-        drawPanel();
-    }
+    logic();
+    draw();
 };
 
 // let onReset = () => {
