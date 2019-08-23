@@ -13,11 +13,16 @@ let events = {
     keyDown: []
 };
 
-/** Player Config */
+/** Players Config */
 let player = {
     name: "",
     life: 100,
-    damage: 25
+    damage: 0
+};
+let boss = {
+    name: "",
+    life: 0,
+    damage: 0
 };
 
 /** Timing Config */
@@ -102,6 +107,12 @@ let doDamage = (p, damage) => {
 
     return false;
 };
+let doDamagePlayer = damage => {
+    return doDamage(player, damage ? damage : boss.damage);
+};
+let doDamageBoss = damage => {
+    return doDamage(boss, damage ? damage : player.damage);
+};
 
 let getMagVector = (x, y) => {
     return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
@@ -185,10 +196,12 @@ export default {
         x: canvas.instance.x,
         y: canvas.instance.y,
         width: canvas.instance.width,
-        height: canvas.instance.height
+        height: canvas.instance.height,
+        panelPosition: canvas.panelPosition
     },
     current,
     player,
+    boss,
     delta: timing.unit,
     events: {
         addClick,
@@ -208,12 +221,13 @@ export default {
         fillCircle: canvas.draw.fillCircle,
         strokeCircle: canvas.draw.strokeCircle,
         drawTutorial: canvas.UI.drawTutorial,
-        drawGameOver: (panelPosition, boss) => canvas.UI.drawGameOver(panelPosition, player, boss),
-        drawPlayerPanel: (panelPosition, boss) => canvas.UI.drawPlayerPanel(panelPosition, player, boss),
+        drawGameOver: () => canvas.UI.drawGameOver(player, boss),
+        drawPlayerPanel: () => canvas.UI.drawPlayerPanel(player, boss),
         drawMouseDirection: canvas.UI.drawMouseDirection,
     },
     functions: {
-        doDamage,
+        doDamagePlayer,
+        doDamageBoss,
         getMagVector,
         getNormalizedVector
     },

@@ -1,7 +1,19 @@
 const { drawTutorial, drawGameOver, drawPlayerPanel, drawMouseDirection } = require("./draw/UI");
 
-/** Variables */
+/** Canvas Config */
 let canvas = document.querySelector("#game-canvas"), ctx = canvas.getContext("2d");
+canvas.width = 1024;
+canvas.height = 768;
+
+/** Panel */
+let panelPosition = {
+    x: 0,
+    y: canvas.height - 100,
+    width: canvas.width,
+    height: 100
+};
+
+/** Context Config */
 let defaultCtx = {
     fillStyle: "white",
     strokeStyle: "white",
@@ -9,12 +21,6 @@ let defaultCtx = {
     textAlign: "center",
     textBaseline: "middle",
 };
-
-/** Canvas Config */
-canvas.width = 1024;
-canvas.height = 768;
-
-/** Context Config */
 ctx.lineWidth = defaultCtx.lineWidth;
 ctx.fillStyle = defaultCtx.fillStyle;
 ctx.strokeStyle = defaultCtx.strokeStyle;
@@ -104,12 +110,13 @@ draw.strokeCircle = (x, y, radius, startAngle, endAngle, styles) => drawCircle("
 
 export const primary = {
     instance: canvas,
+    panelPosition,
     draw,
     UI: {
         drawTutorial: (title, year, boss, intel, startPosition) => drawTutorial(draw, canvas.width, canvas.height, title, year, boss, intel, startPosition),
-        drawGameOver: (panelPosition, player, boss) => drawGameOver(draw, panelPosition, player, boss),
-        drawPlayerPanel: (panelPosition, player, boss) => drawPlayerPanel(draw, panelPosition, player, boss),
-        drawMouseDirection: (panelPosition, x, y) => drawMouseDirection(draw, panelPosition, x, y),
+        drawGameOver: (player, boss) => drawGameOver(draw, panelPosition, player, boss),
+        drawPlayerPanel: (player, boss) => drawPlayerPanel(draw, panelPosition, player, boss),
+        drawMouseDirection: (x, y) => drawMouseDirection(draw, panelPosition, x, y),
     }
 };
 
@@ -117,7 +124,7 @@ export const primary = {
 let auxCanvas = document.querySelector("#game-aux"), auxCtx = canvas.getContext("2d");
 
 /** Canvas Config */
-auxCanvas.width = 1024;
+auxCanvas.width = canvas.width;
 auxCanvas.height = 50;
 
 /** Context Config */

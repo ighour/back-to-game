@@ -1,8 +1,8 @@
 const GAME = require('../../game').default;
 
 /** Variables */
-let gamePosition, startPosition, cellSize, panelPosition;
-let boss, tutorial, gameOver, signs, matchWinner, winCombos, board, playing;
+let gamePosition, startPosition, cellSize;
+let tutorial, gameOver, signs, matchWinner, winCombos, board, playing;
 
 /** Events */
 let click = (event, x, y) => {
@@ -140,9 +140,9 @@ let endMatch = winner => {
     let end = false;
 
     if(winner === -1)
-        end = GAME.functions.doDamage(boss, GAME.player.damage);
+        end = GAME.functions.doDamageBoss();
     else
-        end = GAME.functions.doDamage(GAME.player, boss.damage);
+        end = GAME.functions.doDamagePlayer();
 
     if(end)
         gameOver = true;
@@ -198,7 +198,7 @@ let drawTutorial = () => {
         "You can move only to near positions."
     ];
 
-    GAME.draw.drawTutorial("Last Mission", "1950", boss.name, intel, startPosition);
+    GAME.draw.drawTutorial("Last Mission", "1950", GAME.boss.name, intel, startPosition);
 };
 
 let drawBoard = () => {
@@ -223,25 +223,25 @@ let drawXY = () => {
 };
 
 let drawGameOver = () => {
-    GAME.draw.drawGameOver(panelPosition, boss);
+    GAME.draw.drawGameOver();
 };
 
 let drawMatchResult = () => {
-    let msg = matchWinner === -1 ? `${GAME.player.damage} damage to ${boss.name}!` : `${boss.damage} damage to you!`;
-    GAME.draw.fillText(msg, panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2);
+    let msg = matchWinner === -1 ? `${GAME.player.damage} damage to ${GAME.boss.name}!` : `${GAME.boss.damage} damage to you!`;
+    GAME.draw.fillText(msg, GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height / 2);
 };
 
 let drawBasePanel = () => {
     // Turn
-    GAME.draw.fillText("x", panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
+    GAME.draw.fillText("x", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 20, {textBaseline: "bottom"});
     
     if(playing === -1)
-        GAME.draw.fillText("<", panelPosition.x + panelPosition.width / 2 - 40, panelPosition.y + panelPosition.height - 17, {textBaseline: "bottom"});
+        GAME.draw.fillText("<", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2 - 40, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 17, {textBaseline: "bottom"});
     else
-        GAME.draw.fillText(">", panelPosition.x + panelPosition.width / 2 + 40, panelPosition.y + panelPosition.height - 17, {textBaseline: "bottom"});
+        GAME.draw.fillText(">", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2 + 40, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 17, {textBaseline: "bottom"});
 
     //Players
-    GAME.draw.drawPlayerPanel(panelPosition, boss);
+    GAME.draw.drawPlayerPanel();
 };
 
 let drawPanel = () => {
@@ -272,19 +272,8 @@ let onStart = _win => {
         width: gamePosition.width  / 3,
         height: gamePosition.height / 3 
     };
-    panelPosition = {
-        x: 0,
-        y: gamePosition.y + gamePosition.height + 20,
-        width: GAME.canvas.width,
-        height: GAME.canvas.height - (gamePosition.y + gamePosition.height + 20) - 1
-    };
 
     //State
-    boss = {
-        name: "Evil Tic",
-        life: 100,
-        damage: 20
-    };
     tutorial = true;
     gameOver = false;
     signs = {
@@ -306,6 +295,9 @@ let onStart = _win => {
 
     //Engine
     GAME.player.damage = 25;
+    GAME.boss.name = "Evil Tic";
+    GAME.boss.life = 100;
+    GAME.boss.damage = 20;
     GAME.events.addClick(click);
 
     onReset();

@@ -1,8 +1,8 @@
 const GAME = require('../../game').default;
 
 /** Variables */
-let gamePosition, startPosition, panelPosition, barSize;
-let tutorial, boss, gameOver, p1Bar, p2Bar, ball, magnetic, mouse;
+let gamePosition, startPosition, barSize;
+let tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse;
 
 /** Events */
 let click = (event, x, y) => {
@@ -80,14 +80,14 @@ let checkBallHit = (self, player) => {
     if(!gameOver){
         //Hit player
         if(self.B > player.y && self.T < player.y + barSize.height){
-            gameOver = GAME.functions.doDamage(GAME.player, boss.damage);
+            gameOver = GAME.functions.doDamagePlayer();
 
             if(ball.speed < 2)
                 ball.speed += Math.random() * 0.05;
         }
         //Hit wall
         else
-            gameOver = GAME.functions.doDamage(boss, GAME.player.damage);
+            gameOver = GAME.functions.doDamageBoss();
     }
 };
 
@@ -178,7 +178,7 @@ let drawTutorial = () => {
         "Crashing on bars will hurt you and push the ball."
     ];
 
-    GAME.draw.drawTutorial("Mission #2", "1972", boss.name, intel, startPosition);
+    GAME.draw.drawTutorial("Mission #2", "1972", GAME.boss.name, intel, startPosition);
 };
 
 let drawBoard = () => {
@@ -196,18 +196,18 @@ let drawBall = () => {
 };
 
 let drawGameOver = () => {
-    GAME.draw.drawGameOver(panelPosition, boss);
+    GAME.draw.drawGameOver();
 };
 
 let drawBasePanel = () => {
     // Players
-    GAME.draw.drawPlayerPanel(panelPosition, boss);
+    GAME.draw.drawPlayerPanel();
 
     //Magnetic
     if(magnetic)
-        GAME.draw.drawMouseDirection(panelPosition, ball.forceX, ball.forceY);
+        GAME.draw.drawMouseDirection(ball.forceX, ball.forceY);
     else
-        GAME.draw.strokeCircle(panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2, 10);
+        GAME.draw.strokeCircle(GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height / 2, 10);
 };
 
 let drawPanel = () => {
@@ -232,23 +232,12 @@ let onStart = _win => {
         width: 180,
         height: 60
     };
-    panelPosition = {
-        x: 0,
-        y: gamePosition.y + gamePosition.height + 20,
-        width: GAME.canvas.width,
-        height: GAME.canvas.height - (gamePosition.y + gamePosition.height + 20) - 1
-    };
     barSize = {
         width: 10,
         height: gamePosition.height / 5
     };
 
     //State
-    boss = {
-        name: "Evil Pong",
-        life: 100,
-        damage: 1
-    };
     tutorial = true;
     gameOver = false;
     p1Bar = {
@@ -277,6 +266,9 @@ let onStart = _win => {
 
     //Engine
     GAME.player.damage = 10;
+    GAME.boss.name = "Evil Pong";
+    GAME.boss.life = 100;
+    GAME.boss.damage = 1;
     GAME.events.addMouseMove(mouseMove);
     GAME.events.addClick(click);
     GAME.events.addMouseDown(mouseDown);

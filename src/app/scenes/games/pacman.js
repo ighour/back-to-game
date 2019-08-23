@@ -1,8 +1,8 @@
 const GAME = require('../../game').default;
 
 /** Variables */
-let gamePosition, startPosition, panelPosition, unit, map, bossAnimation, foodAnimation;
-let tutorial, boss, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, moving, graph;
+let gamePosition, startPosition, unit, map, bossAnimation, foodAnimation;
+let tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, moving, graph;
 
 /** Events */
 let click = (event, x, y) => {
@@ -104,16 +104,16 @@ let bossThink = () => {
     let target = graph.iteratorBFS(mapBoss, index => mapFoods.includes(index)).pop();
 
     if(target !== undefined)
-        boss.path = graph.iteratorShortestPath(mapBoss, target);
+        GAME.boss.path = graph.iteratorShortestPath(mapBoss, target);
 };
 
 let bossMove = () => {
-    if(!gameOver && mapFoods.length > 0 && boss.path.length === 0)
+    if(!gameOver && mapFoods.length > 0 && GAME.boss.path.length === 0)
         bossThink();
 
     //Pursuit
-    if(boss.path.length > 0){
-        let target = boss.path.shift();
+    if(GAME.boss.path.length > 0){
+        let target = GAME.boss.path.shift();
 
         lastMapBoss = mapBoss;
         mapBoss = target;
@@ -165,9 +165,9 @@ let makeCollisionDamage = () => {
     if(gameOver)
         return false;
     else if(mapPlayers.length === 1)
-        return GAME.functions.doDamage(boss, GAME.player.damage);
+        return GAME.functions.doDamageBoss();
     else
-        return GAME.functions.doDamage(GAME.player, boss.damage2);
+        return GAME.functions.doDamagePlayer(GAME.boss.damage2);
 };
 
 let checkCollisions = () => {
@@ -190,7 +190,7 @@ let checkCollisions = () => {
     //Eat food?
     mapFoods = mapFoods.filter(e => {
         if(e === mapBoss){
-            gameOver = GAME.functions.doDamage(GAME.player, boss.damage);
+            gameOver = GAME.functions.doDamagePlayer();
             return false;
         }
 
@@ -222,7 +222,7 @@ let drawTutorial = () => {
         "But they are confused with your orders"
     ];
 
-    GAME.draw.drawTutorial("Mission #1", "1980", boss.name, intel, startPosition);
+    GAME.draw.drawTutorial("Mission #1", "1980", GAME.boss.name, intel, startPosition);
 };
 
 let drawMap = () => {
@@ -279,7 +279,7 @@ let drawTargets = () => {
     });
 
     //Boss
-    if(boss.life > 0){
+    if(GAME.boss.life > 0){
         let bossCoords = getUnitXY(mapBoss);
         let bossX = bossCoords.x + unit.width / 2, bossY = bossCoords.y + unit.height / 2;
         let bossStartAngle = Math.PI, bossStartAngle2 = Math.PI, bossEyeX, bossEyeY, biteAngle = Math.PI / 8 * bossAnimation.bite;
@@ -303,15 +303,15 @@ let drawBoard = () => {
 };
 
 let drawGameOver = () => {
-    GAME.draw.drawGameOver(panelPosition, boss);
+    GAME.draw.drawGameOver();
 };
 
 let drawBasePanel = () => {
     // Players
-    GAME.draw.drawPlayerPanel(panelPosition, boss);
+    GAME.draw.drawPlayerPanel();
 
     //Mouse Direction
-    GAME.draw.drawMouseDirection(panelPosition, moving.x, moving.y);
+    GAME.draw.drawMouseDirection(moving.x, moving.y);
 };
 
 let drawPanel = () => {
@@ -335,12 +335,6 @@ let onStart = _win => {
         y: GAME.canvas.height * 5 / 6 - 30,
         width: 180,
         height: 60
-    };
-    panelPosition = {
-        x: 0,
-        y: gamePosition.y + gamePosition.height + 20,
-        width: GAME.canvas.width,
-        height: GAME.canvas.height - (gamePosition.y + gamePosition.height + 20) - 1
     };
     map = [ // 0 = empty, 1 = wall
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -409,13 +403,6 @@ let onStart = _win => {
 
             362, 365, 368, 371, 374, 377
     ];
-    boss = {
-        name: "Evil Pac",
-        life: 100,
-        damage: 100 / mapFoods.length,
-        damage2: 100 / mapPlayers.length - 1,
-        path: []
-    };
     time = 0;
     moving = {
         x: gamePosition.x + gamePosition.width / 2,
@@ -425,6 +412,11 @@ let onStart = _win => {
 
     //Engine
     GAME.player.damage = 100;
+    GAME.boss.name = "Evil Pac";
+    GAME.boss.life = 100;
+    GAME.boss.damage = 100 / mapFoods.length;
+    GAME.boss.damage2 = 100 / mapPlayers.length - 1;
+    GAME.boss.path = [];
     GAME.events.addMouseMove(mouseMove);
     GAME.events.addClick(click);
 
