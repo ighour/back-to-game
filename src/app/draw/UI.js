@@ -1,3 +1,9 @@
+/** Button */
+export const drawButton = (draw, position, text, styles) => {
+    draw.fillText(text, position.x + position.width / 2, position.y + position.height / 2, styles);
+    draw.strokeRect(position.x, position.y, position.width, position.height, styles);
+};
+
 /** Tutorial of Games */
 export const drawTutorial = (draw, width, height, title, year, boss, intel, startPosition) => {
     //Mission
@@ -13,45 +19,44 @@ export const drawTutorial = (draw, width, height, title, year, boss, intel, star
 
     texts = [
         year,
-        boss
+        boss.name
     ];
     draw.fillTextBlock(texts, width / 20 + 100, height * 2 / 5, 70, {textAlign: "left", font: "30px Arial"});
 
-    draw.fillTextBlock(intel, width / 20 + 100, height * 2 / 5 + 140, 35, {textAlign: "left", font: "30px Arial"});
+    draw.fillTextBlock(intel, width / 20 + 100, height * 2 / 5 + 140, 40, {textAlign: "left", font: "30px Arial"});
 
     //Start
-    draw.fillText("Travel", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
-    draw.strokeRect(startPosition.x, startPosition.y, startPosition.width, startPosition.height);
+    drawButton(draw, startPosition, "Travel");
 };
 
-/** Game Lose */
-export const drawGameOver = (draw, panelPosition, player, boss) => {
+/** Game Over */
+export const drawGameOver = (draw, position, player, boss) => {
     let msg = boss.life <= 0 ? `${boss.name} was Defeated!` : `${player.name} was Defeated!`;
-    draw.fillText(msg, panelPosition.x + panelPosition.width / 2, panelPosition.y + panelPosition.height / 2);
+    draw.fillText(msg, position.x + position.width / 2, position.y + position.height / 2);
 };
 
 /** Panel */
-export const drawPlayerPanel = (draw, panelPosition, player, boss) => {
+export const drawPanel = (draw, position, player, boss) => {
     // Names
-    draw.fillText(player.name, panelPosition.x + panelPosition.width / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
-    draw.fillText(boss.name, panelPosition.x + panelPosition.width * 3 / 4, panelPosition.y + panelPosition.height - 20, {textBaseline: "bottom"});
+    draw.fillText(player.name, position.x + position.width / 4, position.y + position.height - 20, {textBaseline: "bottom"});
+    draw.fillText(boss.name, position.x + position.width * 3 / 4, position.y + position.height - 20, {textBaseline: "bottom"});
 
     //Life    
-    let maxSize = panelPosition.x + panelPosition.width / 4;
+    let maxSize = position.x + position.width / 4;
     let playerLifeSize = player.life / 100 * maxSize;
     let bossLifeSize = boss.life / 100 * maxSize;
 
-    draw.fillRect(panelPosition.x + panelPosition.width / 8, panelPosition.y + panelPosition.height - 100, playerLifeSize, 20);
-    draw.fillRect(panelPosition.x + panelPosition.width / 8 + playerLifeSize, panelPosition.y + panelPosition.height - 100, maxSize - playerLifeSize, 20, {fillStyle: "black"});
+    draw.fillRect(position.x + position.width / 8, position.y + position.height - 100, playerLifeSize, 20);
+    draw.fillRect(position.x + position.width / 8 + playerLifeSize, position.y + position.height - 100, maxSize - playerLifeSize, 20, {fillStyle: "black"});
 
-    draw.fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize, panelPosition.y + panelPosition.height - 100, bossLifeSize, 20);
-    draw.fillRect(panelPosition.x + panelPosition.width * 7 / 8 - maxSize + bossLifeSize, panelPosition.y + panelPosition.height - 100, maxSize - bossLifeSize, 20, {fillStyle: "black"});
+    draw.fillRect(position.x + position.width * 7 / 8 - maxSize, position.y + position.height - 100, bossLifeSize, 20);
+    draw.fillRect(position.x + position.width * 7 / 8 - maxSize + bossLifeSize, position.y + position.height - 100, maxSize - bossLifeSize, 20, {fillStyle: "black"});
 };
 
 /** Mouse Direction */
-export const drawMouseDirection = (draw, panelPosition, x, y) => {
-    let dirX = panelPosition.x + panelPosition.width / 2;
-    let dirY = panelPosition.y + panelPosition.height / 2;
+export const drawMouseDirection = (draw, position, x, y) => {
+    let dirX = position.x + position.width / 2;
+    let dirY = position.y + position.height / 2;
     draw.fillCircle(dirX, dirY, 10);
     draw.strokeCircle(dirX + x * 10, dirY + y * 10, 20);
 };

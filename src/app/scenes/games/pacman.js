@@ -1,22 +1,8 @@
 const GAME = require('../../game').default;
 
 /** Variables */
-let gamePosition, startPosition, unit, map, bossAnimation, foodAnimation;
+let gamePosition, startButton, unit, map, bossAnimation, foodAnimation;
 let tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, moving, graph;
-
-/** Events */
-let click = (event, x, y) => {
-    if(tutorial){
-        //Start Button
-        if(x > startPosition.x && x < startPosition.x + startPosition.width && y > startPosition.y && y < startPosition.y + startPosition.height)
-            tutorial = false;
-    }
-};
-
-let mouseMove = (event, x, y) => {
-    if(!tutorial && x > gamePosition.x && x < gamePosition.x + gamePosition.width && y > gamePosition.y && y < gamePosition.y + gamePosition.height)
-        moving = GAME.functions.getNormalizedVector(x - (gamePosition.x + gamePosition.width / 2), y - (gamePosition.y + gamePosition.height / 2));
-};
 
 /** Helper Functions */
 let getUnitXY = index => {
@@ -222,7 +208,7 @@ let drawTutorial = () => {
         "But they are confused with your orders"
     ];
 
-    GAME.draw.drawTutorial("Mission #1", "1980", GAME.boss.name, intel, startPosition);
+    GAME.draw.drawTutorial("Mission #1", "1980", intel, startButton);
 };
 
 let drawMap = () => {
@@ -302,23 +288,24 @@ let drawBoard = () => {
     drawTargets();
 };
 
-let drawGameOver = () => {
-    GAME.draw.drawGameOver();
-};
-
-let drawBasePanel = () => {
-    // Players
-    GAME.draw.drawPlayerPanel();
-
-    //Mouse Direction
-    GAME.draw.drawMouseDirection(moving.x, moving.y);
-};
-
 let drawPanel = () => {
     if(gameOver === true)
-        drawGameOver();  
-    else
-        drawBasePanel();
+        GAME.draw.drawGameOver();  
+    else{
+        // Players
+        GAME.draw.drawPanel();
+
+        //Mouse Direction
+        GAME.draw.drawMouseDirection(moving.x, moving.y); 
+    }
+};
+
+/** Events */
+let clickStart = () => tutorial = false;
+
+let mouseMove = (event, x, y) => {
+    if(!tutorial)
+        moving = GAME.functions.getNormalizedVector(x - (gamePosition.x + gamePosition.width / 2), y - (gamePosition.y + gamePosition.height / 2));
 };
 
 /** Lifecycle */
@@ -330,9 +317,9 @@ let onStart = _win => {
         width: GAME.canvas.width * 3 / 4,
         height: GAME.canvas.height * 3 / 4
     };
-    startPosition = {
+    startButton = {
         x: GAME.canvas.width / 2 - 90,
-        y: GAME.canvas.height * 5 / 6 - 30,
+        y: GAME.canvas.height * 9 / 10 - 30,
         width: 180,
         height: 60
     };
@@ -417,9 +404,11 @@ let onStart = _win => {
     GAME.boss.damage = 100 / mapFoods.length;
     GAME.boss.damage2 = 100 / mapPlayers.length - 1;
     GAME.boss.path = [];
-    GAME.events.addMouseMove(mouseMove);
-    GAME.events.addClick(click);
 
+    GAME.addEvent("click", clickStart, startButton.x, startButton.y, startButton.width, startButton.height);
+    GAME.addEvent("mousemove", mouseMove);
+
+    //Other
     generateGraph();
 };
 

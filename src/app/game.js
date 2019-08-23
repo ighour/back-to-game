@@ -7,10 +7,10 @@ const { Graph } = require("./datastructures");
 let animationFrame, instances = [], current;
 let events = {
     click: [],
-    mouseMove: [],
-    mouseDown: [],
-    mouseUp: [],
-    keyDown: []
+    mousemove: [],
+    mousedown: [],
+    mouseup: [],
+    keydown: []
 };
 
 /** Players Config */
@@ -45,51 +45,32 @@ let getCanvasCoords = (x, y) => {
     };
 };
 
-let addClick = event => events.click.push(event);
-canvas.instance.addEventListener("click", event => {
-    let coords = getCanvasCoords(event.clientX, event.clientY);
-    events.click.forEach(e => e(event, coords.x, coords.y));
+let eventCanRun = (coords, target) => coords.x >= target.x && coords.x <= target.x + target.width && coords.y >= target.y && coords.y <= target.y + target.height;
+
+let addEvent = (type, event, x = 0, y = 0, width = canvas.instance.width, height = canvas.instance.height) => events[type].push([event, {x, y, width, height}]);
+
+["click", "mousemove", "mousedown", "mouseup"].forEach(type => {
+    canvas.instance.addEventListener(type, event => {
+        let coords = getCanvasCoords(event.clientX, event.clientY);
+        events[type].forEach(e => {if(eventCanRun(coords, e[1])) e[0](event, coords.x, coords.y)});
+    });
 });
 
-let addMouseMove = event => events.mouseMove.push(event);
-canvas.instance.addEventListener("mousemove", event => {
-    let coords = getCanvasCoords(event.clientX, event.clientY);
-    events.mouseMove.forEach(e => e(event, coords.x, coords.y));
+[
+    ["touchmove", ["mousemove"]],
+    ["touchstart", ["mousedow"]],
+    ["touchend", ["mouseup", "click"]]
+
+].forEach(type => {
+    canvas.instance.addEventListener(type[0], event => {
+        event.preventDefault();
+        let touch = event.touches[0];
+        let coords = getCanvasCoords(touch.clientX, touch.clientY);
+        type[1].forEach(target => canvas.instance.dispatchEvent(new MouseEvent(target, {clientX: coords.clientX, clientY: coords.clientY})));
+    });
 });
 
-let addMouseDown = event => events.mouseDown.push(event);
-canvas.instance.addEventListener("mousedown", event => events.mouseDown.forEach(e => e(event)));
-
-let addMouseUp = event => events.mouseUp.push(event);
-canvas.instance.addEventListener("mouseup", event => events.mouseUp.forEach(e => e(event)));
-
-canvas.instance.addEventListener("touchmove", event => {
-    event.preventDefault();
-    let touch = event.touches[0];
-    canvas.instance.dispatchEvent(new MouseEvent("mousemove", {clientX: touch.clientX, clientY: touch.clientY}));
-});
-
-canvas.instance.addEventListener("touchstart", event => {
-    event.preventDefault();
-    let touch = event.touches[0];
-    let coords = getCanvasCoords(touch.clientX, touch.clientY);
-    canvas.instance.dispatchEvent(new MouseEvent("mousedown", {clientX: coords.x, clientY: coords.y}));
-});
-
-canvas.instance.addEventListener("touchend", event => {
-    event.preventDefault();
-
-    let touch = event.changedTouches[0];
-    let coords = getCanvasCoords(touch.clientX, touch.clientY);
-
-    canvas.instance.dispatchEvent(new MouseEvent("mouseup", {clientX: coords.x, clientY: coords.y}));
-    canvas.instance.dispatchEvent(new MouseEvent("click", {clientX: coords.x, clientY: coords.y}));    
-});
-
-let addKeyDown = event => events.keyDown.push(event);
-document.addEventListener("keydown", event => {
-    events.keyDown.forEach(e => e(event));
-});
+document.addEventListener("keydown", event => events.keydown.forEach(e => e[0](event)));
 
 document.addEventListener("contextmenu", event => event.preventDefault());
 
@@ -107,16 +88,10 @@ let doDamage = (p, damage) => {
 
     return false;
 };
-let doDamagePlayer = damage => {
-    return doDamage(player, damage ? damage : boss.damage);
-};
-let doDamageBoss = damage => {
-    return doDamage(boss, damage ? damage : player.damage);
-};
+let doDamagePlayer = damage => doDamage(player, damage ? damage : boss.damage);
+let doDamageBoss = damage => doDamage(boss, damage ? damage : player.damage);
 
-let getMagVector = (x, y) => {
-    return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
-};
+let getMagVector = (x, y) => Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 
 let getNormalizedVector = (x, y, mag) => {
     if(!mag)
@@ -169,13 +144,11 @@ let start = proceed => {
 
 let stop = () => {
     cancelAnimationFrame(animationFrame);
-    events = {
-        click: [],
-        mouseMove: [],
-        mouseDown: [],
-        mouseUp: [],
-        keyDown: []
-    };
+    events.click = [];
+    events.mousemove = [];
+    events.mousedown = [];
+    events.mouseup = [];
+    events.keydown = [];
 };
 
 let next = proceed => {
@@ -184,9 +157,7 @@ let next = proceed => {
     if(instances[current].onStop)
         instances[current].onStop();
 
-    let lastIndex = instances.length - 1;
-
-    current = proceed !== false ? (current === lastIndex ? 0 : current + 1) : lastIndex;
+    current = proceed !== false ? (current + 1) % instances.length : instances.length - 1;
 
     start(proceed);
 };
@@ -203,13 +174,7 @@ export default {
     player,
     boss,
     delta: timing.unit,
-    events: {
-        addClick,
-        addMouseMove,
-        addMouseDown,
-        addMouseUp,
-        addKeyDown,
-    },
+    addEvent,
     draw: {
         line: canvas.draw.line,
         splitLine: canvas.draw.splitLine,
@@ -220,9 +185,10 @@ export default {
         strokeRect: canvas.draw.strokeRect,
         fillCircle: canvas.draw.fillCircle,
         strokeCircle: canvas.draw.strokeCircle,
-        drawTutorial: canvas.UI.drawTutorial,
+        drawButton: canvas.UI.drawButton,
+        drawTutorial: (title, year, intel, startPosition) => canvas.UI.drawTutorial(title, year, boss, intel, startPosition),
         drawGameOver: () => canvas.UI.drawGameOver(player, boss),
-        drawPlayerPanel: () => canvas.UI.drawPlayerPanel(player, boss),
+        drawPanel: () => canvas.UI.drawPanel(player, boss),
         drawMouseDirection: canvas.UI.drawMouseDirection,
     },
     functions: {

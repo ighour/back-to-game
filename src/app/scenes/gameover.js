@@ -4,13 +4,6 @@ const GAME = require('../game').default;
 let newGame;
 let win;
 
-/** Events */
-let click = (event, x, y) => {
-    //New Game
-    if(x > newGame.x && x < newGame.x + newGame.width && y > newGame.y && y < newGame.y + newGame.height)
-        GAME.next();
-};
-
 /** Helper Functions */
 
 /** State Functions */
@@ -23,6 +16,9 @@ let drawWin = () => {
 let drawLose = () => {
     GAME.draw.fillText("You were defeated by Evil Games!", GAME.canvas.width / 2, GAME.canvas.height / 3);
 };
+
+/** Events */
+let clickNew = () => GAME.next();
 
 /** Lifecycle */
 let onStart = _win => {
@@ -38,7 +34,7 @@ let onStart = _win => {
     win = _win;
 
     //Engine
-    GAME.events.addClick(click);
+    GAME.addEvent("click", clickNew, newGame.x, newGame.y, newGame.width, newGame.height);
 };
 
 let onUpdate = () => {  
@@ -48,8 +44,7 @@ let onUpdate = () => {
         drawLose();
 
     //New Game
-    GAME.draw.fillText("Back to Future", newGame.x + newGame.width / 2, newGame.y + newGame.height / 2);
-    GAME.draw.strokeRect(newGame.x, newGame.y, newGame.width, newGame.height);
+    GAME.draw.drawButton(newGame, "Back to Future");
 };
 
 // let onReset = () => {

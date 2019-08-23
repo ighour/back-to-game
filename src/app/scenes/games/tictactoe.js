@@ -1,32 +1,8 @@
 const GAME = require('../../game').default;
 
 /** Variables */
-let gamePosition, startPosition, cellSize;
+let gamePosition, startButton, cellSize;
 let tutorial, gameOver, signs, matchWinner, winCombos, board, playing;
-
-/** Events */
-let click = (event, x, y) => {
-    if(tutorial){
-        //Start Button
-        if(x > startPosition.x && x < startPosition.x + startPosition.width && y > startPosition.y && y < startPosition.y + startPosition.height)
-            tutorial = false;
-    }
-    //Board
-    else if(x > gamePosition.x && x < gamePosition.x + gamePosition.width && y > gamePosition.y && y < gamePosition.y + gamePosition.height) {
-        if(playing !== -1 || matchWinner !== 0 || gameOver === true)
-            return;
-
-        let square = getSelectedSquare(x, y);
-
-        if(!canMoveToSquare(square.x, square.y))
-            return;
-
-        let boardIndex = square.x + square.y*3;
-
-        if(board[boardIndex] === 0)
-            markBoard(boardIndex);
-    }
-};
 
 /** Helper Functions */
 let getPlayerIndex = () => {
@@ -198,7 +174,7 @@ let drawTutorial = () => {
         "You can move only to near positions."
     ];
 
-    GAME.draw.drawTutorial("Last Mission", "1950", GAME.boss.name, intel, startPosition);
+    GAME.draw.drawTutorial("Last Mission", "1950", intel, startButton);
 };
 
 let drawBoard = () => {
@@ -222,35 +198,46 @@ let drawXY = () => {
     }
 };
 
-let drawGameOver = () => {
-    GAME.draw.drawGameOver();
-};
-
 let drawMatchResult = () => {
     let msg = matchWinner === -1 ? `${GAME.player.damage} damage to ${GAME.boss.name}!` : `${GAME.boss.damage} damage to you!`;
     GAME.draw.fillText(msg, GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height / 2);
 };
 
-let drawBasePanel = () => {
-    // Turn
-    GAME.draw.fillText("x", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 20, {textBaseline: "bottom"});
-    
-    if(playing === -1)
-        GAME.draw.fillText("<", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2 - 40, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 17, {textBaseline: "bottom"});
-    else
-        GAME.draw.fillText(">", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2 + 40, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 17, {textBaseline: "bottom"});
-
-    //Players
-    GAME.draw.drawPlayerPanel();
-};
 
 let drawPanel = () => {
     if(gameOver === true)
-        drawGameOver();
+        GAME.draw.drawGameOver();
     else if(matchWinner !== 0)
         drawMatchResult();    
-    else
-        drawBasePanel();
+    else{
+        // Turn
+        GAME.draw.fillText("x", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 20, {textBaseline: "bottom"});
+        
+        if(playing === -1)
+            GAME.draw.fillText("<", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2 - 40, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 17, {textBaseline: "bottom"});
+        else
+            GAME.draw.fillText(">", GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2 + 40, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height - 17, {textBaseline: "bottom"});
+
+        //Players
+        GAME.draw.drawPanel();
+    }
+};
+
+/** Events */
+let clickStart = () => {tutorial = false};
+
+let clickBoard = (event, x, y) => {
+    if(!tutorial && playing === -1 && matchWinner === 0 && !gameOver) {
+        let square = getSelectedSquare(x, y);
+
+        if(!canMoveToSquare(square.x, square.y))
+            return;
+
+        let boardIndex = square.x + square.y*3;
+
+        if(board[boardIndex] === 0)
+            markBoard(boardIndex);
+    }
 };
 
 /** Lifecycle */
@@ -262,9 +249,9 @@ let onStart = _win => {
         width: GAME.canvas.width * 3 / 5,
         height: GAME.canvas.height * 3 / 5
     };
-    startPosition = {
+    startButton = {
         x: GAME.canvas.width / 2 - 90,
-        y: GAME.canvas.height * 5 / 6 - 30,
+        y: GAME.canvas.height * 9 / 10 - 30,
         width: 180,
         height: 60
     };
@@ -298,8 +285,11 @@ let onStart = _win => {
     GAME.boss.name = "Evil Tic";
     GAME.boss.life = 100;
     GAME.boss.damage = 20;
-    GAME.events.addClick(click);
 
+    GAME.addEvent("click", clickStart, startButton.x, startButton.y, startButton.width, startButton.height);
+    GAME.addEvent("click", clickBoard, gamePosition.x, gamePosition.y, gamePosition.width, gamePosition.height);
+
+    //Other
     onReset();
 };
 

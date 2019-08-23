@@ -1,42 +1,8 @@
 const GAME = require('../game').default;
 
 /** Variables */
-let startPosition, keyboardPosition, keySize, capsLock;
+let startButton, keyboardPosition, keySize, capsLock;
 let creating, name, keyboard, nameRules;
-
-/** Events */
-let click = (event, x, y) => {
-    //Button
-    if(x > startPosition.x && x < startPosition.x + startPosition.width && y > startPosition.y && y < startPosition.y + startPosition.height){
-        //Create
-        if(!creating)
-            creating = true;
-        //Start
-        else if(name.length > 0)
-            beginGame();
-    }
-
-    //Keyboard
-    else if(creating && x > keyboardPosition.x && x < keyboardPosition.x + keyboardPosition.width && 
-        y > keyboardPosition.y && y < keyboardPosition.y + keyboardPosition.height){
-        let keyIndex = getPressedKey(x, y);
-        pressKey(keyIndex);
-    }
-};
-
-let keyDown = (event) => {
-    if(!creating)
-        return;
-        
-    let key = event.key;
-
-    if(validKeyForName(key) && name.length < nameRules.max)
-        name += key;
-    else if(event.keyCode === 8) //Backspace
-        name = name.slice(0, name.length - 1);
-    else if(event.keyCode === 20) //Caps Lock
-        capsLock = !capsLock;
-};
 
 /** Helper Functions */
 let validKeyForName = key => {
@@ -46,24 +12,20 @@ let validKeyForName = key => {
     return key.length === 1 && nameRules.keys.test(key);
 };
 
-let getPressedKey = (x, y) => {
-    let target = {
-        x: Math.floor((x - keyboardPosition.x) / keySize.width),
-        y: Math.floor((y - keyboardPosition.y) / keySize.height),
-    };
-
-    let index = target.x + target.y * 10;
-
-    return index;
-};
-
 /** State Functions */
 let beginGame = () => {
     GAME.player.name = name;
     GAME.next(true);
 };
 
-let pressKey = keyIndex => {
+let pressKey = (x, y) => {
+    let target = {
+        x: Math.floor((x - keyboardPosition.x) / keySize.width),
+        y: Math.floor((y - keyboardPosition.y) / keySize.height),
+    };
+
+    let keyIndex = target.x + target.y * 10;
+
     if(keyIndex === 29)
         capsLock = !capsLock;
     else if(keyIndex === 38){
@@ -91,9 +53,8 @@ let drawNew = () => {
     ];
     GAME.draw.fillTextBlock(texts, GAME.canvas.width / 2, GAME.canvas.height * 2 / 5, 70);
 
-    //Start Game
-    GAME.draw.fillText("Start Game", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
-    GAME.draw.strokeRect(startPosition.x, startPosition.y, startPosition.width, startPosition.height);
+    //Start Button
+    GAME.draw.drawButton(startButton, "Start Game");
 };
 
 let drawCreate = () => {
@@ -111,11 +72,9 @@ let drawCreate = () => {
     //Keyboard
     drawKeyboard();
 
-    //Send Name
-    if(name.length > 0){
-        GAME.draw.fillText("Time Travel", startPosition.x + startPosition.width / 2, startPosition.y + startPosition.height / 2);
-        GAME.draw.strokeRect(startPosition.x, startPosition.y, startPosition.width, startPosition.height);
-    }
+    //Send Button
+    if(name.length > 0)
+        GAME.draw.drawButton(startButton, "Time Travel");
 };
 
 let drawKeyboard = () => {
@@ -133,10 +92,39 @@ let drawKeyboard = () => {
     }
 };
 
+/** Events */
+let clickStart = () => {
+    //Create
+    if(!creating)
+        creating = true;
+    //Start
+    else if(name.length > 0)
+        beginGame();
+};
+
+let clickKeyboard = (event, x, y) => {
+    if(creating)
+        pressKey(x, y);
+};
+
+let keyDown = (event) => {
+    if(!creating)
+        return;
+        
+    let key = event.key;
+
+    if(validKeyForName(key) && name.length < nameRules.max)
+        name += key;
+    else if(event.keyCode === 8) //Backspace
+        name = name.slice(0, name.length - 1);
+    else if(event.keyCode === 20) //Caps Lock
+        capsLock = !capsLock;
+};
+
 /** Lifecycle */
 let onStart = () => {
     //UI
-    startPosition = {
+    startButton = {
         x: GAME.canvas.width / 2 - 180,
         y: GAME.canvas.height * 9 / 10 - 30,
         width: 360,
@@ -169,8 +157,9 @@ let onStart = () => {
     };
 
     //Engine
-    GAME.events.addClick(click);
-    GAME.events.addKeyDown(keyDown);
+    GAME.addEvent("click", clickStart, startButton.x, startButton.y, startButton.width, startButton.height);
+    GAME.addEvent("click", clickKeyboard, keyboardPosition.x, keyboardPosition.y, keyboardPosition.width, keyboardPosition.height);
+    GAME.addEvent("keydown", keyDown);
 };
 
 let onUpdate = () => {  

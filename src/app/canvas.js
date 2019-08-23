@@ -1,4 +1,4 @@
-const { drawTutorial, drawGameOver, drawPlayerPanel, drawMouseDirection } = require("./draw/UI");
+const { drawButton, drawTutorial, drawGameOver, drawPanel, drawMouseDirection } = require("./draw/UI");
 
 /** Canvas Config */
 let canvas = document.querySelector("#game-canvas"), ctx = canvas.getContext("2d");
@@ -113,9 +113,10 @@ export const primary = {
     panelPosition,
     draw,
     UI: {
+        drawButton: (position, text, styles) => drawButton(draw, position, text, styles),
         drawTutorial: (title, year, boss, intel, startPosition) => drawTutorial(draw, canvas.width, canvas.height, title, year, boss, intel, startPosition),
         drawGameOver: (player, boss) => drawGameOver(draw, panelPosition, player, boss),
-        drawPlayerPanel: (player, boss) => drawPlayerPanel(draw, panelPosition, player, boss),
+        drawPanel: (player, boss) => drawPanel(draw, panelPosition, player, boss),
         drawMouseDirection: (x, y) => drawMouseDirection(draw, panelPosition, x, y),
     }
 };

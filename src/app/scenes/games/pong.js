@@ -1,32 +1,8 @@
 const GAME = require('../../game').default;
 
 /** Variables */
-let gamePosition, startPosition, barSize;
+let gamePosition, startButton, barSize;
 let tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse;
-
-/** Events */
-let click = (event, x, y) => {
-    if(tutorial){
-        //Start Button
-        if(x > startPosition.x && x < startPosition.x + startPosition.width && y > startPosition.y && y < startPosition.y + startPosition.height)
-            tutorial = false;
-    }
-};
-
-let mouseMove = (event, x, y) => {
-    if(!tutorial && x > gamePosition.x && x < gamePosition.x + gamePosition.width && y > gamePosition.y && y < gamePosition.y + gamePosition.height)
-        mouse = {x, y};  
-};
-
-let mouseDown = (event) => {
-    if(!tutorial)
-        magnetic = true;
-};
-
-let mouseUp = (event) => {
-    if(!tutorial)
-        magnetic = false;
-};
 
 /** Helper Functions */
 let getBarY = y => {
@@ -178,7 +154,7 @@ let drawTutorial = () => {
         "Crashing on bars will hurt you and push the ball."
     ];
 
-    GAME.draw.drawTutorial("Mission #2", "1972", GAME.boss.name, intel, startPosition);
+    GAME.draw.drawTutorial("Mission #2", "1972", intel, startButton);
 };
 
 let drawBoard = () => {
@@ -195,27 +171,26 @@ let drawBall = () => {
     GAME.draw.fillCircle(ball.x, ball.y, ball.radius);
 };
 
-let drawGameOver = () => {
-    GAME.draw.drawGameOver();
-};
-
-let drawBasePanel = () => {
-    // Players
-    GAME.draw.drawPlayerPanel();
-
-    //Magnetic
-    if(magnetic)
-        GAME.draw.drawMouseDirection(ball.forceX, ball.forceY);
-    else
-        GAME.draw.strokeCircle(GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height / 2, 10);
-};
-
 let drawPanel = () => {
     if(gameOver === true)
-        drawGameOver();  
-    else
-        drawBasePanel();
+        GAME.draw.drawGameOver();  
+    else{
+        // Players
+        GAME.draw.drawPanel();
+
+        //Magnetic
+        if(magnetic)
+            GAME.draw.drawMouseDirection(ball.forceX, ball.forceY);
+        else
+            GAME.draw.strokeCircle(GAME.canvas.panelPosition.x + GAME.canvas.panelPosition.width / 2, GAME.canvas.panelPosition.y + GAME.canvas.panelPosition.height / 2, 10);
+    }
 };
+
+/** Events */
+let clickStart = () => tutorial = false;
+let mouseMove = (event, x, y) => {if(!tutorial) mouse = {x, y}};
+let mouseDown = () => {if(!tutorial) magnetic = true};
+let mouseUp = () => {if(!tutorial) magnetic = false};
 
 /** Lifecycle */
 let onStart = _win => {
@@ -226,9 +201,9 @@ let onStart = _win => {
         width: GAME.canvas.width * 4 / 5,
         height: GAME.canvas.height * 3 / 5
     };
-    startPosition = {
+    startButton = {
         x: GAME.canvas.width / 2 - 90,
-        y: GAME.canvas.height * 5 / 6 - 30,
+        y: GAME.canvas.height * 9 / 10 - 30,
         width: 180,
         height: 60
     };
@@ -269,10 +244,11 @@ let onStart = _win => {
     GAME.boss.name = "Evil Pong";
     GAME.boss.life = 100;
     GAME.boss.damage = 1;
-    GAME.events.addMouseMove(mouseMove);
-    GAME.events.addClick(click);
-    GAME.events.addMouseDown(mouseDown);
-    GAME.events.addMouseUp(mouseUp);
+
+    GAME.addEvent("click", clickStart, startButton.x, startButton.y, startButton.width, startButton.height);
+    GAME.addEvent("mousemove", mouseMove);
+    GAME.addEvent("mousedown", mouseDown);
+    GAME.addEvent("mouseup", mouseUp);
 };
 
 let onUpdate = () => {
