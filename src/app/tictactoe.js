@@ -29,7 +29,7 @@ let click = (event, x, y) => {
 };
 
 /** Helper Functions */
-let getPlayerCoords = () => {
+let getPlayerIndex = () => {
     let index;
 
     for(let i = 0; i < board.length; i++){
@@ -38,6 +38,12 @@ let getPlayerCoords = () => {
             break;
         }
     };
+
+    return index;
+};
+
+let getPlayerCoords = () => {
+    let index = getPlayerIndex();
 
     let y = Math.floor(index / 3);
     let x = index - y * 3;
@@ -70,13 +76,17 @@ let playerCanMove = () => {
 
 let getSelectedSquare = (x, y) => {
     return {
-        x: Math.floor((x - gamePosition.x) / cellSize.x),
-        y: Math.floor((y - gamePosition.y) / cellSize.y)
+        x: Math.floor((x - gamePosition.x) / cellSize.width),
+        y: Math.floor((y - gamePosition.y) / cellSize.height)
     };
 };
 
 let boardIsFull = () => {
     return board.reduce((carrier, e) => carrier * e, 1) !== 0;
+};
+
+let boardIsEmpty = () => {
+    return board.reduce((carrier, e) => carrier + e, 0) === 0;
 };
 
 let checkResult = compareBoard => {
@@ -192,19 +202,24 @@ let drawTutorial = () => {
 };
 
 let drawBoard = () => {
-    GAME.draw.line(gamePosition.x, gamePosition.y + cellSize.y, gamePosition.x + gamePosition.width, gamePosition.y + cellSize.y);
-    GAME.draw.line(gamePosition.x, gamePosition.y + cellSize.y * 2, gamePosition.x + gamePosition.width, gamePosition.y + cellSize.y * 2);
-    GAME.draw.line(gamePosition.x + cellSize.x, gamePosition.y, gamePosition.x + cellSize.x, gamePosition.y + gamePosition.height);
-    GAME.draw.line(gamePosition.x + cellSize.x * 2, gamePosition.y, gamePosition.x + cellSize.x * 2, gamePosition.y + gamePosition.height);
+    GAME.draw.line(gamePosition.x, gamePosition.y + cellSize.height, gamePosition.x + gamePosition.width, gamePosition.y + cellSize.height);
+    GAME.draw.line(gamePosition.x, gamePosition.y + cellSize.height * 2, gamePosition.x + gamePosition.width, gamePosition.y + cellSize.height * 2);
+    GAME.draw.line(gamePosition.x + cellSize.width, gamePosition.y, gamePosition.x + cellSize.width, gamePosition.y + gamePosition.height);
+    GAME.draw.line(gamePosition.x + cellSize.width * 2, gamePosition.y, gamePosition.x + cellSize.width * 2, gamePosition.y + gamePosition.height);
 };
 
 let drawXY = () => {
-    for(let i = 0; i < 9; i++)
-        if(board[i] !== 0) {
-            let y = Math.floor(i / 3);
-            let x = i - y * 3;
-            GAME.draw.fillText(signs[board[i]], gamePosition.x + cellSize.x * (0.5 + x), gamePosition.y + cellSize.y * (0.5 + y));
-        }   
+    let playerIndex = getPlayerIndex();
+
+    for(let i = 0; i < 9; i++){
+        let y = Math.floor(i / 3);
+        let x = i - y * 3;
+
+        if(board[i] !== 0)
+            GAME.draw.fillText(signs[board[i]], gamePosition.x + cellSize.width * (0.5 + x), gamePosition.y + cellSize.height * (0.5 + y));
+        else if(playing === -1 && (boardIsEmpty() || i === playerIndex - 1 || i === playerIndex + 1 || i === playerIndex + 3 || i === playerIndex - 3))
+            GAME.draw.fillCircle(gamePosition.x + (x + 0.5) * cellSize.width, gamePosition.y + (y + 0.5) * cellSize.height, 2, undefined, undefined, {fillStyle: "#AAAAAA"});
+    }
 };
 
 let drawGameOver = () => {
@@ -254,8 +269,8 @@ let onStart = _win => {
         height: 60
     };
     cellSize = {
-        x: gamePosition.width  / 3,
-        y: gamePosition.height / 3 
+        width: gamePosition.width  / 3,
+        height: gamePosition.height / 3 
     };
     panelPosition = {
         x: 0,
