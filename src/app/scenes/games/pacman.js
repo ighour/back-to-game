@@ -199,7 +199,7 @@ let draw = () => {
             GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
         else{
             GAME.d.dp();
-            GAME.d.dmd(moving.x, moving.y);
+            GAME.d.dap(moving.x, moving.y);
         }
     }
 };

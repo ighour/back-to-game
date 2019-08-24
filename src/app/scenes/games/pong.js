@@ -179,11 +179,7 @@ let draw = () => {
             GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
         else{
             GAME.d.dp();
-
-            if(magnetic)
-                GAME.d.dmd(ball.fx, ball.fy);
-            else
-                GAME.d.sc(GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 2, 10);
+            GAME.d.dap(ball.fx, ball.fy, magnetic);
         }
     }
 };

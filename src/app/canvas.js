@@ -1,4 +1,5 @@
-const { drawButton, drawTutorial, drawPanel, drawMouseDirection } = require("./draw/UI");
+const { drawTutorial, drawPanel } = require("./draw/UI");
+const { drawButton, drawArrowPointer } = require("./draw/components");
 
 /** Canvas Config */
 let canvas = document.querySelector("#gc"), ctx = canvas.getContext("2d");
@@ -11,6 +12,10 @@ let p = {
     y: canvas.height - 150,
     w: canvas.width,
     h: 150
+};
+let panelCenter = {
+    x: p.x + p.w / 2,
+    y: p.y + p.h / 2
 };
 
 /** Context Config */
@@ -138,7 +143,7 @@ export const cp = {
         b: (position, text, styles) => drawButton(d, position, text, styles),
         t: (title, year, boss, intel, startPosition) => drawTutorial(d, canvas.width, canvas.height, title, year, boss, intel, startPosition),
         p: (player, boss, text) => drawPanel(d, p, player, boss, text),
-        md: (x, y) => drawMouseDirection(d, p, x, y),
+        ap: (dirX, dirY, active, position = panelCenter) => drawArrowPointer(d, dirX, dirY, position, active),
     }
 };
 

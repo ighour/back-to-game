@@ -182,7 +182,7 @@ export const GAME = {
         db: cp.UI.b,
         dt: (title, year, intel, startPosition) => cp.UI.t(title, year, boss, intel, startPosition),
         dp: text => cp.UI.p(player, boss, text),
-        dmd: cp.UI.md,
+        dap: cp.UI.ap,
     },
     f: {    //functions
         dp: damage => doDamage(player, damage ? damage : boss.d),

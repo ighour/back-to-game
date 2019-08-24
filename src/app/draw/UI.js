@@ -1,10 +1,4 @@
-const { drawLifeCircle } = require("./components");
-
-/** Button */
-export const drawButton = (draw, position, text, styles) => {
-    draw.ft(text, position.x + position.w / 2, position.y + position.h / 2, styles);
-    draw.sr(position.x, position.y, position.w, position.h, styles);
-};
+const { drawButton, drawLifeCircle } = require("./components");
 
 /** Tutorial of Games */
 export const drawTutorial = (draw, width, height, title, year, boss, intel, startPosition) => {
@@ -53,18 +47,4 @@ export const drawPanel = (draw, position, player, boss, text) => {
         draw.ft(player.n, x + radius, y, {tb, ta: "l"});
         draw.ft(boss.n, x * 11 - radius, y, {tb, ta: "r"});
     }
-};
-function rad(deg){
-    return (Math.PI/180)*deg;
-}
-function percentToRad(percent){
-    return rad(270) + rad ((360 * percent) / 100);
-}
-
-/** Mouse Direction */
-export const drawMouseDirection = (draw, position, x, y) => {
-    let dirX = position.x + position.w / 2;
-    let dirY = position.y + position.h / 2;
-    draw.fc(dirX, dirY, 10);
-    draw.sc(dirX + x * 10, dirY + y * 10, 20);
 };
