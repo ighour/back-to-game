@@ -8,13 +8,14 @@ canvas.height = 768;
 /** Panel */
 let p = {
     x: 0,
-    y: canvas.height - 100,
+    y: canvas.height - 150,
     w: canvas.width,
-    h: 100
+    h: 150
 };
 
 /** Context Config */
 let defaultCtx = {
+    lw: 2,
     fs: "white",
     ss: "white",
     f: 50,
@@ -35,6 +36,7 @@ let defaultCtxTB = {
     a: "alphabetic",
     h: "hanging"
 };
+ctx.lineWidth = defaultCtx.lw;
 ctx.fillStyle = defaultCtx.fs;
 ctx.strokeStyle = defaultCtx.ss;
 ctx.font = `${defaultCtx.f}px Arial`;
@@ -50,7 +52,8 @@ let tempStyleAction = (callback, newStyles) => {
     if(newStyles) styles(defaultCtx);
 };
 
-let styles = ({fs, ss, f, ta, tb}) => {
+let styles = ({fs, ss, f, ta, tb, lw}) => {
+    if(lw) ctx.lineWidth = lw;
     if(fs) ctx.fillStyle = fs;
     if(ss) ctx.strokeStyle = ss;
     if(f) ctx.font = `${f}px Arial`;

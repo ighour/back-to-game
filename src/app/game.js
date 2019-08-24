@@ -126,7 +126,7 @@ let update = timestamp => {
         timing.d -= timing.u;
  
     //Draw
-    cp.d.cc(0, 0, cp.i.width, cp.i.height);
+    cp.d.fr(0, 0, cp.i.width, cp.i.height, {fs: "#333333"});
     instances[current].ou();    //onUpdate
     animationFrame = requestAnimationFrame(update);
 };
