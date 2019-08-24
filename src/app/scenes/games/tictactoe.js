@@ -141,7 +141,7 @@ let draw = () => {
             "It loses HP when game result is draw.",
             "You can move only to near positions."
         ];
-        GAME.d.dt("Last Mission", "1950", intel, startButton);
+        GAME.d.dt("Last Mission", "1952", intel, startButton);
     }
     else{
         //Board
