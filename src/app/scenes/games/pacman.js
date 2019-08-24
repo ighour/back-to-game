@@ -364,7 +364,7 @@ let onStart = () => {
     GAME.p.d = 100;
     GAME.b.n = "Evil Pac";
     GAME.b.l = 100;
-    GAME.b.d = 100 / mapFoods.length;
+    GAME.b.d = 100 / mapFoods.length - 1;
     GAME.b.d2 = 100 / mapPlayers.length - 1;
     GAME.b.p = [];
 
