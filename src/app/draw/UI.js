@@ -1,3 +1,5 @@
+const { drawLifeCircle } = require("./components");
+
 /** Button */
 export const drawButton = (draw, position, text, styles) => {
     draw.ft(text, position.x + position.w / 2, position.y + position.h / 2, styles);
@@ -33,27 +35,31 @@ export const drawTutorial = (draw, width, height, title, year, boss, intel, star
 
 /** Panel */
 export const drawPanel = (draw, position, player, boss, text) => {
+    //Divisor
+    draw.l(position.x, position.y + 5, position.x + position.w, position.y + 5, {ss: "#444444"});
+
+    //Life
+    let x = position.x + position.w / 12, y = position.y + position.h / 2, radius = 50;
+    drawLifeCircle(draw, x, y, radius, player.l);
+    drawLifeCircle(draw, x * 11, y, radius, boss.l);
+
     if(text)
         draw.ft(text, position.x + position.w / 2, position.y + position.h / 2);
     else{
         // Names
         let tb = "b";
-        draw.ft(player.n, position.x + position.w / 4, position.y + position.h - 20, {tb});
-        draw.ft(boss.n, position.x + position.w * 3 / 4, position.y + position.h - 20, {tb});
-
-        //Life    
-        let maxSize = position.x + position.w / 4;
-        let playerLifeSize = player.l / 100 * maxSize;
-        let bossLifeSize = boss.l / 100 * maxSize;
-
-        let fs = "black";
-        draw.fr(position.x + position.w / 8, position.y + position.h - 100, playerLifeSize, 20);
-        draw.fr(position.x + position.w / 8 + playerLifeSize, position.y + position.h - 100, maxSize - playerLifeSize, 20, {fs});
-
-        draw.fr(position.x + position.w * 7 / 8 - maxSize, position.y + position.h - 100, bossLifeSize, 20);
-        draw.fr(position.x + position.w * 7 / 8 - maxSize + bossLifeSize, position.y + position.h - 100, maxSize - bossLifeSize, 20, {fs});
+        y += position.h / 2;
+        radius += 5;
+        draw.ft(player.n, x + radius, y, {tb, ta: "l"});
+        draw.ft(boss.n, x * 11 - radius, y, {tb, ta: "r"});
     }
 };
+function rad(deg){
+    return (Math.PI/180)*deg;
+}
+function percentToRad(percent){
+    return rad(270) + rad ((360 * percent) / 100);
+}
 
 /** Mouse Direction */
 export const drawMouseDirection = (draw, position, x, y) => {
