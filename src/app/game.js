@@ -43,14 +43,13 @@ let getCanvasCoords = (x, y) => {
     };
 };
 
-let eventCanRun = (coords, target) => coords.x >= target.x && coords.x <= target.x + target.w && coords.y >= target.y && coords.y <= target.y + target.h;
-
-let addEvent = (type, event, x = 0, y = 0, w = cp.i.width, h = cp.i.height) => events[type].push([event, {x, y, w, h}]);
-
 ["click", "mousemove", "mousedown", "mouseup"].forEach(type => {
     cp.i.addEventListener(type, event => {
         let coords = getCanvasCoords(event.clientX, event.clientY);
-        events[type].forEach(e => {if(eventCanRun(coords, e[1])) e[0](event, coords.x, coords.y)});
+        events[type].forEach(e => {
+            if(coords.x >= e[1].x && coords.x <= e[1].x + e[1].w && coords.y >= e[1].y && coords.y <= e[1].y + e[1].h)
+                e[0](event, coords.x, coords.y)
+        });
     });
 });
 
@@ -85,8 +84,6 @@ let doDamage = (p, damage) => {
 
     return false;
 };
-let doDamagePlayer = damage => doDamage(player, damage ? damage : boss.d);
-let doDamageBoss = damage => doDamage(boss, damage ? damage : player.d);
 
 let getMagVector = (x, y) => Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 
@@ -171,7 +168,7 @@ export const GAME = {
     p: player,  //player
     b: boss,  //boss
     dt: timing.u, //delta
-    e: addEvent,  //add event
+    e: (type, event, x = 0, y = 0, w = cp.i.width, h = cp.i.height) => events[type].push([event, {x, y, w, h}]),  //add event
     d: {    //draw
         l: cp.d.l,
         sl: cp.d.sl,
@@ -188,8 +185,8 @@ export const GAME = {
         dmd: cp.UI.md,
     },
     f: {    //functions
-        dp: doDamagePlayer,
-        db: doDamageBoss,
+        dp: damage => doDamage(player, damage ? damage : boss.d),
+        db: damage => doDamage(boss, damage ? damage : player.d),
         mag: getMagVector,
         norm: getNormalizedVector
     },

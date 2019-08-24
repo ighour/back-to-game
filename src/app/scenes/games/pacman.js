@@ -1,8 +1,7 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, unit, map, bossAnimation, playerAnimation;
-let tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, moving, graph;
+let gamePosition, startButton, unit, map, bossAnimation, playerAnimation, tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, timeAnimation, moving, graph;
 
 /** Events */
 let clickStart = () => tutorial = false;
@@ -29,23 +28,9 @@ let getNearIndex = (dir, index) => {
     };
 };
 
-let getNearValidIndex = (dir, index) => {
-    let near = getNearIndex(dir, index);
-    return map[near] === 0 ? near : -1;
-};
-
 let canMoveSide = (side, index) => {
     let nearIndex = getNearIndex(side, index);
     return map[nearIndex] === 1 ? -1 : nearIndex;
-};
-
-let canMove = index => {
-    return {
-        l: canMoveSide("l", index),
-        r: canMoveSide("r", index),
-        t: canMoveSide("t", index),
-        b: canMoveSide("b", index),
-    };
 };
 
 let playerChooseMove = (coord, prev, next) => {
@@ -62,32 +47,15 @@ let logic = () => {
         return;
 
     time += GAME.dt;
+    timeAnimation += GAME.dt;
 
-    if(time >= 250){
-        bossAnimation.b = 0;
-        playerAnimation.c = 1;
+    if(timeAnimation >= 90){    //50ms
+        bossAnimation.b = (bossAnimation.b + 1) % 2;
+        playerAnimation.c = (playerAnimation.c + 1) % 2;
+
+        timeAnimation = 0;
     }
-    else if(time >= 200){
-        bossAnimation.b = 2;
-        playerAnimation.c = 0;
-    }
-    else if(time >= 150){
-        bossAnimation.b = 1;
-        playerAnimation.c = 1;
-    }
-    else if(time >= 100){
-        bossAnimation.b = 0;
-        playerAnimation.c = 0;
-    }
-    else if(time >= 50){
-        bossAnimation.b = 2;
-        playerAnimation.c = 1;
-    }
-    else if(time >= 0){
-        bossAnimation.b = 1;
-        playerAnimation.c = 0;
-    }
- 
+
     if(time >= 300){  //300ms
         bossMove();
         playersMove();
@@ -98,8 +66,12 @@ let logic = () => {
 };
 
 let bossMove = () => {
-    if(!gameOver && mapFoods.length > 0 && GAME.b.p.length === 0)
-        bossThink();
+    if(!gameOver && mapFoods.length > 0 && GAME.b.p.length === 0){
+        let target = graph.BFS(mapBoss, index => mapFoods.includes(index)).pop();
+
+        if(target !== undefined)
+            GAME.b.p = graph.shortestPath(mapBoss, target);
+    }
 
     //Pursuit
     if(GAME.b.p.length > 0){
@@ -109,43 +81,32 @@ let bossMove = () => {
         mapBoss = target;
 
         //Animation
-        if(mapBoss === getNearIndex("l", lastMapBoss))
-            bossAnimation.d = "l";
-        else if(mapBoss === getNearIndex("r", lastMapBoss))
-            bossAnimation.d = "r";
-        else if(mapBoss === getNearIndex("t", lastMapBoss))
-            bossAnimation.d = "t";
-        else if(mapBoss === getNearIndex("b", lastMapBoss))
-            bossAnimation.d = "b";
+        let dirs = ["l", "r", "t", "b"];
+        for(let i = 0; i < dirs.length; i++){
+            if(mapBoss === getNearIndex(dirs[i], lastMapBoss)){
+                bossAnimation.d = dirs[i];
+                break;
+            }
+        }
     }
-};
-
-let bossThink = () => {
-    let target = graph.BFS(mapBoss, index => mapFoods.includes(index)).pop();
-
-    if(target !== undefined)
-        GAME.b.p = graph.shortestPath(mapBoss, target);
 };
 
 let playersMove = () => {
     let preferHorizontal = Math.abs(moving.x) >= Math.abs(moving.y);
 
     mapPlayers = mapPlayers.map(e => {
-        let can = canMove(e);
-        let newIndex = -1;
+        let can = {
+            l: canMoveSide("l", e),
+            r: canMoveSide("r", e),
+            t: canMoveSide("t", e),
+            b: canMoveSide("b", e),
+        }, newIndex = -1;
 
-        if(preferHorizontal){
-            newIndex = playerChooseMove(moving.x, can.l, can.r);
+        newIndex = playerChooseMove(preferHorizontal ? moving.x : moving.y, preferHorizontal ? can.l : can.t, preferHorizontal ? can.r : can.b);
 
-            if(newIndex === -1 && Math.abs(moving.y) >= 0.2)
-                newIndex = playerChooseMove(moving.y, can.t, can.b);
-        }
-        else {
-            newIndex = playerChooseMove(moving.y, can.t, can.b);
+        if(newIndex === -1 && Math.abs(preferHorizontal ? moving.y : moving.x) >= 0.2)
+            newIndex = playerChooseMove(preferHorizontal ? moving.y : moving.x, preferHorizontal ? can.t : can.l, preferHorizontal ? can.b : can.r);
 
-            if(newIndex === -1 && Math.abs(moving.x) >= 0.2)
-                newIndex = playerChooseMove(moving.x, can.l, can.r);
-        }
         return newIndex === -1 ? e : newIndex;
     })
     .filter(e => {
@@ -197,7 +158,9 @@ let generateGraph = () => {
             graph.addVertex(i);
 
             ["l", "r", "t", "b"].forEach(e => {
-                let neighbor = getNearValidIndex(e, i);
+                let near = getNearIndex(e, i);
+                let neighbor = map[near] === 0 ? near : -1;
+
                 if(neighbor !== -1)
                     graph.addEdge(i, neighbor);
             });
@@ -216,22 +179,28 @@ let draw = () => {
         GAME.d.dt("Mission #1", "1980", intel, startButton);
     }
     else {
-        drawMap();
-        drawTargets();
-        drawPanel();
-    }
-};
-
-let drawMap = () => {
-    for(let i = 0; i < map.length; i++){
-        let coords = getUnitXY(i);
-
-        if(map[i] === 1){
-            GAME.d.fr(coords.x, coords.y, unit.w, unit.h);
-            GAME.d.sr(coords.x, coords.y, unit.w, unit.h, {ss: "#EEEEEE"});
+        //Map
+        for(let i = 0; i < map.length; i++){
+            let coords = getUnitXY(i);
+    
+            if(map[i] === 1){
+                GAME.d.fr(coords.x, coords.y, unit.w, unit.h);
+                GAME.d.sr(coords.x, coords.y, unit.w, unit.h, {ss: "#EEEEEE"});
+            }
+            else
+                GAME.d.fr(coords.x, coords.y, unit.w, unit.h, {fs: "#666666"});
         }
-        else
-            GAME.d.fr(coords.x, coords.y, unit.w, unit.h, {fs: "#666666"});
+
+        //Targets
+        drawTargets();
+
+        //Panel
+        if(gameOver === true)
+            GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
+        else{
+            GAME.d.dp();
+            GAME.d.dmd(moving.x, moving.y);
+        }
     }
 };
 
@@ -296,28 +265,21 @@ let drawTargets = () => {
     }
 };
 
-let drawPanel = () => {
-    if(gameOver === true)
-        GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
-    else{
-        GAME.d.dp();
-        GAME.d.dmd(moving.x, moving.y);
-    }
-};
-
 /** Lifecycle */
-let onStart = _win => {
+let onStart = () => {
+    let x = GAME.c.w / 2, y = GAME.c.h / 2;
+
     //UI
     gamePosition = {
-        x: GAME.c.w / 8,
-        y: GAME.c.h / 20,
-        w: GAME.c.w * 3 / 4,
-        h: GAME.c.h * 3 / 4
+        x: x / 4,
+        y: y / 10,
+        w: x * 1.5,
+        h: y * 1.5
     };
     startButton = {
-        x: GAME.c.w / 2 - 90,
-        y: GAME.c.h * 9 / 10 - 30,
-        w: 180,
+        x: x - 105,
+        y: y * 1.7,
+        w: 210,
         h: 60
     };
     map = [ // 0 = empty, 1 = wall
@@ -391,9 +353,10 @@ let onStart = _win => {
             362, 365, 368, 371, 374, 377
     ];
     time = 0;
+    timeAnimation = 0;
     moving = {
-        x: gamePosition.x + gamePosition.w / 2,
-        y: gamePosition.y + gamePosition.h / 2
+        x,
+        y
     };
     graph = {};
 

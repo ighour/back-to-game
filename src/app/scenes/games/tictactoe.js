@@ -1,118 +1,77 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, cellSize;
-let tutorial, gameOver, signs, matchWinner, winCombos, board, playing;
+let gamePosition, startButton, cellSize, tutorial, gameOver, signs, matchWinner, winCombos, board, playing;
 
 /** Events */
-let clickStart = () => {tutorial = false};
+let clickStart = () => tutorial = false;
 
 let clickBoard = (event, x, y) => {
     if(!tutorial && playing === -1 && matchWinner === 0 && !gameOver) {
-        let square = getSelectedSquare(x, y);
+        let square = {
+            x: Math.floor((x - gamePosition.x) / cellSize.w),
+            y: Math.floor((y - gamePosition.y) / cellSize.h)
+        };
+        let playerIndex = getPlayerIndex();
+        let coords = getPlayerCoords(playerIndex);
 
-        if(!canMoveToSquare(square.x, square.y))
-            return;
+        if(playerIndex === -1 || Math.abs(square.x - coords.x) <= 1 && Math.abs(square.y - coords.y) <= 1){
+            let boardIndex = square.x + square.y*3;
 
-        let boardIndex = square.x + square.y*3;
-
-        if(board[boardIndex] === 0)
-            markBoard(boardIndex);
+            if(board[boardIndex] === 0)
+                markBoard(boardIndex);
+        }
     }
 };
 
 /** Helper Functions */
 let getPlayerIndex = () => {
-    let index;
-
     for(let i = 0; i < board.length; i++){
-        if(board[i] === -1){
-            index = i;
-            break;
-        }
+        if(board[i] === -1)
+            return i;
     };
-
-    return index;
+    return -1;
 };
 
-let getPlayerCoords = () => {
-    let index = getPlayerIndex();
-
+let getPlayerCoords = (index = getPlayerIndex()) => {
     let y = Math.floor(index / 3);
-    let x = index - y * 3;
 
-    return {x, y};
-};
-
-let canMoveToSquare = (x, y) => {
-    let coords = getPlayerCoords();
-
-    if(Math.abs(x - coords.x) > 1 || Math.abs(y - coords.y) > 1)
-        return false;
-    return true;
-};
-
-let playerCanMove = () => {
-    let coords = getPlayerCoords();
-
-    for(let i = -1; i < 2; i++)
-        for(let j = -1; j < 2; j++){
-            let x = coords.x + i;
-            let y = coords.y + j;
-
-            if(x >= 0 && x <= 2 && y >= 0 && y <= 2 && board[x + y*3] === 0)
-                return true;
-        }
-
-    return false;
-};
-
-let getSelectedSquare = (x, y) => {
     return {
-        x: Math.floor((x - gamePosition.x) / cellSize.w),
-        y: Math.floor((y - gamePosition.y) / cellSize.h)
+        x: index - y * 3, 
+        y
     };
-};
-
-let boardIsFull = () => {
-    return board.reduce((carrier, e) => carrier * e, 1) !== 0;
-};
-
-let boardIsEmpty = () => {
-    return board.reduce((carrier, e) => carrier + e, 0) === 0;
 };
 
 let checkResult = compareBoard => {
     for(let i = 0; i < winCombos.length; i++){
-        let winCombo = winCombos[i];
-
-        let result = winCombo.reduce((carrier, boardIndex) => {
+        let result = winCombos[i].reduce((carrier, boardIndex) => {
             carrier *= compareBoard[boardIndex];
             return carrier;
         }, 1);
 
-        if(result === 1)
-            return 1;
-        else if(result === 8)
-            return 2;
+        if(result === 1 || result === 8)
+            return Math.cbrt(result);
     }
 
-    return boardIsFull() ? -1 : 0;
+    return board.reduce((carrier, e) => carrier * e, 1) !== 0 ? -1 : 0;
 };
 
-let getNPCMove = () => {
-    let otherPlaying = playing === 1 ? 2 : 1;
+/** Logic */
+// let logic = () => {};
 
-    let lose = [];
-    let random = [];
+let makeNPCMove = () => {
+    let boardIndex = -1, lose = [], random = [];
+    let otherPlaying = playing === 1 ? 2 : 1;
 
     for(let i = 0; i < 9; i++){
         if(board[i] === 0){
             let nextBoard = board.slice(0);
 
             nextBoard[i] = playing;
-            if(checkResult(nextBoard) === playing)
-                return i;
+            if(checkResult(nextBoard) === playing){
+                boardIndex = i;
+                break;
+            }
 
             nextBoard[i] = otherPlaying;
             if(checkResult(nextBoard) === otherPlaying)
@@ -122,46 +81,18 @@ let getNPCMove = () => {
         }
     }
 
-    if(lose.length > 0)
-        return lose[0];
-
-    return random[Math.floor(Math.random() * random.length)];
-};
-
-/** Logic */
-// let logic = () => {};
-
-let endMatch = winner => {
-    let end = false;
-
-    if(winner === -1)
-        end = GAME.f.db();
-    else
-        end = GAME.f.dp();
-
-    if(end)
-        gameOver = true;
-    else{
-        matchWinner = winner;
-        setTimeout(onReset, 2000);
-    }
-};
-
-let makeNPCMove = () => {
-    let boardIndex = getNPCMove();
+    if(boardIndex === -1)
+        boardIndex = lose.length > 0 ? lose[0] : random[Math.floor(Math.random() * random.length)];
 
     setTimeout(() => markBoard(boardIndex), 500);
 };
 
-let clearPlayerBoard = () => {
-    for(let i = 0; i < board.length; i++)
-        if(board[i] === -1)
-            board[i] = 0;
-};
-
 let markBoard = boardIndex => {
-    if(playing === -1)
-        clearPlayerBoard();
+    if(playing === -1){
+        for(let i = 0; i < board.length; i++)
+            if(board[i] === -1)
+                board[i] = 0;
+    }
 
     board[boardIndex] = playing;
 
@@ -169,17 +100,34 @@ let markBoard = boardIndex => {
         case -1: playing = 1; break;
         case 1: playing = 2; break;
         case 2:
-            if(playerCanMove())
-                playing = -1;
-            else
-                playing = 1;    
+            let coords = getPlayerCoords();
+            let canPlay = false;
+
+            for(let i = -1; i < 2; i++)
+                for(let j = -1; j < 2; j++){
+                    let x = coords.x + i;
+                    let y = coords.y + j;
+        
+                    if(x >= 0 && x <= 2 && y >= 0 && y <= 2 && board[x + y*3] === 0){
+                        canPlay = true;
+                        break;
+                    }
+                }
+        
+            playing = canPlay ? -1 : 1;   
         break;
     }
 
     let result = checkResult(board);
 
-    if(result !== 0)
-        endMatch(result);
+    if(result !== 0){
+        gameOver = result === -1 ? GAME.f.db() : GAME.f.dp();
+          
+        if(!gameOver){
+            matchWinner = result;
+            setTimeout(onReset, 2000);
+        }
+    }
     
     else if(playing > 0)
         setTimeout(() => makeNPCMove(), Math.random() * 501 + 500);
@@ -196,68 +144,65 @@ let draw = () => {
         GAME.d.dt("Last Mission", "1950", intel, startButton);
     }
     else{
-        drawBoard();
-        drawXY();
-        drawPanel();
-    }
-};
+        //Board
+        for(let i = 0; i < 2; i++)
+            for(let j = 0; j < 2; j++)
+                GAME.d.l(gamePosition.x + cellSize.w * i * (j+1),
+                        gamePosition.y + cellSize.h * (1-i) * (j+1),
+                        gamePosition.x + gamePosition.w * (1-i) + cellSize.w * i * (j+1),
+                        gamePosition.y + cellSize.h * (1-i) * (j+1) + gamePosition.h * i);
 
-let drawBoard = () => {
-    GAME.d.l(gamePosition.x, gamePosition.y + cellSize.h, gamePosition.x + gamePosition.w, gamePosition.y + cellSize.h);
-    GAME.d.l(gamePosition.x, gamePosition.y + cellSize.h * 2, gamePosition.x + gamePosition.w, gamePosition.y + cellSize.h * 2);
-    GAME.d.l(gamePosition.x + cellSize.w, gamePosition.y, gamePosition.x + cellSize.w, gamePosition.y + gamePosition.h);
-    GAME.d.l(gamePosition.x + cellSize.w * 2, gamePosition.y, gamePosition.x + cellSize.w * 2, gamePosition.y + gamePosition.h);
-};
+        //Players
+        let playerIndex = getPlayerIndex();
 
-let drawXY = () => {
-    let playerIndex = getPlayerIndex();
+        for(let i = 0; i < 9; i++){
+            let y = Math.floor(i / 3);
+            let x = i - y * 3;
+    
+            if(board[i] !== 0)
+                GAME.d.ft(signs[board[i]], gamePosition.x + cellSize.w * (0.5 + x), gamePosition.y + cellSize.h * (0.5 + y));
+            else if(playing === -1 && (playerIndex === -1 || i === playerIndex - 1 || i === playerIndex + 1 || i === playerIndex + 3 || i === playerIndex - 3))
+                GAME.d.fc(gamePosition.x + (x + 0.5) * cellSize.w, gamePosition.y + (y + 0.5) * cellSize.h, 2, undefined, undefined, {fs: "#AAAAAA"});
+        }
 
-    for(let i = 0; i < 9; i++){
-        let y = Math.floor(i / 3);
-        let x = i - y * 3;
+        //Panel
+        if(gameOver === true)
+            GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
+        else if(matchWinner !== 0)
+            GAME.d.dp(matchWinner === -1 ? `${GAME.p.d} damage to ${GAME.b.n}!` : `${GAME.b.d} damage to you!`); 
+        else{
+            let tb = "b", x = GAME.c.p.x + GAME.c.p.w / 2, y = GAME.c.p.y + GAME.c.p.h - 17;
+            GAME.d.ft("x", GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h - 20, {tb});
+            
+            if(playing === -1)
+                GAME.d.ft("<", x - 40, y, {tb});
+            else
+                GAME.d.ft(">", x + 40, y, {tb});
 
-        if(board[i] !== 0)
-            GAME.d.ft(signs[board[i]], gamePosition.x + cellSize.w * (0.5 + x), gamePosition.y + cellSize.h * (0.5 + y));
-        else if(playing === -1 && (boardIsEmpty() || i === playerIndex - 1 || i === playerIndex + 1 || i === playerIndex + 3 || i === playerIndex - 3))
-            GAME.d.fc(gamePosition.x + (x + 0.5) * cellSize.w, gamePosition.y + (y + 0.5) * cellSize.h, 2, undefined, undefined, {fs: "#AAAAAA"});
-    }
-};
-
-let drawPanel = () => {
-    if(gameOver === true)
-        GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
-    else if(matchWinner !== 0)
-        GAME.d.dp(matchWinner === -1 ? `${GAME.p.d} damage to ${GAME.b.n}!` : `${GAME.b.d} damage to you!`); 
-    else{
-        let tb = "b";
-        GAME.d.ft("x", GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h - 20, {tb});
-        
-        if(playing === -1)
-            GAME.d.ft("<", GAME.c.p.x + GAME.c.p.w / 2 - 40, GAME.c.p.y + GAME.c.p.h - 17, {tb});
-        else
-            GAME.d.ft(">", GAME.c.p.x + GAME.c.p.w / 2 + 40, GAME.c.p.y + GAME.c.p.h - 17, {tb});
-
-        GAME.d.dp();
+            GAME.d.dp();
+        }
     }
 };
 
 /** Lifecycle */
-let onStart = _win => {
+let onStart = () => {
+    let x = GAME.c.w / 5, y = GAME.c.h / 10;
+
     //UI
     gamePosition = {
-        x: GAME.c.w / 5,
-        y: GAME.c.h / 10,
-        w: GAME.c.w * 3 / 5,
-        h: GAME.c.h * 3 / 5
+        x,
+        y,
+        w: x * 3,
+        h: y * 6
     };
     startButton = {
-        x: GAME.c.w / 2 - 90,
-        y: GAME.c.h * 9 / 10 - 30,
-        w: 180,
+        x: x * 2.5 - 105,
+        y: y * 8.5,
+        w: 210,
         h: 60
     };
     cellSize = {
-        w: gamePosition.w  / 3,
+        w: gamePosition.w / 3,
         h: gamePosition.h / 3 
     };
 

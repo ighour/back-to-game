@@ -1,8 +1,7 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, barSize;
-let tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse;
+let gamePosition, startButton, barSize, tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse;
 
 /** Events */
 let clickStart = () => tutorial = false;
@@ -12,16 +11,7 @@ let mouseUp = () => {if(!tutorial) magnetic = false};
 
 /** Helper Functions */
 let getBarY = y => {
-    let halfBar = barSize.h / 2;
 
-    let newY = y - halfBar;
-
-    if(newY < gamePosition.y)
-        newY = gamePosition.y;
-    else if(newY + barSize.h > gamePosition.y + gamePosition.h)
-        newY = gamePosition.y + gamePosition.h - barSize.h;
-
-    return newY;
 };
 
 /** Logic */
@@ -30,11 +20,17 @@ let logic = () => {
         return;
 
     moveNPCs();
-    moveBall();
+    setBallDirection();
+    setBallPosition();
 };
 
 let moveNPCs = () => {
-    let targetY = getBarY(ball.y);
+    let targetY = ball.y - barSize.h / 2, y = gamePosition.y + gamePosition.h - barSize.h;
+
+    if(targetY < gamePosition.y)
+        targetY = gamePosition.y;
+    else if(targetY > y)
+        targetY = y;
 
     moveNPC(p1Bar, targetY);
     moveNPC(p2Bar, targetY);
@@ -53,17 +49,13 @@ let moveNPC = (player, targetY) => {
 
     let newY = player.y + normVector.y * GAME.dt;
 
+    let y = gamePosition.y + gamePosition.h - barSize.h;
     if(newY < gamePosition.y)
         newY = gamePosition.y;
-    else if(newY + barSize.h > gamePosition.y + gamePosition.h)
-        newY = gamePosition.y + gamePosition.h - barSize.h;
+    else if(newY > y)
+        newY = y;
     
     player.y = newY;
-};
-
-let moveBall = () => {
-    setBallDirection();
-    setBallPosition();
 };
 
 let setBallDirection = () => {
@@ -171,63 +163,51 @@ let draw = () => {
         GAME.d.dt("Mission #2", "1972", intel, startButton);
     }
     else {
-        drawBoard();
-        drawBars();
-        drawBall();
-        drawPanel();
-    }
-};
+        //Board
+        GAME.d.sr(gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
+        GAME.d.sl(gamePosition.x + gamePosition.w / 2, gamePosition.y, gamePosition.x + gamePosition.w / 2, gamePosition.y + gamePosition.h, 30);
 
-let drawBoard = () => {
-    GAME.d.sr(gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
-    GAME.d.sl(gamePosition.x + gamePosition.w / 2, gamePosition.y, gamePosition.x + gamePosition.w / 2, gamePosition.y + gamePosition.h, 30);
-};
+        //Bars
+        GAME.d.fr(p1Bar.x, p1Bar.y, barSize.w, barSize.h);
+        GAME.d.fr(p2Bar.x, p2Bar.y, barSize.w, barSize.h);
 
-let drawBars = () => {
-    GAME.d.fr(p1Bar.x, p1Bar.y, barSize.w, barSize.h);
-    GAME.d.fr(p2Bar.x, p2Bar.y, barSize.w, barSize.h);
-};
+        //Ball
+        GAME.d.fc(ball.x, ball.y, ball.r);
 
-let drawBall = () => {
-    GAME.d.fc(ball.x, ball.y, ball.r);
-};
+        //Panel
+        if(gameOver === true)
+            GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
+        else{
+            GAME.d.dp();
 
-let drawPanel = () => {
-    if(gameOver === true)
-        GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
-    else{
-        GAME.d.dp();
-
-        if(magnetic)
-            GAME.d.dmd(ball.fx, ball.fy);
-        else
-            GAME.d.sc(GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 2, 10);
+            if(magnetic)
+                GAME.d.dmd(ball.fx, ball.fy);
+            else
+                GAME.d.sc(GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 2, 10);
+        }
     }
 };
 
 /** Lifecycle */
-let onStart = _win => {
+let onStart = () => {
+    let x = GAME.c.w / 10, y = GAME.c.h / 10;
     //UI
     gamePosition = {
-        x: GAME.c.w / 10,
-        y: GAME.c.h / 10,
-        w: GAME.c.w * 4 / 5,
-        h: GAME.c.h * 3 / 5
+        x,
+        y,
+        w: x * 8,
+        h: y * 6
     };
     startButton = {
-        x: GAME.c.w / 2 - 90,
-        y: GAME.c.h * 9 / 10 - 30,
-        w: 180,
+        x: x * 5 - 105,
+        y: y * 8.5,
+        w: 210,
         h: 60
     };
     barSize = {
         w: 10,
         h: gamePosition.h / 5
     };
-
-    //State
-    tutorial = true;
-    gameOver = false;
     p1Bar = {
         x: gamePosition.x + 3,
         y: gamePosition.y + gamePosition.h / 2
@@ -236,6 +216,10 @@ let onStart = _win => {
         x: gamePosition.x + gamePosition.w - 3 - barSize.w,
         y: p1Bar.y
     };
+
+    //State
+    tutorial = true;
+    gameOver = false;
     ball = {
         x: gamePosition.x + gamePosition.w / 2,
         y: gamePosition.y + gamePosition.h / 2,

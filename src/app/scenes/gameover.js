@@ -13,10 +13,7 @@ let clickNew = () => GAME.n();
 
 /** Draw */
 let draw = () => {
-    if(win)
-        GAME.d.ft("You defeated all Evil Games!", GAME.c.w / 2, GAME.c.h / 3);
-    else
-        GAME.d.ft("You were defeated by Evil Games!", GAME.c.w / 2, GAME.c.h / 3);
+    GAME.d.ft(win ? "You defeated all Evil Games!" : "You were defeated by Evil Games!", GAME.c.w / 2, GAME.c.h / 4);
 
     //New Game
     GAME.d.db(newGame, "Back to Future");

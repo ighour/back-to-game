@@ -77,8 +77,8 @@ let draw = () => {
         GAME.d.ftb(texts, x, y / 4, 70);
 
         //Input
-        GAME.d.fr(x - 160, y / 1.8, 320, 46);
-        GAME.d.ft(name, x, y / 1.8 + 23, {fs: "#222222"});
+        GAME.d.fr(x - 160, y / 1.7, 320, 46);
+        GAME.d.ft(name, x, y / 1.7 + 23, {fs: "#222222"});
 
         //Keyboard
         GAME.d.sr(keyboardPosition.x, keyboardPosition.y, keyboardPosition.w, keyboardPosition.h, {ss: "#555555"});
@@ -100,17 +100,19 @@ let draw = () => {
 
 /** Lifecycle */
 let onStart = () => {
+    let x = GAME.c.w / 2, y = GAME.c.h / 2;
+
     //UI
     startButton = {
-        x: GAME.c.w / 2 - 180,
-        y: GAME.c.h * 9 / 10 - 30,
-        w: 360,
+        x: x - 170,
+        y: y * 1.7,
+        w: 340,
         h: 60
     };
     keyboardPosition = {
-        x: GAME.c.w / 10,
-        y: GAME.c.h * 3 / 8 + 50,
-        w: GAME.c.w * 4 / 5,
+        x: x / 5,
+        y: y * 0.9,
+        w: x * 1.6,
         h: GAME.c.h / 3
     };
     keySize = {
