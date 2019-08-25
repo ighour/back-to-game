@@ -42,6 +42,13 @@ let getUnitXY = index => {
 
 let getOccupiedSquares = () => getPlayerOccupiedSquares(p1).concat(getPlayerOccupiedSquares(p2));
 
+let getPlayerOccupiedSquares = p => {
+    return Object.values(p).reduce((carrier, e) => {
+        e.forEach(pp => carrier.push(pp));
+        return carrier;
+    }, []);
+};
+
 let getEmptySquares = () => {
     let result = [];
 
@@ -53,111 +60,29 @@ let getEmptySquares = () => {
     return result;
 };
 
-let getPlayerOccupiedSquares = p => {
-    return Object.values(p).reduce((carrier, e) => {
-        e.forEach(pp => carrier.push(pp));
-        return carrier;
-    }, []);
-};
-
 let getValidMove = (index, type, dir) => {
-    let result = [];
-
     // 1 = pawn, 2 = knight, 4 = bishop, 8 = rook, 16 = queen, 32 = king
     switch(type){
-        case "1": result = getPawnMove(index, dir); break;
-        case "2": result = getKnightMove(index); break;
-        case "4": result = getBishopMove(index); break;
-        case "8": result = getRookMove(index); break;
-        case "16": result = getQueenMove(index); break;
-        case "32": result = getKingMove(index); break;
+        case "1": return canExtensiveMoveOne(index, dir === 0 ? [-8, 8] : [-8 * dir]);
+        case "2": return canExtensiveMoveOne(index, [-8 - 2, -16 - 1, -8 + 2, -16 + 1, 8 - 2, 16 - 1, 8 + 2, 16 + 1], 2);
+        case "4": return canExtensiveMoveMultiple(index, [-8 -1, -8 + 1, 8 - 1, 8 + 1]);
+        case "8": return canExtensiveMoveMultiple(index, [-1, + 1, -8, 8]);
+        case "16": return canExtensiveMoveMultiple(index, [-1, + 1, -8, 8, -8 - 1, - 8 + 1, 8 - 1, 8 + 1]);
+        case "32": return canExtensiveMoveOne(index, [-1, + 1, -8, 8, -8 - 1, - 8 + 1, 8 - 1, 8 + 1]);
     }
-
-    return result;
 };
 
-let getPawnMove = (index, dir) => {
-    let result = [];
-    let modifiers = dir === 0 ? [-8, 8] : [-8 * dir];
+let canExtensiveMoveOne = (index, modifiers, jump) => modifiers.filter(m => canExtensiveMove(index, m, jump)).map(m => index + m);
 
-    modifiers.forEach(m => {
-        if(canExtensiveMove(index, m))
-            result.push(index + m);
-    });
-
-    return result;
-};
-
-let getKnightMove = index => {
-    let result = [];
-    let modifiers = [
-        -8 - 2, -16 - 1, -8 + 2, -16 + 1,
-        8 - 2, 16 - 1, 8 + 2, 16 + 1
-    ];
-
-    modifiers.forEach(m => {
-        if(canExtensiveMove(index, m, 2))
-            result.push(index + m);
-    });
-
-    return result;
-};
-
-let getBishopMove = index => {
-    let result = [];
-    let modifiers = [-8 -1, -8 + 1, 8 - 1, 8 + 1];
-
-    modifiers.forEach(m => {
+let canExtensiveMoveMultiple = (index, modifiers, jump) => {
+    return modifiers.reduce((carrier, m) => {
         let currentIndex = index;
-        while(canExtensiveMove(currentIndex, m)){
-            result.push(currentIndex + m);
+        while(canExtensiveMove(currentIndex, m, jump)){
+            carrier.push(currentIndex + m);
             currentIndex += m;
         }
-    });
-
-    return result;
-};
-
-let getRookMove = index => {
-    let result = [];
-    let modifiers = [-1, + 1, -8, 8];
-
-    modifiers.forEach(m => {
-        let currentIndex = index;
-        while(canExtensiveMove(currentIndex, m)){
-            result.push(currentIndex + m);
-            currentIndex += m;
-        }
-    });
-
-    return result;
-};
-
-let getQueenMove = index => {
-    let result = [];
-    let modifiers = [-1, + 1, -8, 8, -8 - 1, - 8 + 1, 8 - 1, 8 + 1];
-
-    modifiers.forEach(m => {
-        let currentIndex = index;
-        while(canExtensiveMove(currentIndex, m)){
-            result.push(currentIndex + m);
-            currentIndex += m;
-        }
-    });
-
-    return result;
-};
-
-let getKingMove = index => {
-    let result = [];
-    let modifiers = [-1, + 1, -8, 8, -8 - 1, - 8 + 1, 8 - 1, 8 + 1];
-
-    modifiers.forEach(m => {
-        if(canExtensiveMove(index, m))
-            result.push(index + m);
-    });
-
-    return result;
+        return carrier;
+    }, []);
 };
 
 let canExtensiveMove = (index, modifier, jump = 1) => {
