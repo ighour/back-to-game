@@ -29,6 +29,8 @@ let clickSquare = (event, x, y) => {
             turn = 1;
             setTimeout(movePieces, 1000);
         }
+        else if(playerCanMove.e.includes(boardIndex))
+            eatPiece(player, boardIndex);
     }
 };
 
@@ -158,6 +160,10 @@ let moveNPCs = (type, p, dir) => {
         group[index] = parseInt(moves[Math.floor(Math.random() * moves.length)]);
         occupied[occupiedIndex] = group[index];
     }
+};
+
+let eatPiece = (piece1, piece2) => {
+    console.log("TODO");
 };
 
 /** Draw */
