@@ -13,10 +13,10 @@ let clickSquare = (event, x, y) => {
             y: Math.floor((y - gamePosition.y) / unit.h)
         };
         
-        let boardIndex = square.x + square.y*8;
+        let boardIndex = (square.x + square.y*8);
 
-        if(playerCanMove.includes(boardIndex)){
-            if(player === -1){
+        if(playerCanMove.m.includes(boardIndex)){
+            if(player == -1){
                 player = boardIndex;
                 occupied.push(player);
             }
@@ -44,15 +44,15 @@ let getOccupiedSquares = () => getPlayerOccupiedSquares(p1).concat(getPlayerOccu
 
 let getPlayerOccupiedSquares = p => {
     return Object.values(p).reduce((carrier, e) => {
-        e.forEach(pp => carrier.push(pp));
+        e.forEach(pp => carrier.push(parseInt(pp)));
         return carrier;
     }, []);
 };
 
 let getEmptySquares = () => {
     let result = [];
-
-    for(let i = 0; i < 64; i++){
+    
+    for(let i = 0; i < 63; i++){
         if(!occupied.includes(i))
             result.push(i);
     }
@@ -63,26 +63,33 @@ let getEmptySquares = () => {
 let getValidMove = (index, type, dir) => {
     // 1 = pawn, 2 = knight, 4 = bishop, 8 = rook, 16 = queen, 32 = king
     switch(type){
-        case "1": return canExtensiveMoveOne(index, dir === 0 ? [-8, 8] : [-8 * dir]);
-        case "2": return canExtensiveMoveOne(index, [-8 - 2, -16 - 1, -8 + 2, -16 + 1, 8 - 2, 16 - 1, 8 + 2, 16 + 1], 2);
-        case "4": return canExtensiveMoveMultiple(index, [-8 -1, -8 + 1, 8 - 1, 8 + 1]);
-        case "8": return canExtensiveMoveMultiple(index, [-1, + 1, -8, 8]);
-        case "16": return canExtensiveMoveMultiple(index, [-1, + 1, -8, 8, -8 - 1, - 8 + 1, 8 - 1, 8 + 1]);
-        case "32": return canExtensiveMoveOne(index, [-1, + 1, -8, 8, -8 - 1, - 8 + 1, 8 - 1, 8 + 1]);
+        case 1: return canExtensiveMoveGroup(index, dir === 0 ? [-8, 8] : [-8 * dir], false);
+        case 2: return canExtensiveMoveGroup(index, [-8 - 2, -16 - 1, -8 + 2, -16 + 1, 8 - 2, 16 - 1, 8 + 2, 16 + 1], false, 2);
+        case 4: return canExtensiveMoveGroup(index, [-8 -1, -8 + 1, 8 - 1, 8 + 1], true);
+        case 8: return canExtensiveMoveGroup(index, [-1, + 1, -8, 8], true);
+        case 16: return canExtensiveMoveGroup(index, [-1, + 1, -8, 8, -8 - 1, - 8 + 1, 8 - 1, 8 + 1], true);
+        case 32: return canExtensiveMoveGroup(index, [-1, + 1, -8, 8, -8 - 1, - 8 + 1, 8 - 1, 8 + 1], false);
     }
 };
 
-let canExtensiveMoveOne = (index, modifiers, jump) => modifiers.filter(m => canExtensiveMove(index, m, jump)).map(m => index + m);
-
-let canExtensiveMoveMultiple = (index, modifiers, jump) => {
+let canExtensiveMoveGroup = (index, modifiers, multiple, jump) => {
     return modifiers.reduce((carrier, m) => {
-        let currentIndex = index;
-        while(canExtensiveMove(currentIndex, m, jump)){
-            carrier.push(currentIndex + m);
+        let currentIndex = index, can = 0;
+        while(can != -1){
+            can = canExtensiveMove(currentIndex, m, jump);
+
+            if(can == -1)
+                break;
+
+            carrier[can == 0 ? "m" : "e"].push(currentIndex + m);
+
+            if(!multiple || can == 1)
+                break;
+
             currentIndex += m;
         }
         return carrier;
-    }, []);
+    }, {m: [], e: []});
 };
 
 let canExtensiveMove = (index, modifier, jump = 1) => {
@@ -92,15 +99,15 @@ let canExtensiveMove = (index, modifier, jump = 1) => {
     let result = index + modifier;
 
     if(result < 0 || result > 63)
-        return false;
+        return -1;
 
     let resultX = result % 8;
     let resultY = Math.floor(result / 8);
 
     if(Math.abs(resultX - indexX) > jump || Math.abs(resultY - indexY) > jump)
-        return false;
+        return -1;
 
-    return !occupied.includes(result);
+    return occupied.includes(result) ? 1 : 0;
 };
 
 /** Logic */
@@ -123,7 +130,7 @@ let movePieces = () => {
 
             playerCanMove = getValidMove(player, sequence[0], 0);
 
-            if(playerCanMove.length > 0)
+            if(playerCanMove.m.length > 0)
                 turn = 0;
             else{
                 turn = 1; 
@@ -137,11 +144,10 @@ let moveNPCs = (type, p, dir) => {
     let group = p[type], index, moves;
 
     let indexToTest = [...group].sort(() => Math.random() - 0.5);
-
     while(indexToTest.length > 0){
         let value = indexToTest.shift();
         index = group.indexOf(value);
-        moves = getValidMove(group[index], type, dir);
+        moves = getValidMove(group[index], type, dir).m;
 
         if(moves.length > 0)
             break;
@@ -149,7 +155,7 @@ let moveNPCs = (type, p, dir) => {
 
     if(moves.length > 0){
         let occupiedIndex = occupied.indexOf(group[index]);
-        group[index] = moves[Math.floor(Math.random() * moves.length)];
+        group[index] = parseInt(moves[Math.floor(Math.random() * moves.length)]);
         occupied[occupiedIndex] = group[index];
     }
 };
@@ -177,17 +183,22 @@ let draw = () => {
         drawPlayer(p2, "brown");
 
         //Player
-        if(player !== -1){
+        if(player != -1){
             let coords = getUnitXY(player);
             GAME.d.ft("XX", coords.x + unit.w / 2, coords.y + unit.h / 2, {f: 25, fs: "orange"});
         }
 
         //Available to play
         if(turn === 0){
-            playerCanMove.forEach(e => {
+            playerCanMove.m.forEach(e => {
                 let y = Math.floor(e / 8);
                 let x = e - y * 8;
                 GAME.d.fc(gamePosition.x + (x + 0.5) * unit.w, gamePosition.y + (y + 0.5) * unit.h, 2, undefined, undefined, {fs: "orange"});
+            });
+            playerCanMove.e.forEach(e => {
+                let y = Math.floor(e / 8);
+                let x = e - y * 8;
+                GAME.d.fc(gamePosition.x + (x + 0.5) * unit.w, gamePosition.y + (y + 0.5) * unit.h, 2, undefined, undefined, {fs: "red"});
             });
         }
 
@@ -267,7 +278,7 @@ let onStart = () => {
         16: "QU",
         32: "KI",
     };
-    pieces = Object.keys(symbol);
+    pieces = Object.keys(symbol).map(e => parseInt(e));
     p1 = {
         1: [48, 49, 50, 51, 52, 53, 54, 55],
         2: [57, 62],
@@ -286,9 +297,12 @@ let onStart = () => {
     };
     player = -1;
     turn = 0;
-    sequence = ["1", "1", "1", "1"];
+    sequence = [1, 1, 1, 1];
     occupied = getOccupiedSquares();
-    playerCanMove = getEmptySquares();
+    playerCanMove = {
+        m: getEmptySquares(),
+        e: []
+    };
 
     //Engine
     GAME.p.d = 50;
