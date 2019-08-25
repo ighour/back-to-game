@@ -1,10 +1,36 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, unit, tutorial, gameOver, symbol, pieces, p1, p2, turn, sequence, occupied;
+let gamePosition, startButton, unit, tutorial, gameOver, symbol, pieces, p1, p2, player, turn, sequence, occupied, playerCanMove;
 
 /** Events */
 let clickStart = () => tutorial = false;
+
+let clickSquare = (event, x, y) => {
+    if(turn === 0 && sequence.length > 0){
+        let square = {
+            x: Math.floor((x - gamePosition.x) / unit.w),
+            y: Math.floor((y - gamePosition.y) / unit.h)
+        };
+        
+        let boardIndex = square.x + square.y*8;
+
+        if(playerCanMove.includes(boardIndex)){
+            if(player === -1){
+                player = boardIndex;
+                occupied.push(player);
+            }
+            else {
+                let occupiedIndex = occupied.indexOf(player);
+                player = boardIndex;
+                occupied[occupiedIndex] = player;
+            }
+
+            turn = 1;
+            setTimeout(movePieces, 1000);
+        }
+    }
+};
 
 /** Helper Functions */
 let getUnitXY = index => {
@@ -15,6 +41,17 @@ let getUnitXY = index => {
 };
 
 let getOccupiedSquares = () => getPlayerOccupiedSquares(p1).concat(getPlayerOccupiedSquares(p2));
+
+let getEmptySquares = () => {
+    let result = [];
+
+    for(let i = 0; i < 64; i++){
+        if(!occupied.includes(i))
+            result.push(i);
+    }
+
+    return result;
+};
 
 let getPlayerOccupiedSquares = p => {
     return Object.values(p).reduce((carrier, e) => {
@@ -40,20 +77,27 @@ let getValidMove = (index, type, dir) => {
 };
 
 let getPawnMove = (index, dir) => {
-    let result = [], target = index - 8 * dir;
+    let result = [];
+    let modifiers = dir === 0 ? [-8, 8] : [-8 * dir];
 
-    if((dir === 1 && target >= 8 || dir === -1 && target <= 48) && !occupied.includes(target))
-        result.push(target);
+    modifiers.forEach(m => {
+        if(canExtensiveMove(index, m))
+            result.push(index + m);
+    });
 
     return result;
 };
 
 let getKnightMove = index => {
-    let result = [], target = [index - 16 - 1, index - 16 + 1, index + 16 - 1, index + 16 + 1, index - 2 - 8, index - 2 + 8, index + 2 - 8, index + 2 + 8];
+    let result = [];
+    let modifiers = [
+        -8 - 2, -16 - 1, -8 + 2, -16 + 1,
+        8 - 2, 16 - 1, 8 + 2, 16 + 1
+    ];
 
-    target.forEach(e => {
-        if(e >= 0 && e <= 63 && !occupied.includes(e))
-            result.push(e);
+    modifiers.forEach(m => {
+        if(canExtensiveMove(index, m, 2))
+            result.push(index + m);
     });
 
     return result;
@@ -116,45 +160,67 @@ let getKingMove = index => {
     return result;
 };
 
-let canExtensiveMove = (index, modifier) => {
+let canExtensiveMove = (index, modifier, jump = 1) => {
+    let indexX = index % 8;
+    let indexY = Math.floor(index / 8);
+
     let result = index + modifier;
-    return result >= 0 && result <= 63 && !occupied.includes(result);
+
+    if(result < 0 || result > 63)
+        return false;
+
+    let resultX = result % 8;
+    let resultY = Math.floor(result / 8);
+
+    if(Math.abs(resultX - indexX) > jump || Math.abs(resultY - indexY) > jump)
+        return false;
+
+    return !occupied.includes(result);
 };
 
 /** Logic */
-let logic = () => {
-    if(tutorial || gameOver)
-        return;
-
-
-
-};
+// let logic = () => {};
 
 let movePieces = () => {
-    if(sequence.length === 0)
-        sequence = [...pieces].sort(() => Math.random() - 0.5);
-
-    let type = turn === 2 ? sequence.shift() : sequence[0];
+    let type = sequence[0];
 
     switch(turn){
         case 1: //p1
             moveNPCs(type, p1, 1);
+            turn = 2;
+            setTimeout(movePieces, 1000);
         break;
         case 2: //p2
             moveNPCs(type, p2, -1);
+
+            sequence.shift();
+            sequence.push(pieces[Math.floor(Math.random() * pieces.length)]);
+
+            playerCanMove = getValidMove(player, sequence[0], 0);
+
+            if(playerCanMove.length > 0)
+                turn = 0;
+            else{
+                turn = 1; 
+                setTimeout(movePieces, 1000);
+            }
         break;
     };
-    
-    turn = turn === 1 ? 2 : 1;
-
-    setTimeout(movePieces, 1000);
 };
 
 let moveNPCs = (type, p, dir) => {
-    let group = p[type];
-    let index = Math.floor(Math.random() * group.length);
+    let group = p[type], index, moves;
 
-    let moves = getValidMove(group[index], type, dir);
+    let indexToTest = [...group].sort(() => Math.random() - 0.5);
+
+    while(indexToTest.length > 0){
+        let value = indexToTest.shift();
+        index = group.indexOf(value);
+        moves = getValidMove(group[index], type, dir);
+
+        if(moves.length > 0)
+            break;
+    }
 
     if(moves.length > 0){
         let occupiedIndex = occupied.indexOf(group[index]);
@@ -181,15 +247,52 @@ let draw = () => {
             GAME.d.fr(coords.x, coords.y, unit.w, unit.h, {fs: (i + Math.floor(i / 8)) % 2 === 0 ? "#DDDDDD" : "#444444"});
         }
 
-        //Players
+        //Players (NPC)
         drawPlayer(p1, "green");
         drawPlayer(p2, "brown");
+
+        //Player
+        if(player !== -1){
+            let coords = getUnitXY(player);
+            GAME.d.ft("XX", coords.x + unit.w / 2, coords.y + unit.h / 2, {f: 25, fs: "orange"});
+        }
+
+        //Available to play
+        if(turn === 0){
+            playerCanMove.forEach(e => {
+                let y = Math.floor(e / 8);
+                let x = e - y * 8;
+                GAME.d.fc(gamePosition.x + (x + 0.5) * unit.w, gamePosition.y + (y + 0.5) * unit.h, 2, undefined, undefined, {fs: "orange"});
+            });
+        }
 
         //Panel
         if(gameOver === true)
             GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
         else{
             GAME.d.dp();
+
+            //Sequence      1 = pawn, 2 = knight, 4 = bishop, 8 = rook, 16 = queen, 32 = king
+            GAME.d.ft("Sequence", GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 - 15, {f: 20});
+            if(sequence.length > 0){
+                let seqNames = {1: "Pawn", 2: "Knight", 4: "Bishop", 8: "Rook", 16: "Queen", 32: "King"};
+                let names = `${seqNames[sequence[0]]}`;
+                for(let i = 1; i < sequence.length; i++)
+                    names += ` -> ${seqNames[sequence[i]]}`;
+                GAME.d.ft(names, GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 + 15, {f: 30});
+            }
+            else
+                GAME.d.ft("Sorting", GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 + 15, {f: 30});
+
+            //Turn
+            let tb = "b", f = 20, x = GAME.c.p.x + GAME.c.p.w / 2, y = GAME.c.p.y + GAME.c.p.h - 20;
+            GAME.d.ft("Turn", x, y, {tb, f});
+            
+            if(turn === 0)
+                GAME.d.ft("<", x - 30, y + 2, {tb, f});
+            else
+                GAME.d.ft(">", x + 30, y + 2, {tb, f});
+
         }
     }
 };
@@ -256,9 +359,11 @@ let onStart = () => {
         16: [3],
         32: [4]
     };
-    turn = 1;
-    sequence = ["1", "1", "1", "1", "1", "1"];
+    player = -1;
+    turn = 0;
+    sequence = ["1", "1", "1", "1"];
     occupied = getOccupiedSquares();
+    playerCanMove = getEmptySquares();
 
     //Engine
     GAME.p.d = 50;
@@ -267,13 +372,11 @@ let onStart = () => {
     GAME.b.d = 5;
 
     GAME.e("click", clickStart, startButton.x, startButton.y, startButton.w, startButton.h);
-
-    //Other
-    movePieces();
+    GAME.e("click", clickSquare, gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
 };
 
 let onUpdate = () => {
-    logic();
+    // logic();
     draw();
 };
 
