@@ -65,7 +65,11 @@ let getEmptySquares = () => {
 let getValidMove = (index, type, dir) => {
     // 1 = pawn, 2 = knight, 4 = bishop, 8 = rook, 16 = queen, 32 = king
     switch(type){
-        case 1: return canExtensiveMoveGroup(index, dir === 0 ? [-8, 8] : [-8 * dir], false);
+        case 1: 
+            return {
+                m: canExtensiveMoveGroup(index, dir === 0 ? [-8, 8] : [-8 * dir], false).m,
+                e: canExtensiveMoveGroup(index, dir === 0 ? [-9, -7, 9, 7] : [-9 * dir, -7 * dir], false).e
+            };
         case 2: return canExtensiveMoveGroup(index, [-8 - 2, -16 - 1, -8 + 2, -16 + 1, 8 - 2, 16 - 1, 8 + 2, 16 + 1], false, 2);
         case 4: return canExtensiveMoveGroup(index, [-8 -1, -8 + 1, 8 - 1, 8 + 1], true);
         case 8: return canExtensiveMoveGroup(index, [-1, + 1, -8, 8], true);
