@@ -1,7 +1,7 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, unit, tutorial, gameOver, bgColors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack;
+let gamePosition, startButton, unit, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack;
 
 /** Events */
 let clickStart = () => tutorial = false;
@@ -254,17 +254,17 @@ let draw = () => {
         //Board
         for(let i = 0; i < board.length; i++){
             let coords = getUnitXY(i);
-            GAME.d.fr(coords.x, coords.y, unit.w, unit.h, {fs: (i + Math.floor(i / 8)) % 2 === 0 ? bgColors[0] : bgColors[1]});
+            GAME.d.fr(coords.x, coords.y, unit.w, unit.h, {fs: (i + Math.floor(i / 8)) % 2 === 0 ? colors[0] : colors[1]});
         }
 
         //Players
-        drawPlayer(player0, "orange");
-        drawPlayer(player1, "green");
-        drawPlayer(player2, "brown");
+        drawPlayer(player0, colors[2]);
+        drawPlayer(player1, colors[3]);
+        drawPlayer(player2, colors[4]);
 
         //Available to play
         if(turn == 0){
-            drawAvailable(playerCanMove, "orange");
+            drawAvailable(playerCanMove, colors[2]);
             drawAvailable(playerCanAttack, "red");
         }
 
@@ -275,25 +275,12 @@ let draw = () => {
             GAME.d.dp();
 
             //Sequence
-            GAME.d.ft("Sequence", GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 - 15, {f: 20});
-            if(sequence.length > 0){
-                let seqNames = {1: "Pawn", 2: "Knight", 3: "Bishop", 4: "Rook", 5: "Queen", 6: "King"};
-                let names = `${seqNames[sequence[0]]}`;
-                for(let i = 1; i < sequence.length; i++)
-                    names += ` -> ${seqNames[sequence[i]]}`;
-                GAME.d.ft(names, GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 + 15, {f: 30});
-            }
-            else
-                GAME.d.ft("Sorting", GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 + 15, {f: 30});
-
-            //Turn
-            let tb = "b", f = 20, x = GAME.c.p.x + GAME.c.p.w / 2, y = GAME.c.p.y + GAME.c.p.h - 20;
-            GAME.d.ft("Turn", x, y, {tb, f});
-            
-            if(turn === 0)
-                GAME.d.ft("<", x - 30, y + 2, {tb, f});
-            else
-                GAME.d.ft(">", x + 30, y + 2, {tb, f});
+            GAME.d.ft("Order", GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 - 5, {f: 20});
+            GAME.d.dic(symbol[sequence[0]], GAME.c.p.x + GAME.c.p.w / 2 - 70, GAME.c.p.y + GAME.c.p.h / 3 + 35, "white", "#333333", 25);
+            GAME.d.ft("->", GAME.c.p.x + GAME.c.p.w / 2 - 35, GAME.c.p.y + GAME.c.p.h / 3 + 35, {f: 20});
+            GAME.d.dic(symbol[sequence[1]], GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 + 35, "#AAAAAA", "#333333", 25);
+            GAME.d.ft("->", GAME.c.p.x + GAME.c.p.w / 2 + 35, GAME.c.p.y + GAME.c.p.h / 3 + 35, {f: 20});
+            GAME.d.dic(symbol[sequence[2]], GAME.c.p.x + GAME.c.p.w / 2 + 70, GAME.c.p.y + GAME.c.p.h / 3 + 35, "#AAAAAA", "#333333", 25);
         }
     }
 };
@@ -303,10 +290,7 @@ let drawPlayer = (player, fs) => {
         let boardIndex = player[i];
         let coords = getUnitXY(boardIndex);
 
-        if(board[boardIndex] == 1)
-            GAME.d.dic("PA", coords.x + unit.w / 2, coords.y + unit.h / 2, fs, (boardIndex + Math.floor(boardIndex / 8)) % 2 === 0 ? bgColors[0] : bgColors[1], 30);
-        else
-            GAME.d.ft(symbol[board[boardIndex]], coords.x + unit.w / 2, coords.y + unit.h / 2, {f: 25, fs});
+        GAME.d.dic(symbol[board[boardIndex]], coords.x + unit.w / 2, coords.y + unit.h / 2, fs, (boardIndex + Math.floor(boardIndex / 8)) % 2 === 0 ? colors[0] : colors[1], 30);
     }
 };
 
@@ -346,7 +330,13 @@ let onStart = () => {
     //State
     tutorial = true;
     gameOver = false;
-    bgColors = ["#DDDDDD", "#444444"]
+    colors = [
+        "#D8DbBf",  //board 1
+        "#7d8796",   //board 2
+        "#224422",    //player0
+        "maroon",    //player1
+        "indigo",    //player2
+    ]
     symbol = {
         1: "PA",
         2: "KN",
