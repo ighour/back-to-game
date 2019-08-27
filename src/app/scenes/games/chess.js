@@ -1,7 +1,7 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, unit, tutorial, gameOver, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack;
+let gamePosition, startButton, unit, tutorial, gameOver, bgColors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack;
 
 /** Events */
 let clickStart = () => tutorial = false;
@@ -254,7 +254,7 @@ let draw = () => {
         //Board
         for(let i = 0; i < board.length; i++){
             let coords = getUnitXY(i);
-            GAME.d.fr(coords.x, coords.y, unit.w, unit.h, {fs: (i + Math.floor(i / 8)) % 2 === 0 ? "#DDDDDD" : "#444444"});
+            GAME.d.fr(coords.x, coords.y, unit.w, unit.h, {fs: (i + Math.floor(i / 8)) % 2 === 0 ? bgColors[0] : bgColors[1]});
         }
 
         //Players
@@ -303,7 +303,10 @@ let drawPlayer = (player, fs) => {
         let boardIndex = player[i];
         let coords = getUnitXY(boardIndex);
 
-        GAME.d.ft(symbol[board[boardIndex]], coords.x + unit.w / 2, coords.y + unit.h / 2, {f: 25, fs});
+        if(board[boardIndex] == 1)
+            GAME.d.dic("PA", coords.x + unit.w / 2, coords.y + unit.h / 2, fs, (boardIndex + Math.floor(boardIndex / 8)) % 2 === 0 ? bgColors[0] : bgColors[1], 30);
+        else
+            GAME.d.ft(symbol[board[boardIndex]], coords.x + unit.w / 2, coords.y + unit.h / 2, {f: 25, fs});
     }
 };
 
@@ -343,6 +346,7 @@ let onStart = () => {
     //State
     tutorial = true;
     gameOver = false;
+    bgColors = ["#DDDDDD", "#444444"]
     symbol = {
         1: "PA",
         2: "KN",

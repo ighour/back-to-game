@@ -1,5 +1,6 @@
 const { drawTutorial, drawPanel } = require("./draw/UI");
 const { drawButton, drawArrowPointer } = require("./draw/components");
+const { drawChess } = require("./draw/images");
 
 /** Canvas Config */
 let canvas = document.querySelector("#gc"), ctx = canvas.getContext("2d");
@@ -135,6 +136,21 @@ d.fc = (x, y, radius, startAngle, endAngle, styles) => drawCircle("fill", x, y, 
 //Stroke Circle
 d.sc = (x, y, radius, startAngle, endAngle, styles) => drawCircle("stroke", x, y, radius, startAngle, endAngle, styles);
 
+let drawMix = (type, coords, styles) => {
+    tempStyleAction(() => {
+        ctx.beginPath();
+        let first = coords.shift();
+        ctx.moveTo(first[0], first[1]);
+        coords.forEach(c => ctx.lineTo(c[0], c[1]));
+        ctx.closePath();
+        ctx[type]();
+    }, styles);
+};
+//Fill Mix
+d.fm = (coords, styles) => drawMix("fill", coords, styles);
+//Stroke Mix
+d.sm = (coords, styles) => drawMix("stroke", coords, styles);
+
 export const cp = {
     i: canvas,  //instance
     p,  //panel 
@@ -144,6 +160,9 @@ export const cp = {
         t: (title, year, boss, intel, startPosition) => drawTutorial(d, canvas.width, canvas.height, title, year, boss, intel, startPosition),
         p: (player, boss, text) => drawPanel(d, p, player, boss, text),
         ap: (dirX, dirY, active, position = panelCenter) => drawArrowPointer(d, dirX, dirY, position, active),
+    },
+    im: {
+        c: (piece, x, y, color, notColor, size) => drawChess(d, piece, x, y, color, notColor, size)
     }
 };
 
