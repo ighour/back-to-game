@@ -1,13 +1,15 @@
 const { GAME } = require('../game');
 
 /** Variables */
-let startButton, keyboardPosition, keySize, capsLock, creating, name, keyboard, nameMax, nameRules;
+let acceptButton, travelButton, keyboardPosition, keySize, capsLock, creating, name, keyboard, nameMax, nameRules, textTimer;
 
 /** Events */
-let clickStart = () => {
-    creating = true;
+let clickAccept = () => {
+    if(creating == false && textTimer >= 1000) creating = true;
+};
 
-    if(name.length > 0){
+let clickTravel = () => {
+    if(creating && name.length > 0){
         GAME.p.n = name;
         GAME.n(true);
     }
@@ -49,36 +51,51 @@ let keyDown = (event) => {
 
 /** Draw */
 let draw = () => {
-    let x = GAME.c.w / 2, y = GAME.c.h / 2;
+    textTimer += GAME.dt;
 
     if(creating === false){
-        //Title
-        GAME.d.ft("Back To #", x, y / 4, {f: 100});
+        let x = GAME.c.x, y = GAME.c.y;
 
-        //Brief
+        GAME.d.ft("Back To Game", x + GAME.c.w / 2, y + 70, {f: 70});
+
+        let sp = 70, tm = 50;
+
         let texts = [
-            "Welcome to a journey back through time",
-            "where some games were corrupted.",
-            "Now only a true gamer",
-            "can proceed!"
-        ];
-        GAME.d.ftb(texts, x, y / 1.3, 70);
+            {c: "The year is 2019.", sp, tm},
 
-        //Start Button
-        GAME.d.db(startButton, "Start Game");
+            {c: "Chess is angry with technology because people prefer digital games.", sp, tm},
+
+            {c: "He believes that he would be an important game again if he could reach", sp: sp / 1.8, tm},
+            {c: "the most famous and classic digital games of history.", sp, tm},
+
+            {c: "So he has decided to create an improved and digital version of chess and", sp: sp / 1.8, tm},
+            {c: "send it back in time to corrupt those games.", sp, tm},
+
+            {c: "The gaming world now has only one hope, a traveler able to rescue all", sp: sp / 1.8, tm},
+            {c: "corrupted games and destroy the Evil Chess.", sp: sp * 1.1, tm},
+
+            {c: "Do you accept this mission?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
+        ];
+
+        GAME.d.dtx(texts, x + 20, y + 190, {ta: "l", f: 30}, textTimer);
+
+        if(textTimer >= 1000)
+            GAME.d.db(acceptButton, "Accept");
     }
 
     else{
+        let x = GAME.c.x + GAME.c.w / 2, y = GAME.c.y;
+
         //Call
         let texts = [
             "May I know your name,",
             "Traveler?"
         ];
-        GAME.d.ftb(texts, x, y / 4, 70);
+        GAME.d.ftb(texts, x, y + 70, 70);
 
         //Input
-        GAME.d.fr(x - 160, y / 1.7, 320, 46);
-        GAME.d.ft(name, x, y / 1.7 + 23, {fs: "#222222"});
+        GAME.d.fr(x - 160, y + 200, 320, 46);
+        GAME.d.ft(name, x, y + 222, {fs: "#222222"});
 
         //Keyboard
         GAME.d.sr(keyboardPosition.x, keyboardPosition.y, keyboardPosition.w, keyboardPosition.h, {ss: "#555555"});
@@ -94,7 +111,7 @@ let draw = () => {
 
         //Send Button
         if(name.length > 0)
-            GAME.d.db(startButton, "Time Travel");
+            GAME.d.db(travelButton, "Time Travel");
     } 
 };
 
@@ -103,10 +120,16 @@ let onStart = () => {
     let x = GAME.c.w / 2, y = GAME.c.h / 2;
 
     //UI
-    startButton = {
-        x: x - 170,
-        y: y * 1.7,
-        w: 340,
+    acceptButton = {
+        x: x - 90,
+        y: y * 2 - 75,
+        w: 180,
+        h: 60
+    };
+    travelButton = {
+        x: x - 140,
+        y: y * 2 - 120,
+        w: 280,
         h: 60
     };
     keyboardPosition = {
@@ -132,9 +155,11 @@ let onStart = () => {
     ];
     nameMax = 8;
     nameRules = /[a-zA-Z0-9_ ]/;
+    textTimer = 0;
 
     //Engine
-    GAME.e("click", clickStart, startButton.x, startButton.y, startButton.w, startButton.h);
+    GAME.e("click", clickAccept, acceptButton.x, acceptButton.y, acceptButton.w, acceptButton.h);
+    GAME.e("click", clickTravel, travelButton.x, travelButton.y, travelButton.w, travelButton.h);
     GAME.e("click", clickKeyboard, keyboardPosition.x, keyboardPosition.y, keyboardPosition.w, keyboardPosition.h);
     GAME.e("keydown", keyDown);
 };
