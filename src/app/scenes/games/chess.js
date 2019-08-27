@@ -1,7 +1,7 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, unit, hovering, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack;
+let gamePosition, startButton, unit, hovering, npcSelect, npcTarget, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack;
 
 /** Events */
 let clickStart = () => tutorial = false;
@@ -124,17 +124,51 @@ let playNPC = (player) => {
             }
         }
 
-        if(pieceCanAttack.length > 0)
-            attackPiece(player, currentBoardIndex, pieceCanAttack[Math.floor(Math.random() * pieceCanAttack.length)]);
+        if(pieceCanAttack.length > 0){
+            let targetBoardIndex = pieceCanAttack[Math.floor(Math.random() * pieceCanAttack.length)];
+            npcSelect = currentBoardIndex;
+
+            setTimeout(() => {
+                npcTarget = targetBoardIndex;
+
+                setTimeout(() => {
+                    npcSelect = -1, npcTarget = -1;
+
+                    attackPiece(player, currentBoardIndex, targetBoardIndex);
+
+                    playNPCEnd(player);
+                }, 400);
+            }, 400);
+        }
 
         else if(pieceCanMove.length > 0){
             let targetBoardIndex = pieceCanMove[Math.floor(Math.random() * pieceCanMove.length)];
-            movePiece(player, moveBoardIndex, targetBoardIndex);
+            npcSelect = currentBoardIndex;
 
-            if(board[targetBoardIndex] == 1 && (player === player2 && targetBoardIndex < 8 || player === player1 && targetBoardIndex >= 56))
-                evolvePiece(targetBoardIndex);
+            setTimeout(() => {
+                npcTarget = targetBoardIndex;
+
+                setTimeout(() => {
+                    npcSelect = -1, npcTarget = -1;
+
+                    movePiece(player, moveBoardIndex, targetBoardIndex);
+
+                    if(board[targetBoardIndex] == 1 && (player === player2 && targetBoardIndex < 8 || player === player1 && targetBoardIndex >= 56))
+                        evolvePiece(targetBoardIndex);
+
+                    playNPCEnd(player);
+                }, 400);
+            }, 400);
         }
+
+        else
+            playNPCEnd(player);
     }
+};
+
+let playNPCEnd = (player) => {
+    if(gameOver)
+        return;
 
     turn = (turn + 1) % 3;
 
@@ -279,6 +313,24 @@ let draw = () => {
             drawAvailable(playerCanAttack, colors[5]);
         }
 
+        //NPC Acting
+        else if(turn != 0){
+            let color = turn == 1 ? colors[3] : colors[4];
+
+            if(npcSelect != -1){
+                let coords = getUnitXY(npcSelect);
+                GAME.d.sr(coords.x, coords.y, unit.w, unit.h, {ss: color});
+            }
+            if(npcTarget != -1){
+                let coords = getUnitXY(npcTarget);
+
+                if(board[npcTarget] == 0)
+                    GAME.d.fr(coords.x, coords.y, unit.w, unit.h, {fs: color});
+                else
+                    GAME.d.sr(coords.x, coords.y, unit.w, unit.h, {ss: colors[5]});
+            }
+        }
+
         //Panel
         if(gameOver === true)
             GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
@@ -341,6 +393,8 @@ let onStart = () => {
         c: 8
     };
     hovering = -1;
+    npcSelect = -1;
+    npcTarget = -1;
 
     //State
     tutorial = true;
@@ -351,7 +405,7 @@ let onStart = () => {
         "#224422",    //player0
         "maroon",    //player1
         "indigo",    //player2
-        "rgba(255, 0, 0, 0.3)", //attack available
+        "rgba(255, 0, 0, 0.5)", //attack available
     ]
     symbol = {
         1: "PA",
