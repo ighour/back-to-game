@@ -73,6 +73,10 @@ let attackPiece = (player, attackerBoardIndex, defenderBoardIndex) => {
     }
 };
 
+let evolvePiece = targetBoardIndex => {
+    board[targetBoardIndex] = pieces[Math.floor(Math.random() * (pieces.length - 2)) + 1]
+};
+
 let playNPC = (player) => {
     if(gameOver)
         return;
@@ -89,7 +93,7 @@ let playNPC = (player) => {
     if(availableBoardIndex.length > 0){
         let sortedAvailableBoardIndex = [...availableBoardIndex].sort(() => Math.random() - 0.5);
         let boardDirection = player === player1 ? -1 : 1;
-        let currentBoardIndex, pieceCanAttack = [], pieceCanMove = [];
+        let currentBoardIndex, pieceCanAttack = [], pieceCanMove = [], moveBoardIndex;
 
         while(sortedAvailableBoardIndex.length > 0){
             currentBoardIndex = sortedAvailableBoardIndex.shift();
@@ -103,15 +107,22 @@ let playNPC = (player) => {
 
             let tempPieceCanMove = getPieceCanMove(currentBoardIndex, boardDirection); 
 
-            if(tempPieceCanMove.length > 0)
+            if(tempPieceCanMove.length > 0){
                 pieceCanMove = tempPieceCanMove;
+                moveBoardIndex = currentBoardIndex;
+            }
         }
 
         if(pieceCanAttack.length > 0)
             attackPiece(player, currentBoardIndex, pieceCanAttack[Math.floor(Math.random() * pieceCanAttack.length)]);
 
-        else if(pieceCanMove.length > 0)
-            movePiece(player, currentBoardIndex, pieceCanMove[Math.floor(Math.random() * pieceCanMove.length)]);
+        else if(pieceCanMove.length > 0){
+            let targetBoardIndex = pieceCanMove[Math.floor(Math.random() * pieceCanMove.length)];
+            movePiece(player, moveBoardIndex, targetBoardIndex);
+
+            if(board[targetBoardIndex] == 1 && (player === player2 && targetBoardIndex < 8 || player === player1 && targetBoardIndex >= 56))
+                evolvePiece(targetBoardIndex);
+        }
     }
 
     turn = (turn + 1) % 3;
