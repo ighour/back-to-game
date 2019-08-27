@@ -1,3 +1,28 @@
+/** Draw Texts */
+export const drawTexts = (draw, texts, x, y, styles, currentTime) => {
+    let spacing = 0, neededTime = 0;
+
+    for(let i = 0; i < texts.length; i++){
+        let text = texts[i];
+
+        if(text.tm){
+            neededTime += text.tm;
+            if(currentTime < neededTime)
+                break;
+        }
+
+        if(text.co && !text.co())
+            return;
+
+        let currentStyles = Object.assign({}, styles, text.s);
+        let y2 = text.y ? text.y : y;
+
+        draw.ft(text.c, text.x ? text.x : x, y2 + spacing, currentStyles);
+
+        spacing += text.sp;
+    }
+};
+
 /** Button */
 export const drawButton = (draw, position, text, styles) => {
     draw.ft(text, position.x + position.w / 2, position.y + position.h / 2, styles);

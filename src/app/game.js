@@ -126,7 +126,7 @@ let update = timestamp => {
         timing.d -= timing.u;
  
     //Draw
-    cp.d.fr(0, 0, cp.i.width, cp.i.height, {fs: "#333333"});
+    cp.d.fr(0, 0, cp.i.width, cp.i.height, {fs: "#2A293E"});
     instances[current].ou();    //onUpdate
     animationFrame = requestAnimationFrame(update);
 };
@@ -179,6 +179,7 @@ export const GAME = {
         sr: cp.d.sr,
         fc: cp.d.fc,
         sc: cp.d.sc,
+        dtx: cp.UI.tx,
         db: cp.UI.b,
         dt: (title, year, intel, startPosition) => cp.UI.t(title, year, boss, intel, startPosition),
         dp: text => cp.UI.p(player, boss, text),

@@ -1,5 +1,5 @@
 const { drawTutorial, drawPanel } = require("./draw/UI");
-const { drawButton, drawArrowPointer } = require("./draw/components");
+const { drawTexts, drawButton, drawArrowPointer } = require("./draw/components");
 const { drawChess } = require("./draw/images");
 
 /** Canvas Config */
@@ -22,8 +22,8 @@ let panelCenter = {
 /** Context Config */
 let defaultCtx = {
     lw: 2,
-    fs: "white",
-    ss: "white",
+    fs: "#F0EAD6",
+    ss: "#F0EAD6",
     f: 50,
     ta: "c",
     tb: "m",
@@ -156,6 +156,7 @@ export const cp = {
     p,  //panel 
     d,  //draw
     UI: {
+        tx: (texts, x, y, styles, time) => drawTexts(d, texts, x, y, styles, time),
         b: (position, text, styles) => drawButton(d, position, text, styles),
         t: (title, year, boss, intel, startPosition) => drawTutorial(d, canvas.width, canvas.height, title, year, boss, intel, startPosition),
         p: (player, boss, text) => drawPanel(d, p, player, boss, text),
