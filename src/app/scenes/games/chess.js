@@ -1,7 +1,7 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, unit, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack;
+let gamePosition, startButton, unit, hovering, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack;
 
 /** Events */
 let clickStart = () => tutorial = false;
@@ -30,6 +30,17 @@ let clickSquare = (event, x, y) => {
             turn = 1;
             setTimeout(() => playNPC(player1), 1000);
         }
+    }
+};
+
+let moveSquare = (event, x, y) => {
+    if(turn == 0){
+        let square = {
+            x: Math.floor((x - gamePosition.x) / unit.w),
+            y: Math.floor((y - gamePosition.y) / unit.h)
+        };
+        
+        hovering = (square.x + square.y*8);
     }
 };
 
@@ -265,7 +276,7 @@ let draw = () => {
         //Available to play
         if(turn == 0){
             drawAvailable(playerCanMove, colors[2]);
-            drawAvailable(playerCanAttack, "red");
+            drawAvailable(playerCanAttack, colors[5]);
         }
 
         //Panel
@@ -297,10 +308,13 @@ let drawPlayer = (player, fs) => {
 let drawAvailable = (list, fs) => {
     for(let i = 0; i < list.length; i++){
         let boardIndex = list[i];
-        let y = Math.floor(boardIndex / 8);
-        let x = boardIndex - y * 8;
+        let coords = getUnitXY(boardIndex);
 
-        GAME.d.fc(gamePosition.x + (x + 0.5) * unit.w, gamePosition.y + (y + 0.5) * unit.h, 2, undefined, undefined, {fs});
+        if(boardIndex == hovering)
+            GAME.d.fr(coords.x, coords.y, unit.w, unit.h, {fs});
+
+        else
+            GAME.d.sr(coords.x, coords.y, unit.w, unit.h, {ss: fs});
     }
 };
 
@@ -326,6 +340,7 @@ let onStart = () => {
         h: gamePosition.h / 8,
         c: 8
     };
+    hovering = -1;
 
     //State
     tutorial = true;
@@ -336,6 +351,7 @@ let onStart = () => {
         "#224422",    //player0
         "maroon",    //player1
         "indigo",    //player2
+        "rgba(255, 0, 0, 0.3)", //attack available
     ]
     symbol = {
         1: "PA",
@@ -381,6 +397,7 @@ let onStart = () => {
 
     GAME.e("click", clickStart, startButton.x, startButton.y, startButton.w, startButton.h);
     GAME.e("click", clickSquare, gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
+    GAME.e("mousemove", moveSquare, gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
 };
 
 let onUpdate = () => {
