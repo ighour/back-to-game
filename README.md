@@ -4,7 +4,11 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 
 ## About
 
-* TODO.
+* In a world ruled by digital games, one of them travel to past and try to corrupt classic digital games.
+
+* You are the only hope for gaming world.
+
+* Go back to past and destroy the evil!
 
 ## Available Games
 
@@ -70,6 +74,18 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 
 * Added game tips.
 
+### v1.4
+
+* Added score.
+
+* Optimized gameover screen.
+
+* Added revive feature.
+
+* Added Coil monetization.
+
+* Optimized games.
+
 ## Built With
 
 * [HTML](https://www.w3schools.com/html/html5_intro.asp) - WWW Markup Language.
@@ -79,7 +95,7 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 
 ## Playable At
 
-* [http://backtogame.ighour.com](http://backtogame.ighour.com)
+* [https://backtogame.ighour.com](https://backtogame.ighour.com)
 
 ## Author
 
