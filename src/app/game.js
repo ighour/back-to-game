@@ -62,7 +62,7 @@ let getCanvasCoords = (x, y) => {
 ].forEach(type => {
     cp.i.addEventListener(type[0], event => {
         event.preventDefault();
-        let touch = event.touches[0];
+        let touch = event.touches.length > 0 ? event.touches[0] : event.changedTouches[0];
         type[1].forEach(target => cp.i.dispatchEvent(new MouseEvent(target, {clientX: touch.clientX, clientY: touch.clientY})));
     });
 });
