@@ -143,6 +143,7 @@ let stop = () => {
     events.mousedown = [];
     events.mouseup = [];
     events.keydown = [];
+    ca.t("");
 };
 
 let next = proceed => {
@@ -163,6 +164,9 @@ export const GAME = {
         w: cp.i.width,  //width
         h: cp.i.height,  //height
         p: cp.p //panel
+    },
+    ca: {
+        t: ca.t
     },
     cu: current, //current
     p: player,  //player

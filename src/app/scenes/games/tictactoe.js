@@ -4,7 +4,10 @@ const { GAME } = require('../../game');
 let gamePosition, travelButton, cellSize, tutorial, gameOver, signs, matchWinner, winCombos, board, playing, textTimer;
 
 /** Events */
-let clickTravel = () => tutorial = false;
+let clickTravel = () => {
+    tutorial = false;
+    GAME.ca.t("Tip: click on a square to move yourself.");
+};
 
 let clickBoard = (event, x, y) => {
     if(!tutorial && playing === -1 && matchWinner === 0 && !gameOver) {
@@ -165,7 +168,7 @@ let draw = () => {
         GAME.d.dtx(texts, x + 20, y + 160, {ta: "l", f: 30}, textTimer);
 
         if(textTimer >= 1000)
-            GAME.d.db(travelButton, "Travel");
+            GAME.d.db(travelButton, "Travel to 1952");
     }
     else{
         //Board
@@ -191,7 +194,7 @@ let draw = () => {
 
         //Panel
         if(gameOver === true)
-            GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
+            GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} is now rebooting...` : `${GAME.p.n} was Defeated!`);  
         else if(matchWinner !== 0)
             GAME.d.dp(matchWinner === -1 ? `${GAME.p.d} damage to ${GAME.b.n}!` : `${GAME.b.d} damage to you!`); 
         else{
@@ -220,9 +223,9 @@ let onStart = () => {
         h: y * 6
     };
     travelButton = {
-        x: x * 2.5 - 105,
+        x: x * 2.5 - 180,
         y: y * 10 - 75,
-        w: 210,
+        w: 360,
         h: 60
     };
     cellSize = {
@@ -253,7 +256,7 @@ let onStart = () => {
 
     //Engine
     GAME.p.d = 25;
-    GAME.b.n = "Evil Tic";
+    GAME.b.n = "Tic & Tac";
     GAME.b.l = 100;
     GAME.b.d = 20;
 

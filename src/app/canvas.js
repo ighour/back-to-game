@@ -177,23 +177,24 @@ auxCanvas.height = h;
 
 /** Context Config */
 auxCtx.font = "20px Arial";
-auxCtx.textAlign = "left";
 auxCtx.textBaseline = "center";
-auxCtx.fillStyle = "lightgrey";
 
 /** Fixed Draw */
-auxCtx.fillText("Back To #", 0, h / 2);
-
-auxCtx.textAlign = "right";
+let auxDefText = "";
 
 /** Update */
 let update = (FPS, maxFPS) => {
-    auxCtx.clearRect(w / 2, 0, w / 2, h);
-    auxCtx.fillStyle = FPS < maxFPS / 2 ? "red" : "lightgrey";
+    auxCtx.clearRect(0, 0, w, h);
+    auxCtx.textAlign = "left";
+    auxCtx.fillStyle = "#777777";
+    auxCtx.fillText(auxDefText, 0, h / 2);
+    auxCtx.textAlign = "right";
+    auxCtx.fillStyle = FPS < maxFPS / 2 ? "red" : "#777777";
     auxCtx.fillText(`${FPS} FPS`, w, h / 2);
 };
 
 export const ca = {
     i: auxCanvas,   //instance
-    u: update   //update canvas
+    u: update,   //update canvas
+    t: text => auxDefText = text    //set left canvas text
 };

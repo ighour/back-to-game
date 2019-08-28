@@ -4,7 +4,10 @@ const { GAME } = require('../../game');
 let gamePosition, travelButton, unit, hovering, npcSelect, npcTarget, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack, textTimer;
 
 /** Events */
-let clickTravel = () => tutorial = false;
+let clickTravel = () => {
+    tutorial = false;
+    GAME.ca.t("Tip: click on a green square to move and red square to attack.");
+};
 
 let clickSquare = (event, x, y) => {
     if(turn == 0){
@@ -317,7 +320,7 @@ let draw = () => {
         GAME.d.dtx(texts, x + 20, y + 160, {ta: "l", f: 30}, textTimer);
 
         if(textTimer >= 1000)
-            GAME.d.db(travelButton, "Travel");
+            GAME.d.db(travelButton, "Travel to 1950");
     }
     else {
         //Board
@@ -357,7 +360,7 @@ let draw = () => {
 
         //Panel
         if(gameOver === true)
-            GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
+            GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} is now rebooting...` : `${GAME.p.n} was Defeated!`);  
         else{
             GAME.d.dp();
 
@@ -406,9 +409,9 @@ let onStart = () => {
         h: y * 1.5
     };
     travelButton = {
-        x: x - 105,
+        x: x - 180,
         y: y * 2 - 70,
-        w: 210,
+        w: 360,
         h: 60
     };
     unit = {

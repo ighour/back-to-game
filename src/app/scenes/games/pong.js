@@ -4,7 +4,10 @@ const { GAME } = require('../../game');
 let gamePosition, travelButton, barSize, tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse, textTimer;
 
 /** Events */
-let clickTravel = () => tutorial = false;
+let clickTravel = () => {
+    tutorial = false;
+    GAME.ca.t("Tip: move your mouse and click to activate magnetic field.");
+};
 let mouseMove = (event, x, y) => {if(!tutorial) mouse = {x, y}};
 let mouseDown = () => {if(!tutorial) magnetic = true};
 let mouseUp = () => {if(!tutorial) magnetic = false};
@@ -181,7 +184,7 @@ let draw = () => {
         GAME.d.dtx(texts, x + 20, y + 160, {ta: "l", f: 30}, textTimer);
 
         if(textTimer >= 1000)
-            GAME.d.db(travelButton, "Travel");
+            GAME.d.db(travelButton, "Travel to 1972");
     }
     else {
         //Board
@@ -197,7 +200,7 @@ let draw = () => {
 
         //Panel
         if(gameOver === true)
-            GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
+            GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} is now rebooting...` : `${GAME.p.n} was Defeated!`);  
         else{
             GAME.d.dp();
             GAME.d.dap(ball.fx, ball.fy, magnetic);
@@ -216,9 +219,9 @@ let onStart = () => {
         h: y * 6
     };
     travelButton = {
-        x: x * 5 - 105,
+        x: x * 5 - 180,
         y: y * 10 - 72,
-        w: 210,
+        w: 360,
         h: 60
     };
     barSize = {
@@ -256,7 +259,7 @@ let onStart = () => {
 
     //Engine
     GAME.p.d = 10;
-    GAME.b.n = "Evil Pong";
+    GAME.b.n = "Pong";
     GAME.b.l = 100;
     GAME.b.d = 1;
 

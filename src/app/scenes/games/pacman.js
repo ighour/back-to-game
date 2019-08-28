@@ -4,7 +4,10 @@ const { GAME } = require('../../game');
 let gamePosition, travelButton, unit, map, bossAnimation, playerAnimation, tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, timeAnimation, moving, graph, textTimer;
 
 /** Events */
-let clickTravel = () => tutorial = false;
+let clickTravel = () => {
+    tutorial = false
+    GAME.ca.t("Tip: move your mouse to call ghosts to your position.");
+};
 
 let mouseMove = (event, x, y) => {
     if(!tutorial)
@@ -199,7 +202,7 @@ let draw = () => {
         GAME.d.dtx(texts, x + 20, y + 170, {ta: "l", f: 30}, textTimer);
 
         if(textTimer >= 1000)
-            GAME.d.db(travelButton, "Travel");
+            GAME.d.db(travelButton, "Travel to 1980");
     }
     else {
         //Map
@@ -219,7 +222,7 @@ let draw = () => {
 
         //Panel
         if(gameOver === true)
-            GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} was Defeated!` : `${GAME.p.n} was Defeated!`);  
+            GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} is now rebooting...` : `${GAME.p.n} was Defeated!`);  
         else{
             GAME.d.dp();
             GAME.d.dap(moving.x, moving.y);
@@ -300,9 +303,9 @@ let onStart = () => {
         h: y * 1.5
     };
     travelButton = {
-        x: x - 105,
+        x: x - 180,
         y: y * 2 - 75,
-        w: 210,
+        w: 360,
         h: 60
     };
     map = [ // 0 = empty, 1 = wall
@@ -386,7 +389,7 @@ let onStart = () => {
 
     //Engine
     GAME.p.d = 100;
-    GAME.b.n = "Evil Pac";
+    GAME.b.n = "Pacman";
     GAME.b.l = 100;
     GAME.b.d = 100 / mapFoods.length - 1;
     GAME.b.d2 = 100 / mapPlayers.length - 1;
