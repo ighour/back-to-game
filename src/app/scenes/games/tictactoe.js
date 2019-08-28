@@ -199,7 +199,7 @@ let draw = () => {
             GAME.d.dp(matchWinner === -1 ? `${GAME.p.d} damage to ${GAME.b.n}!` : `${GAME.b.d} damage to you!`); 
         else{
             let tb = "b", x = GAME.c.p.x + GAME.c.p.w / 2, y = GAME.c.p.y + GAME.c.p.h - 17;
-            GAME.d.ft("x", x, y - 20, {tb});
+            GAME.d.ft("x", x, y - 3, {tb});
             
             if(playing === -1)
                 GAME.d.ft("<", x - 40, y, {tb});
@@ -237,7 +237,7 @@ let onStart = () => {
     tutorial = true;
     gameOver = false;
     signs = {
-        "-1": "P",
+        "-1": "⊗",
         0: "",
         1: "X",
         2: "0"
