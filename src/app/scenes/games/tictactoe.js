@@ -157,10 +157,10 @@ let draw = () => {
             {c: "a match by weakening them.", sp, tm},
 
             {c: "For this you will be positioned inside the board. Each turn, you will have to", sp: sp / 1.8, tm},
-            {c: "move to an adjacent board.", sp, tm},
+            {c: "move to an adjacent board square.", sp, tm},
 
             {c: "This will prevent Tic or Tac from marking the board where you are situated.", sp: sp / 1.8, tm},
-            {c: "Be careful, as if Tic or Tac wins a match, you will be dealt damage.", sp: sp * 1.05, tm},
+            {c: "Be careful, as if Tic or Tac wins a match, you will take damage.", sp: sp * 1.05, tm},
 
             {c: "Ready for this?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
         ];
@@ -262,7 +262,7 @@ let onStart = () => {
     GAME.p.s[GAME.cu()] = 1000;
     GAME.b.n = "Tic & Tac";
     GAME.b.l = 100;
-    GAME.b.d = 20;
+    GAME.b.d = 15;
 
     GAME.e("click", clickTravel, travelButton);
     GAME.e("click", clickBoard, gamePosition);

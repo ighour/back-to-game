@@ -172,11 +172,11 @@ let draw = () => {
             {c: "You will receive control of a magnetic field with the power to influence the", sp: sp / 1.8, tm},
             {c: "movement of the ball on the field.", sp, tm},
 
-            {c: "However, Pong will do everything not to let the ball go out of bounds by ", sp: sp / 1.8, tm},
+            {c: "However, Pong will do everything to avoid the ball going out of bounds by ", sp: sp / 1.8, tm},
             {c: "controlling the side bars.", sp, tm},
 
             {c: "Your goal, then, is to get the ball out of the field to weaken the Pong. But", sp: sp / 1.8, tm},
-            {c: "be careful not to let the ball hit the side bars as you will be damaged.", sp: sp * 1.1, tm},
+            {c: "be careful, you can be hurt when hitting the side bars.", sp: sp * 1.1, tm},
 
             {c: "Are you ready for the mission?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
         ];

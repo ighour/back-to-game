@@ -193,8 +193,8 @@ let draw = () => {
             {c: "However, to be able to eat Pac Man, you will need to gather all weakened", sp: sp / 1.8, tm},
             {c: "ghosts into one.", sp, tm},
 
-            {c: "Be careful when passing near Pac Man while weakened as he may eat it ", sp: sp / 1.8, tm},
-            {c: "and race against time, for Pac Man is feeding and it will weaken you too.", sp: sp * 1.1, tm},
+            {c: "Be careful, Pac Man can eat your weakened ghosts and foods along the", sp: sp / 1.8, tm},
+            {c: "map, and this can hurt you.", sp: sp * 1.1, tm},
 
             {c: "Do you accept this mission?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
         ];
@@ -397,7 +397,7 @@ let onStart = () => {
     GAME.b.n = "Pacman";
     GAME.b.l = 100;
     GAME.b.d = 100 / (mapFoods.length - 1);
-    GAME.b.d2 = 100 / (mapPlayers.length - 1);
+    GAME.b.d2 = 20;
     GAME.b.p = [];
 
     GAME.e("click", clickTravel, travelButton);
