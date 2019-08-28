@@ -51,9 +51,9 @@ let keyDown = (event) => {
 
 /** Draw */
 let draw = () => {
-    textTimer += GAME.dt;
-
     if(creating === false){
+        textTimer += GAME.dt;
+        
         let x = GAME.c.x, y = GAME.c.y;
 
         GAME.d.ft("Back To Game", x + GAME.c.w / 2, y + 70, {f: 70});

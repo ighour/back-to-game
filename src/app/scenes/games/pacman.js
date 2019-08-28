@@ -1,10 +1,10 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, unit, map, bossAnimation, playerAnimation, tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, timeAnimation, moving, graph;
+let gamePosition, travelButton, unit, map, bossAnimation, playerAnimation, tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, timeAnimation, moving, graph, textTimer;
 
 /** Events */
-let clickStart = () => tutorial = false;
+let clickTravel = () => tutorial = false;
 
 let mouseMove = (event, x, y) => {
     if(!tutorial)
@@ -171,12 +171,45 @@ let generateGraph = () => {
 /** Draw */
 let draw = () => {
     if(tutorial){
-        let intel = [
-            "Boss is eating your life and you can do nothing",
-            "Except if you join all ghosts together and eat him",
-            "But they are confused with your orders"
+        textTimer += GAME.dt;
+
+        let x = GAME.c.x, y = GAME.c.y;
+
+        GAME.d.ft("Mission #1", x + GAME.c.w / 2, y + 70, {f: 70});
+
+        let sp = 70, tm = 50;
+
+        let texts = [
+            {c: "The year is 1980.", sp, tm},
+
+            {c: "Evil Chess has taken control of Pac Man. Your first mission is to defeat", sp: sp / 1.8, tm},
+            {c: "Pac Man in order to restart it.", sp, tm},
+
+            {c: "You will be given control of the ghosts and aim to eat Pac Man.", sp, tm},
+
+            {c: "However, to be able to eat Pac Man, you will need to gather all weakened", sp: sp / 1.8, tm},
+            {c: "ghosts into one.", sp, tm},
+
+            {c: "Be careful when passing near Pac Man while weakened as he may eat it ", sp: sp / 1.8, tm},
+            {c: "and race against time, for Pac Man is feeding and it will weaken you too.", sp: sp * 1.1, tm},
+
+            {c: "Do you accept this mission?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
         ];
-        GAME.d.dt("Mission #1", "1980", intel, startButton);
+
+        GAME.d.dtx(texts, x + 20, y + 170, {ta: "l", f: 30}, textTimer);
+
+        if(textTimer >= 1000)
+            GAME.d.db(travelButton, "Travel");
+
+
+
+
+        // let intel = [
+        //     "Boss is eating your life and you can do nothing",
+        //     "Except if you join all ghosts together and eat him",
+        //     "But they are confused with your orders"
+        // ];
+        // GAME.d.dt("Mission #1", "1980", intel, travelButton);
     }
     else {
         //Map
@@ -276,9 +309,9 @@ let onStart = () => {
         w: x * 1.5,
         h: y * 1.5
     };
-    startButton = {
+    travelButton = {
         x: x - 105,
-        y: y * 1.7,
+        y: y * 2 - 75,
         w: 210,
         h: 60
     };
@@ -359,6 +392,7 @@ let onStart = () => {
         y
     };
     graph = {};
+    textTimer = 0;
 
     //Engine
     GAME.p.d = 100;
@@ -368,7 +402,7 @@ let onStart = () => {
     GAME.b.d2 = 100 / mapPlayers.length - 1;
     GAME.b.p = [];
 
-    GAME.e("click", clickStart, startButton.x, startButton.y, startButton.w, startButton.h);
+    GAME.e("click", clickTravel, travelButton.x, travelButton.y, travelButton.w, travelButton.h);
     GAME.e("mousemove", mouseMove);
 
     //Other
