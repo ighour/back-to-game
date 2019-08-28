@@ -1,6 +1,6 @@
 const { drawTutorial, drawPanel } = require("./draw/UI");
 const { drawTexts, drawButton, drawArrowPointer } = require("./draw/components");
-const { drawChess } = require("./draw/images");
+const { drawChess, drawOther } = require("./draw/images");
 
 /** Canvas Config */
 let canvas = document.querySelector("#gc"), ctx = canvas.getContext("2d");
@@ -163,7 +163,8 @@ export const cp = {
         ap: (dirX, dirY, active, position = panelCenter) => drawArrowPointer(d, dirX, dirY, position, active),
     },
     im: {
-        c: (piece, x, y, color, notColor, size) => drawChess(d, piece, x, y, color, notColor, size)
+        c: (piece, x, y, color, notColor, size) => drawChess(d, piece, x, y, color, notColor, size),
+        o: (name, x, y, fs, notFs, size) => drawOther(d, name, x, y, fs, notFs, size)
     }
 };
 

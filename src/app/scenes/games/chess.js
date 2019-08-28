@@ -484,9 +484,9 @@ let onStart = () => {
     GAME.b.l = 100;
     GAME.b.d = 6.25;
 
-    GAME.e("click", clickTravel, travelButton.x, travelButton.y, travelButton.w, travelButton.h);
-    GAME.e("click", clickSquare, gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
-    GAME.e("mousemove", moveSquare, gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
+    GAME.e("click", clickTravel, travelButton);
+    GAME.e("click", clickSquare, gamePosition);
+    GAME.e("mousemove", moveSquare, gamePosition);
 };
 
 let onUpdate = () => {

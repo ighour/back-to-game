@@ -400,7 +400,7 @@ let onStart = () => {
     GAME.b.d2 = 100 / (mapPlayers.length - 1);
     GAME.b.p = [];
 
-    GAME.e("click", clickTravel, travelButton.x, travelButton.y, travelButton.w, travelButton.h);
+    GAME.e("click", clickTravel, travelButton);
     GAME.e("mousemove", mouseMove);
 
     //Other

@@ -158,9 +158,9 @@ let onStart = () => {
     textTimer = 0;
 
     //Engine
-    GAME.e("click", clickAccept, acceptButton.x, acceptButton.y, acceptButton.w, acceptButton.h);
-    GAME.e("click", clickTravel, travelButton.x, travelButton.y, travelButton.w, travelButton.h);
-    GAME.e("click", clickKeyboard, keyboardPosition.x, keyboardPosition.y, keyboardPosition.w, keyboardPosition.h);
+    GAME.e("click", clickAccept, acceptButton);
+    GAME.e("click", clickTravel, travelButton);
+    GAME.e("click", clickKeyboard, keyboardPosition);
     GAME.e("keydown", keyDown);
 };
 

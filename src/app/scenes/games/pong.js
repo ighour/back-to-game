@@ -267,7 +267,7 @@ let onStart = () => {
     GAME.b.l = 100;
     GAME.b.d = 1;
 
-    GAME.e("click", clickTravel, travelButton.x, travelButton.y, travelButton.w, travelButton.h);
+    GAME.e("click", clickTravel, travelButton);
     GAME.e("mousemove", mouseMove);
     GAME.e("mousedown", mouseDown);
     GAME.e("mouseup", mouseUp);

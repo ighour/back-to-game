@@ -107,3 +107,18 @@ export const drawChess = (draw, piece, x, y, fs, notFs, size = 100) => {
     draw.fc(x - baseUnit * 45, y + baseUnit * 72, baseUnit * 12, undefined, undefined, {fs});
     draw.fc(x + baseUnit * 45, y + baseUnit * 72, baseUnit * 12, undefined, undefined, {fs});
 };
+
+/** Other */
+export const drawOther = (draw, name, x, y, fs, notFs, size = 100) => {
+    let baseUnit = size / 100;
+
+    switch(name){
+        case "LO":  //Lock
+            draw.fc(x, y - baseUnit * 5, baseUnit * 10, undefined, undefined, {fs});
+            draw.fr(x - baseUnit * 10, y + baseUnit * 10, baseUnit * 20, -baseUnit * 13, {fs});
+            draw.fc(x, y - baseUnit * 5, baseUnit * 6.5, Math.PI, Math.PI * 2, {fs: notFs});
+            draw.fc(x, y + baseUnit, baseUnit * 3.5, undefined, undefined, {fs: notFs});
+            draw.l(x, y, x, y + baseUnit * 7, {ss: notFs, lw: 4});
+        break;
+    }
+};

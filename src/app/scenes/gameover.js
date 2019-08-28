@@ -1,7 +1,7 @@
 const { GAME } = require('../game');
 
 /** Variables */
-let newButton, payButton, codeButton, win, textTimer;
+let newButton, reviveButton, monetizeButton, codeButton, win, textTimer;
 
 /** Events */
 let clickNew = () => {
@@ -11,12 +11,18 @@ let clickNew = () => {
         GAME.n();
     }
 };
-let clickPay = () => {
+let clickRevive = () => {
+    if(textTimer >= 1300 && !win && GAME.m.s){
+        GAME.r();
+    }
+        
+};
+let clickMonetize = () => {
     if(textTimer >= 1300){
-        console.log("TODO Monetize");
-
-        if(!win)
-            GAME.r();
+        if(!GAME.m.a)
+            window.open('https://coil.com', '_blank');
+        else if(!GAME.m.s)
+            window.open('https://coil.com/settings/payment', '_blank'); 
     }
 };
 let clickCode = () => {
@@ -35,7 +41,6 @@ let draw = () => {
     
     let x = GAME.c.x, y = GAME.c.y, w = x + GAME.c.w / 2;
     let sp = 40, tm = 50;
-    let fs = textTimer < 1300 ? "#999999" : undefined;
 
     if(win){
         GAME.d.ft("Congratulations!", w, y + 80, {f: 70});
@@ -51,8 +56,6 @@ let draw = () => {
         GAME.d.dtx(texts, w, y + 220, {f: 30}, textTimer);
 
         GAME.d.l(x + 20, y + 300, w * 2 - 20, y + 300);
-
-        GAME.d.db(payButton, "Help Us", {fs, ss: fs});
     }
 
     else{
@@ -71,13 +74,7 @@ let draw = () => {
         GAME.d.dtx(texts, w, y + 200, {f: 30}, textTimer);
 
         GAME.d.l(x + 20, y + 320, w * 2 - 20, y + 320);
-
-        GAME.d.db(payButton, "Revive", {fs, ss: fs});
     }
-
-    GAME.d.db(newButton, "New Game", {fs, ss: fs});
-
-    GAME.d.db(codeButton, "View Code", {fs, ss: fs});
 
     sp = 70;
 
@@ -103,6 +100,34 @@ let draw = () => {
     ];
 
     GAME.d.dtx(texts, w + 20, y + 430, {ta: "l", f: 30}, textTimer);
+
+    drawButtons();
+};
+
+let drawButtons = () => {
+    let fs = textTimer < 1300 ? "#999999" : undefined, y = newButton.y;
+
+    GAME.d.db(newButton, "New Game", {fs, ss: fs});
+
+    if(!win){
+        y += 100;
+        let color = !GAME.m.s ? "#999999" : fs;
+        reviveButton.y = y;
+        GAME.d.db(reviveButton, "Revive", {fs: color, ss: color});
+
+        if(!GAME.m.s)
+            GAME.d.dio("LO", reviveButton.x + reviveButton.w - 30, reviveButton.y + reviveButton.h / 2 + 2, color);
+    }
+
+    if(!GAME.m.s){
+        y += 100;
+        monetizeButton.y = y;
+        GAME.d.db(monetizeButton, "Support Us", {fs, ss: fs});
+    }
+       
+    y += 100;
+    codeButton.y = y;
+    GAME.d.db(codeButton, "View Code", {fs, ss: fs});
 };
 
 /** Lifecycle */
@@ -111,21 +136,27 @@ let onStart = _win => {
 
     //UI
     newButton = {
-        x: x / 2 - 190,
-        y: y - 330,
-        w: 340,
+        x: x / 2 - 180,
+        y: y - (_win ? 330 : 390),
+        w: 360,
         h: 60
     };
-    payButton = {
-        x: x / 2 - 190,
-        y: y - 230,
-        w: 340,
+    reviveButton = {
+        x: x / 2 - 180,
+        y,
+        w: 360,
+        h: 60
+    };
+    monetizeButton = {
+        x: x / 2 - 180,
+        y,
+        w: 360,
         h: 60
     };
     codeButton = {
-        x: x / 2 - 190,
-        y: y - 130,
-        w: 340,
+        x: x / 2 - 180,
+        y,
+        w: 360,
         h: 60
     };
 
@@ -134,9 +165,10 @@ let onStart = _win => {
     textTimer = 0;
 
     //Engine
-    GAME.e("click", clickNew, newButton.x, newButton.y, newButton.w, newButton.h);
-    GAME.e("click", clickPay, payButton.x, payButton.y, payButton.w, payButton.h);
-    GAME.e("click", clickCode, codeButton.x, codeButton.y, codeButton.w, codeButton.h);
+    GAME.e("click", clickNew, newButton);
+    GAME.e("click", clickRevive, reviveButton);
+    GAME.e("click", clickMonetize, monetizeButton);
+    GAME.e("click", clickCode, codeButton);
 };
 
 let onUpdate = () => {  

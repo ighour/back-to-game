@@ -16,7 +16,7 @@ let player = {
     n: "",  //name
     l: 100, //life
     d: 0,   //damage
-    s: []   //score
+    s: [],   //score
 };
 let boss = {
     n: "",
@@ -70,6 +70,21 @@ let getCanvasCoords = (x, y) => {
 document.addEventListener("keydown", event => events.keydown.forEach(e => e[0](event)));
 
 document.addEventListener("contextmenu", event => event.preventDefault());
+
+/** Monetize */
+let monetize = {
+    a: false,    //web monetization existence
+    s: false    //web monetization started
+};
+let checkMonetizing = () => {
+    monetize.a = document.monetization;
+    monetize.s = monetize.a && document.monetization.state === 'started';
+    if(currentInstance == instances.length - 1){
+        ca.t(monetize.s ? "Thank you for supporting us with your Coil subscription!" : "You can enable Revive and help us by clicking at Support Us and subscribing to a Coil account.");
+    }
+    setTimeout(checkMonetizing, 5000);
+};
+checkMonetizing();
 
 /** Helper Functions */
 let doDamage = (p, damage, score) => {
@@ -187,7 +202,8 @@ export const GAME = {
     p: player,  //player
     b: boss,  //boss
     dt: timing.u, //delta
-    e: (type, event, x = 0, y = 0, w = cp.i.width, h = cp.i.height) => events[type].push([event, {x, y, w, h}]),  //add event
+    m: monetize,    //web monetizing
+    e: (type, event, coords = {x: 0, y: 0, w: cp.i.width, h: cp.i.height}) => events[type].push([event, coords]),  //add event
     d: {    //draw
         l: cp.d.l,
         sl: cp.d.sl,
@@ -203,7 +219,8 @@ export const GAME = {
         dt: (title, year, intel, startPosition) => cp.UI.t(title, year, boss, intel, startPosition),
         dp: text => cp.UI.p(player, boss, text),
         dap: cp.UI.ap,
-        dic: cp.im.c
+        dic: cp.im.c,
+        dio: (name, x, y, fs, notFs = "#2A293E", size) => cp.im.o(name, x, y, fs, notFs, size)
     },
     f: {    //functions
         dp: (damage, score) => doDamage(player, damage ? damage : boss.d, score),
