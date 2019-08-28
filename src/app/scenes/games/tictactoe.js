@@ -1,10 +1,10 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, cellSize, tutorial, gameOver, signs, matchWinner, winCombos, board, playing;
+let gamePosition, travelButton, cellSize, tutorial, gameOver, signs, matchWinner, winCombos, board, playing, textTimer;
 
 /** Events */
-let clickStart = () => tutorial = false;
+let clickTravel = () => tutorial = false;
 
 let clickBoard = (event, x, y) => {
     if(!tutorial && playing === -1 && matchWinner === 0 && !gameOver) {
@@ -136,12 +136,36 @@ let markBoard = boardIndex => {
 /** Draw */
 let draw = () => {
     if(tutorial){
-        let intel = [
-            "The boss act as player 1 (X) and 2 (0).",
-            "It loses HP when game result is draw.",
-            "You can move only to near positions."
+        textTimer += GAME.dt;
+
+        let x = GAME.c.x, y = GAME.c.y;
+
+        GAME.d.ft("Mission #3", x + GAME.c.w / 2, y + 70, {f: 70});
+
+        let sp = 70, tm = 50;
+
+        let texts = [
+            {c: "The year is 1952.", sp, tm},
+
+            {c: "Evil Chess has taken control of Tic Tac Toe. Your third mission is to defeat", sp: sp / 1.8, tm},
+            {c: "Tic and Tac in order to restart it.", sp, tm},
+
+            {c: "Tic is playing against Tac. Your goal is to prevent any of them from winning", sp: sp / 1.8, tm},
+            {c: "a match by weakening them.", sp, tm},
+
+            {c: "For this you will be positioned inside the board. Each turn, you will have to", sp: sp / 1.8, tm},
+            {c: "move to an adjacent board.", sp, tm},
+
+            {c: "This will prevent Tic or Tac from marking this board in which you are situated.", sp: sp / 1.8, tm},
+            {c: "Be careful, as if Tic or Tac wins a match, you will be dealt damage.", sp: sp * 1.05, tm},
+
+            {c: "Ready for this?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
         ];
-        GAME.d.dt("Mission #3", "1952", intel, startButton);
+
+        GAME.d.dtx(texts, x + 20, y + 160, {ta: "l", f: 30}, textTimer);
+
+        if(textTimer >= 1000)
+            GAME.d.db(travelButton, "Travel");
     }
     else{
         //Board
@@ -195,9 +219,9 @@ let onStart = () => {
         w: x * 3,
         h: y * 6
     };
-    startButton = {
+    travelButton = {
         x: x * 2.5 - 105,
-        y: y * 8.5,
+        y: y * 10 - 75,
         w: 210,
         h: 60
     };
@@ -225,6 +249,7 @@ let onStart = () => {
         [0, 4, 8],
         [2, 4, 6]
     ];
+    textTimer = 0;
 
     //Engine
     GAME.p.d = 25;
@@ -232,7 +257,7 @@ let onStart = () => {
     GAME.b.l = 100;
     GAME.b.d = 20;
 
-    GAME.e("click", clickStart, startButton.x, startButton.y, startButton.w, startButton.h);
+    GAME.e("click", clickTravel, travelButton.x, travelButton.y, travelButton.w, travelButton.h);
     GAME.e("click", clickBoard, gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
 
     //Other

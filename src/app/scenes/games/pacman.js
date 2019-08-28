@@ -200,16 +200,6 @@ let draw = () => {
 
         if(textTimer >= 1000)
             GAME.d.db(travelButton, "Travel");
-
-
-
-
-        // let intel = [
-        //     "Boss is eating your life and you can do nothing",
-        //     "Except if you join all ghosts together and eat him",
-        //     "But they are confused with your orders"
-        // ];
-        // GAME.d.dt("Mission #1", "1980", intel, travelButton);
     }
     else {
         //Map

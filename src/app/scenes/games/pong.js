@@ -1,18 +1,15 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, barSize, tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse;
+let gamePosition, travelButton, barSize, tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse, textTimer;
 
 /** Events */
-let clickStart = () => tutorial = false;
+let clickTravel = () => tutorial = false;
 let mouseMove = (event, x, y) => {if(!tutorial) mouse = {x, y}};
 let mouseDown = () => {if(!tutorial) magnetic = true};
 let mouseUp = () => {if(!tutorial) magnetic = false};
 
 /** Helper Functions */
-let getBarY = y => {
-
-};
 
 /** Logic */
 let logic = () => {
@@ -155,12 +152,36 @@ let checkBallHit = (self, player) => {
 /** Draw Functions */
 let draw = () => {
     if(tutorial){
-        let intel = [
-            "The boss loses HP when the ball is out.",
-            "Your mouse has a magnetical field when clicked down.",
-            "Crashing on bars will hurt you and push the ball."
+        textTimer += GAME.dt;
+
+        let x = GAME.c.x, y = GAME.c.y;
+
+        GAME.d.ft("Mission #2", x + GAME.c.w / 2, y + 70, {f: 70});
+
+        let sp = 70, tm = 50;
+
+        let texts = [
+            {c: "The year is 1972.", sp, tm},
+
+            {c: "Evil Chess has taken control of Pong. Your second mission is to defeat", sp: sp / 1.8, tm},
+            {c: "Pong in order to restart it.", sp, tm},
+
+            {c: "You will receive control of a magnetic field with the power to influence the", sp: sp / 1.8, tm},
+            {c: "movement of the ball on the field.", sp, tm},
+
+            {c: "However, Pong will do everything not to let the ball go out of bounds by ", sp: sp / 1.8, tm},
+            {c: "controlling the side bars.", sp, tm},
+
+            {c: "Your goal, then, is to get the ball out of the field to weaken the Pong. But", sp: sp / 1.8, tm},
+            {c: "be careful not to let the ball hit the side bars as you will be damaged.", sp: sp * 1.1, tm},
+
+            {c: "Are you ready for the mission?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
         ];
-        GAME.d.dt("Mission #2", "1972", intel, startButton);
+
+        GAME.d.dtx(texts, x + 20, y + 160, {ta: "l", f: 30}, textTimer);
+
+        if(textTimer >= 1000)
+            GAME.d.db(travelButton, "Travel");
     }
     else {
         //Board
@@ -194,9 +215,9 @@ let onStart = () => {
         w: x * 8,
         h: y * 6
     };
-    startButton = {
+    travelButton = {
         x: x * 5 - 105,
-        y: y * 8.5,
+        y: y * 10 - 72,
         w: 210,
         h: 60
     };
@@ -231,6 +252,7 @@ let onStart = () => {
         x: ball.x,
         y: ball.y
     };
+    textTimer = 0;
 
     //Engine
     GAME.p.d = 10;
@@ -238,7 +260,7 @@ let onStart = () => {
     GAME.b.l = 100;
     GAME.b.d = 1;
 
-    GAME.e("click", clickStart, startButton.x, startButton.y, startButton.w, startButton.h);
+    GAME.e("click", clickTravel, travelButton.x, travelButton.y, travelButton.w, travelButton.h);
     GAME.e("mousemove", mouseMove);
     GAME.e("mousedown", mouseDown);
     GAME.e("mouseup", mouseUp);

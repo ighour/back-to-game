@@ -1,10 +1,10 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, startButton, unit, hovering, npcSelect, npcTarget, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack;
+let gamePosition, travelButton, unit, hovering, npcSelect, npcTarget, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack, textTimer;
 
 /** Events */
-let clickStart = () => tutorial = false;
+let clickTravel = () => tutorial = false;
 
 let clickSquare = (event, x, y) => {
     if(turn == 0){
@@ -288,12 +288,36 @@ let checkBoardRules = (boardIndex, modifier, jump) => {
 /** Draw */
 let draw = () => {
     if(tutorial){
-        let intel = [
-            " ",
-            " ",
-            " "
+        textTimer += GAME.dt;
+
+        let x = GAME.c.x, y = GAME.c.y;
+
+        GAME.d.ft("Final Mission", x + GAME.c.w / 2, y + 70, {f: 70});
+
+        let sp = 70, tm = 50;
+
+        let texts = [
+            {c: "The year is 1950.", sp, tm},
+
+            {c: "Evil Chess has completely replaced it's original game. Your last mission is", sp: sp / 1.8, tm},
+            {c: "to defeat him in order to restart it.", sp, tm},
+
+            {c: "Your goal is to kill enough pieces of Evil Chess, but he is controlling both", sp: sp / 1.8, tm},
+            {c: "sides and you are just one piece.", sp, tm},
+
+            {c: "Each turn, only one type of piece can move or attack. But don't worry, you", sp: sp / 1.8, tm},
+            {c: "got the power to change your piece type as the selected at round.", sp, tm},
+
+            {c: "Killing a King will do a lot of damage to Evil Chess. Think smart and plan", sp: sp / 1.8, tm},
+            {c: "your best strategy.", sp: sp * 1.05, tm},
+
+            {c: "Are you prepared?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
         ];
-        GAME.d.dt("Final Mission", "1950", intel, startButton);
+
+        GAME.d.dtx(texts, x + 20, y + 160, {ta: "l", f: 30}, textTimer);
+
+        if(textTimer >= 1000)
+            GAME.d.db(travelButton, "Travel");
     }
     else {
         //Board
@@ -381,9 +405,9 @@ let onStart = () => {
         w: x * 1.5,
         h: y * 1.5
     };
-    startButton = {
+    travelButton = {
         x: x - 105,
-        y: y * 1.7,
+        y: y * 2 - 70,
         w: 210,
         h: 60
     };
@@ -442,6 +466,7 @@ let onStart = () => {
         32, 33, 34, 35, 36, 37, 38, 39
     ];
     playerCanAttack = [];
+    textTimer = 0;
 
     //Engine
     GAME.p.d = 100 / 31.9;
@@ -449,7 +474,7 @@ let onStart = () => {
     GAME.b.l = 100;
     GAME.b.d = 200 / 31.9;
 
-    GAME.e("click", clickStart, startButton.x, startButton.y, startButton.w, startButton.h);
+    GAME.e("click", clickTravel, travelButton.x, travelButton.y, travelButton.w, travelButton.h);
     GAME.e("click", clickSquare, gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
     GAME.e("mousemove", moveSquare, gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
 };
