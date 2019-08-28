@@ -70,7 +70,7 @@ let logic = () => {
 
 let bossMove = () => {
     if(!gameOver && mapFoods.length > 0 && GAME.b.p.length === 0){
-        let target = graph.BFS(mapBoss, index => mapFoods.includes(index)).pop();
+        let target = graph.BFS(mapBoss, index => mapFoods.includes(index) && (mapFoods.length <= 1 || Math.random() <= 0.9)).pop();
 
         if(target !== undefined)
             GAME.b.p = graph.shortestPath(mapBoss, target);
