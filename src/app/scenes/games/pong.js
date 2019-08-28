@@ -1,7 +1,7 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, travelButton, barSize, tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse, textTimer;
+let gamePosition, travelButton, barSize, tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse, textTimer, scoreChange;
 
 /** Events */
 let clickTravel = () => {
@@ -141,7 +141,7 @@ let checkBallHit = (self, player) => {
     if(!gameOver){
         //Hit player
         if(self.B > player.y && self.T < player.y + barSize.h){
-            gameOver = GAME.f.dp();
+            gameOver = GAME.f.dp(undefined, scoreChange[0]);
 
             if(ball.s < 2)
                 ball.s += Math.random() * 0.05;
@@ -256,9 +256,13 @@ let onStart = () => {
         y: ball.y
     };
     textTimer = 0;
+    scoreChange = [
+        -10
+    ];
 
     //Engine
     GAME.p.d = 10;
+    GAME.p.s[GAME.cu()] = 1000;
     GAME.b.n = "Pong";
     GAME.b.l = 100;
     GAME.b.d = 1;

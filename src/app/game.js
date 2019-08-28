@@ -2,7 +2,7 @@ const {cp, ca} = require("./canvas");
 const { Graph } = require("./datastructures");
 
 /** Variables */
-let animationFrame, instances = [], current;
+let animationFrame, instances = [], currentInstance = 0, lastInstance = 0;
 let events = {
     click: [],
     mousemove: [],
@@ -13,9 +13,10 @@ let events = {
 
 /** Players Config */
 let player = {
-    n: "",
-    l: 100,
-    d: 0
+    n: "",  //name
+    l: 100, //life
+    d: 0,   //damage
+    s: []   //score
 };
 let boss = {
     n: "",
@@ -71,10 +72,16 @@ document.addEventListener("keydown", event => events.keydown.forEach(e => e[0](e
 document.addEventListener("contextmenu", event => event.preventDefault());
 
 /** Helper Functions */
-let doDamage = (p, damage) => {
+let doDamage = (p, damage, score) => {
     p.l -= damage;
 
+    if(score)
+        p.s[currentInstance] += score;
+
     if(Math.floor(p.l) <= 0){
+        if(p === player)
+            p.s[currentInstance] = 0;
+
         setTimeout(() => {
             next(p === player ? false : true);
         }, 3000);
@@ -127,12 +134,12 @@ let update = timestamp => {
  
     //Draw
     cp.d.fr(0, 0, cp.i.width, cp.i.height, {fs: "#2A293E"});
-    instances[current].ou();    //onUpdate
+    instances[currentInstance].ou();    //onUpdate
     animationFrame = requestAnimationFrame(update);
 };
 
 let start = proceed => {
-    instances[current].os(proceed); //onStart
+    instances[currentInstance].os(proceed); //onStart
     update(0);
 };
 
@@ -144,15 +151,23 @@ let stop = () => {
     events.mouseup = [];
     events.keydown = [];
     ca.t("");
+
+    if(player.s[currentInstance] && player.s[currentInstance] < 0)
+        player.s[currentInstance] = 0;
 };
 
-let next = proceed => {
+let next = (proceed, toLastInstance) => {
     stop();
 
-    if(instances[current].ost)   //onStop
-        instances[current].ost();
+    if(instances[currentInstance].ost)   //onStop
+        instances[currentInstance].ost();
 
-    current = proceed !== false ? (current + 1) % instances.length : instances.length - 1;
+    lastInstance = currentInstance;
+
+    if(toLastInstance !== undefined)
+        currentInstance = toLastInstance;
+    else 
+        currentInstance = proceed !== false ? (currentInstance + 1) % instances.length : instances.length - 1;
 
     start(proceed);
 };
@@ -168,7 +183,7 @@ export const GAME = {
     ca: {
         t: ca.t
     },
-    cu: current, //current
+    cu: () => currentInstance, //current
     p: player,  //player
     b: boss,  //boss
     dt: timing.u, //delta
@@ -191,8 +206,8 @@ export const GAME = {
         dic: cp.im.c
     },
     f: {    //functions
-        dp: damage => doDamage(player, damage ? damage : boss.d),
-        db: damage => doDamage(boss, damage ? damage : player.d),
+        dp: (damage, score) => doDamage(player, damage ? damage : boss.d, score),
+        db: (damage, score) => doDamage(boss, damage ? damage : player.d, score),
         mag: getMagVector,
         norm: getNormalizedVector
     },
@@ -204,10 +219,13 @@ export const GAME = {
         if(instances.length === 0)
             return false;
 
-        current = 0;
         start();
 
         return true;
     },
-    a: instance => instances.push(instance) //add instance
+    a: instance => instances.push(instance), //add instance
+    r: () => {  //revive
+        player.l = 100;
+        next(undefined, lastInstance);
+    }
 };

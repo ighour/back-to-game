@@ -1,7 +1,7 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, travelButton, unit, hovering, npcSelect, npcTarget, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack, textTimer;
+let gamePosition, travelButton, unit, hovering, npcSelect, npcTarget, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack, textTimer, scoreChange;
 
 /** Events */
 let clickTravel = () => {
@@ -82,7 +82,7 @@ let attackPiece = (player, attackerBoardIndex, defenderBoardIndex) => {
     }
 
     else{
-        gameOver = GAME.f.dp();
+        gameOver = GAME.f.dp(undefined, scoreChange[0]);
         removePiece(player, attackerBoardIndex);
     }
 };
@@ -167,6 +167,9 @@ let playNPC = (player) => {
         else
             playNPCEnd(player);
     }
+
+    else
+        playNPCEnd(player);
 };
 
 let playNPCEnd = (player) => {
@@ -470,12 +473,16 @@ let onStart = () => {
     ];
     playerCanAttack = [];
     textTimer = 0;
+    scoreChange = [
+        -12.5
+    ];
 
     //Engine
-    GAME.p.d = 100 / 31.9;
+    GAME.p.d = 3.125;
+    GAME.p.s[GAME.cu()] = 2000;
     GAME.b.n = "Evil Chess";
     GAME.b.l = 100;
-    GAME.b.d = 200 / 31.9;
+    GAME.b.d = 6.25;
 
     GAME.e("click", clickTravel, travelButton.x, travelButton.y, travelButton.w, travelButton.h);
     GAME.e("click", clickSquare, gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);

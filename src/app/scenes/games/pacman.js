@@ -1,7 +1,7 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, travelButton, unit, map, bossAnimation, playerAnimation, tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, timeAnimation, moving, graph, textTimer;
+let gamePosition, travelButton, unit, map, bossAnimation, playerAnimation, tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, timeAnimation, moving, graph, textTimer, scoreChange;
 
 /** Events */
 let clickTravel = () => {
@@ -116,7 +116,7 @@ let playersMove = () => {
         //Avoid swiping with boss
         if(e === lastMapBoss){
             if(!gameOver)
-                gameOver = mapPlayers.length === 1 ? GAME.f.db() : GAME.f.dp(GAME.b.d2);
+                gameOver = mapPlayers.length === 1 ? GAME.f.db() : GAME.f.dp(GAME.b.d2, scoreChange[0]);
             return false;
         }
         return true;
@@ -134,7 +134,7 @@ let checkCollisions = () => {
         mapPlayers = mapPlayers.filter(e => {
             if(e === mapBoss){
                 if(!gameOver)
-                    gameOver = GAME.f.dp(GAME.b.d2);
+                    gameOver = GAME.f.dp(GAME.b.d2, scoreChange[0]);
                 return false;
             }
     
@@ -145,7 +145,7 @@ let checkCollisions = () => {
     mapFoods = mapFoods.filter(e => {
         if(e === mapBoss){
             if(!gameOver)
-                gameOver = GAME.f.dp();
+                gameOver = GAME.f.dp(undefined, scoreChange[1]);
             return false;
         }
 
@@ -386,13 +386,18 @@ let onStart = () => {
     };
     graph = {};
     textTimer = 0;
+    scoreChange = [
+        -300 / mapPlayers.length, //eat player
+        -700 / mapFoods.length, //eat food
+    ];
 
     //Engine
     GAME.p.d = 100;
+    GAME.p.s[GAME.cu()] = 1000;
     GAME.b.n = "Pacman";
     GAME.b.l = 100;
-    GAME.b.d = 100 / mapFoods.length - 1;
-    GAME.b.d2 = 100 / mapPlayers.length - 1;
+    GAME.b.d = 100 / (mapFoods.length - 1);
+    GAME.b.d2 = 100 / (mapPlayers.length - 1);
     GAME.b.p = [];
 
     GAME.e("click", clickTravel, travelButton.x, travelButton.y, travelButton.w, travelButton.h);

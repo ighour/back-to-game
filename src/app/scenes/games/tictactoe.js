@@ -1,7 +1,7 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, travelButton, cellSize, tutorial, gameOver, signs, matchWinner, winCombos, board, playing, textTimer;
+let gamePosition, travelButton, cellSize, tutorial, gameOver, signs, matchWinner, winCombos, board, playing, textTimer, scoreChange;
 
 /** Events */
 let clickTravel = () => {
@@ -124,7 +124,7 @@ let markBoard = boardIndex => {
     let result = checkResult(board);
 
     if(result !== 0){
-        gameOver = result === -1 ? GAME.f.db() : GAME.f.dp();
+        gameOver = result === -1 ? GAME.f.db() : GAME.f.dp(undefined, scoreChange[0]);
           
         if(!gameOver){
             matchWinner = result;
@@ -159,7 +159,7 @@ let draw = () => {
             {c: "For this you will be positioned inside the board. Each turn, you will have to", sp: sp / 1.8, tm},
             {c: "move to an adjacent board.", sp, tm},
 
-            {c: "This will prevent Tic or Tac from marking this board in which you are situated.", sp: sp / 1.8, tm},
+            {c: "This will prevent Tic or Tac from marking the board where you are situated.", sp: sp / 1.8, tm},
             {c: "Be careful, as if Tic or Tac wins a match, you will be dealt damage.", sp: sp * 1.05, tm},
 
             {c: "Ready for this?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
@@ -181,15 +181,15 @@ let draw = () => {
 
         //Players
         let playerIndex = getPlayerIndex();
+        let playerCoords = getPlayerCoords(playerIndex);
 
         for(let i = 0; i < 9; i++){
-            let y = Math.floor(i / 3);
-            let x = i - y * 3;
+            let coords = getPlayerCoords(i);
     
             if(board[i] !== 0)
-                GAME.d.ft(signs[board[i]], gamePosition.x + cellSize.w * (0.5 + x), gamePosition.y + cellSize.h * (0.5 + y));
-            else if(playing === -1 && (playerIndex === -1 || i === playerIndex - 1 || i === playerIndex + 1 || i === playerIndex + 3 || i === playerIndex - 3))
-                GAME.d.fc(gamePosition.x + (x + 0.5) * cellSize.w, gamePosition.y + (y + 0.5) * cellSize.h, 2, undefined, undefined, {fs: "#AAAAAA"});
+                GAME.d.ft(signs[board[i]], gamePosition.x + cellSize.w * (0.5 + coords.x), gamePosition.y + cellSize.h * (0.5 + coords.y));
+            else if(playing == -1 && (playerIndex == -1 || (Math.abs(playerCoords.x - coords.x) <= 1 && Math.abs(playerCoords.y - coords.y) <= 1)))
+                GAME.d.fc(gamePosition.x + (coords.x + 0.5) * cellSize.w, gamePosition.y + (coords.y + 0.5) * cellSize.h, 2, undefined, undefined, {fs: "#AAAAAA"});
         }
 
         //Panel
@@ -253,9 +253,13 @@ let onStart = () => {
         [2, 4, 6]
     ];
     textTimer = 0;
+    scoreChange = [
+        -200
+    ];
 
     //Engine
     GAME.p.d = 25;
+    GAME.p.s[GAME.cu()] = 1000;
     GAME.b.n = "Tic & Tac";
     GAME.b.l = 100;
     GAME.b.d = 20;

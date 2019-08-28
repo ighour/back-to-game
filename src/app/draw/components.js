@@ -19,7 +19,8 @@ export const drawTexts = (draw, texts, x, y, styles, currentTime) => {
 
         draw.ft(text.c, text.x ? text.x : x, y2 + spacing, currentStyles);
 
-        spacing += text.sp;
+        if(text.sp)
+            spacing += text.sp;
     }
 };
 
