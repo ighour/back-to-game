@@ -1,16 +1,10 @@
-# Back to #
+# Back to Game
 
 Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](https://2019.js13kgames.com/).
 
 ## About
 
-* Back to old games. That is the main idea behind the game.
-
-* In a world ruled by evil game bosses, you have to travel back to past and beat the evil.
-
-* The games rules are not the common ones anymore.
-
-* Can you become the true hero?
+* TODO.
 
 ## Available Games
 
@@ -19,6 +13,8 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 * **Pong** : get away from the field or die trying. Be carefull with the boss bars.
 
 * **Pacman** : run from Pacman until you have enough power.
+
+* **Chess** : eat pieces from both sides and avoid your enemies.
 
 ## Versions
 
@@ -58,6 +54,22 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 
 * Added Pacman game.
 
+### v1.3
+
+* Optimized game design.
+
+* Added player life circle.
+
+* Fixed Pacman and Tic Tac Toe minor issues.
+
+* Added Chess game.
+
+* Optimized tutorials.
+
+* Optimized introduction.
+
+* Added game tips.
+
 ## Built With
 
 * [HTML](https://www.w3schools.com/html/html5_intro.asp) - WWW Markup Language.
@@ -65,9 +77,9 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 * [CSS](https://www.w3schools.com/css/) - Styles HTML Content.
 * [WebPack](https://webpack.js.org/) - JavaScript Module Bundler.
 
-## Playble At
+## Playable At
 
-* [http://backtosharp-game.ighour.com](http://backtosharp-game.ighour.com)
+* [http://backtogame.ighour.com](http://backtogame.ighour.com)
 
 ## Author
 
