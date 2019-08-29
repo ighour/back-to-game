@@ -1,16 +1,17 @@
 const { GAME } = require('../game');
 
 /** Variables */
-let acceptButton, travelButton, keyboardPosition, keySize, capsLock, creating, name, keyboard, nameMax, nameRules, textTimer;
+let acceptButton, travelButton, travelButton2, keyboardPosition, keySize, capsLock, creating, name, keyboard, nameMax, nameRules, textTimer;
 
 /** Events */
 let clickAccept = () => {
     if(creating == false && textTimer >= 1000) creating = true;
 };
 
-let clickTravel = () => {
+let clickTravel = (mode) => {
     if(creating && name.length > 0){
         GAME.p.n = name;
+        GAME.p.m = mode;
         GAME.n(true);
     }
 };
@@ -110,8 +111,15 @@ let draw = () => {
         }
 
         //Send Button
-        if(name.length > 0)
-            GAME.d.db(travelButton, "Time Travel");
+        if(name.length > 0){
+            let fs = "red";
+            GAME.d.db(travelButton, "Epic Travel", {fs, ss: fs});
+            GAME.d.ft("Score Boost", travelButton.x + travelButton.w / 2, travelButton.y + 80, {fs, f: 20});
+
+            fs = "green";
+            GAME.d.db(travelButton2, "Fun Travel", {fs, ss: fs});
+            GAME.d.ft("HP Regen | ATK Boost | DEF Boost", travelButton2.x + travelButton2.w / 2, travelButton2.y + 80, {fs, f: 20});
+        }
     } 
 };
 
@@ -127,7 +135,13 @@ let onStart = () => {
         h: 60
     };
     travelButton = {
-        x: x - 140,
+        x: x - 400,
+        y: y * 2 - 120,
+        w: 280,
+        h: 60
+    };
+    travelButton2 = {
+        x: x + 120,
         y: y * 2 - 120,
         w: 280,
         h: 60
@@ -159,7 +173,8 @@ let onStart = () => {
 
     //Engine
     GAME.e("click", clickAccept, acceptButton);
-    GAME.e("click", clickTravel, travelButton);
+    GAME.e("click", () => clickTravel(1), travelButton);
+    GAME.e("click", () => clickTravel(2), travelButton2);
     GAME.e("click", clickKeyboard, keyboardPosition);
     GAME.e("keydown", keyDown);
 };

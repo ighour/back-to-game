@@ -258,11 +258,11 @@ let onStart = () => {
     ];
 
     //Engine
-    GAME.p.d = 25;
-    GAME.p.s[GAME.cu()] = 1000;
+    GAME.p.d = 25 * GAME.p.m;
+    GAME.p.s[GAME.cu()] = 1000 / GAME.p.m;
     GAME.b.n = "Tic & Tac";
     GAME.b.l = 100;
-    GAME.b.d = 15;
+    GAME.b.d = 15 / GAME.p.m;
 
     GAME.e("click", clickTravel, travelButton);
     GAME.e("click", clickBoard, gamePosition);

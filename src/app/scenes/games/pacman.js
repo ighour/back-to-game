@@ -69,6 +69,9 @@ let logic = () => {
 };
 
 let bossMove = () => {
+    if(GAME.p.m == 2 && Math.random() <= 0.5)
+        return;
+
     if(!gameOver && mapFoods.length > 0 && GAME.b.p.length === 0){
         let target = graph.BFS(mapBoss, index => mapFoods.includes(index) && (mapFoods.length <= 1 || Math.random() <= 0.9)).pop();
 
@@ -393,11 +396,11 @@ let onStart = () => {
 
     //Engine
     GAME.p.d = 100;
-    GAME.p.s[GAME.cu()] = 1000;
+    GAME.p.s[GAME.cu()] = 1000 / GAME.p.m;
     GAME.b.n = "Pacman";
     GAME.b.l = 100;
     GAME.b.d = 100 / (mapFoods.length - 1);
-    GAME.b.d2 = 20;
+    GAME.b.d2 = 20 / GAME.p.m;
     GAME.b.p = [];
 
     GAME.e("click", clickTravel, travelButton);

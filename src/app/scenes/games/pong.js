@@ -261,8 +261,8 @@ let onStart = () => {
     ];
 
     //Engine
-    GAME.p.d = 10;
-    GAME.p.s[GAME.cu()] = 1000;
+    GAME.p.d = 10 * GAME.p.m;
+    GAME.p.s[GAME.cu()] = 1000 / GAME.p.m;
     GAME.b.n = "Pong";
     GAME.b.l = 100;
     GAME.b.d = 1;

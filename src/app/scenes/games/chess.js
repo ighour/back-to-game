@@ -478,11 +478,11 @@ let onStart = () => {
     ];
 
     //Engine
-    GAME.p.d = 3.125;
-    GAME.p.s[GAME.cu()] = 2000;
+    GAME.p.d = 3.125 * GAME.p.m;
+    GAME.p.s[GAME.cu()] = 2000 / GAME.p.m;
     GAME.b.n = "Evil Chess";
     GAME.b.l = 100;
-    GAME.b.d = 6.25;
+    GAME.b.d = 6.25 / GAME.p.m;
 
     GAME.e("click", clickTravel, travelButton);
     GAME.e("click", clickSquare, gamePosition);
