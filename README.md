@@ -86,6 +86,10 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 
 * Optimized games.
 
+### v1.5
+
+* Added Fun Game mode, with HP regen and ATAK/DEF bonus.
+
 ## Built With
 
 * [HTML](https://www.w3schools.com/html/html5_intro.asp) - WWW Markup Language.
@@ -100,3 +104,5 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 ## Author
 
 * **Célio Ighour** - *Owner* - [My Portfolio](https://www.ighour.com) | [Github](https://github.com/ighour) | [Gitlab](https://gitlab.com/ighour) | [LinkedIn](https://www.linkedin.com/in/c%C3%A9lio-ighour-de-castro-rodrigues-0a278a13a/) | [StackOverflow](https://stackexchange.com/users/10652400/ighour)
+
+* **Luana Honorato** - *Storyline Helper*
