@@ -195,7 +195,7 @@ let draw = () => {
         
                     {c: "- This can slightly change ball direction.", sp, tm},
 
-                    {c: "- Check the panel at bottom to see the direction of you magnetic field.", sp, tm},
+                    {c: "- You can see magnetic field direction when active.", sp, tm},
                 ]
             ],
             textTimer,
@@ -221,7 +221,20 @@ let draw = () => {
             GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} is now rebooting...` : `${GAME.p.n} was Defeated!`);  
         else{
             GAME.d.dp();
-            GAME.d.dap(ball.fx, ball.fy, magnetic);
+            
+            //Ball speed
+            GAME.d.ft("Ball Speed", GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3, {f: 20});
+            GAME.d.ft(Math.round(ball.s * 10) / 10, GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 + 30, {f: 25});
+
+            //Magnetic Field
+            if(magnetic){
+                for(let i = 1, x = ball.x, y = ball.y; i < 50; i++, x += i * ball.fx * 2.5, y += i * ball.fy * 2.5){
+                    if(ball.x <= mouse.x && x > mouse.x || ball.x > mouse.x && x <= mouse.x || ball.y <= mouse.y && y > mouse.y || ball.y > mouse.y && y <= mouse.y)
+                        break;
+
+                    GAME.d.fc(x, y, 1, undefined, undefined, {fs: "orange"});
+                }
+            }
         }
     }
 };

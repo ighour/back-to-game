@@ -248,7 +248,21 @@ let draw = () => {
             GAME.d.dp(GAME.b.l <= 0 ? `${GAME.b.n} is now rebooting...` : `${GAME.p.n} was Defeated!`);  
         else{
             GAME.d.dp();
-            GAME.d.dap(moving.x, moving.y);
+
+            //Direction pointer
+            let x = GAME.c.p.x + GAME.c.p.w / 2, y = GAME.c.p.y + GAME.c.p.h / 2;
+
+            GAME.d.fc(x, y, 5);
+
+            let L1 = 40, L2 = 15, angle = 0.7;
+            let x1 = x, y1 = y;
+            let x2 = x1 + L1 * moving.x, y2 = y1 + L1 * moving.y;
+        
+            GAME.d.l(x2, y2, x2 + L2 / L1 * ((x1 - x2) * Math.cos(angle) + (y1 - y2) * Math.sin(angle)), 
+                y2 + L2 / L1 * ((y1 - y2) * Math.cos(angle) - (x1 - x2) * Math.sin(angle)));
+    
+            GAME.d.l(x2, y2, x2 + L2 / L1 * ((x1 - x2) * Math.cos(angle) - (y1 - y2) * Math.sin(angle)), 
+                y2 + L2 / L1 * ((y1 - y2) * Math.cos(angle) + (x1 - x2) * Math.sin(angle)));
         }
     }
 };
