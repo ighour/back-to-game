@@ -17,7 +17,7 @@ let player = {
     l: 100, //life
     d: 0,   //damage
     s: [],   //score
-    m: 0    //difficulty (1 = hard, 2 = easy)
+    m: 0    //difficulty (1 = hard, 1.2 = easy)
 };
 let boss = {
     n: "",
@@ -185,8 +185,8 @@ let next = (proceed, toLastInstance) => {
     else 
         currentInstance = proceed !== false ? (currentInstance + 1) % instances.length : instances.length - 1;
 
-    if(player.m == 2)
-        player.l = player.l + 20 > 100 ? 100 : player.l + 20;
+    if(player.m != 1)
+        player.l = player.l + 10 > 100 ? 100 : player.l + 10;
 
     start(proceed);
 };

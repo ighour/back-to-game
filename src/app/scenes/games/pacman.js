@@ -76,7 +76,7 @@ let logic = () => {
 };
 
 let bossMove = () => {
-    if(GAME.p.m == 2 && Math.random() <= 0.5)
+    if(GAME.p.m != 1 && Math.random() <= 0.25)
         return;
 
     if(!gameOver && mapFoods.length > 0 && GAME.b.p.length === 0){
@@ -422,7 +422,7 @@ let onStart = () => {
 
     //Engine
     GAME.p.d = 100;
-    GAME.p.s[GAME.cu()] = 1000 / GAME.p.m;
+    GAME.p.s[GAME.cu()] = 1000 / Math.pow(GAME.p.m, 2);
     GAME.b.n = "Pacman";
     GAME.b.l = 100;
     GAME.b.d = 100 / (mapFoods.length - 1);

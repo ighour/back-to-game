@@ -503,7 +503,7 @@ let onStart = () => {
 
     //Engine
     GAME.p.d = 3.125 * GAME.p.m;
-    GAME.p.s[GAME.cu()] = 2000 / GAME.p.m;
+    GAME.p.s[GAME.cu()] = 2000 / Math.pow(GAME.p.m, 2);
     GAME.b.n = "Evil Chess";
     GAME.b.l = 100;
     GAME.b.d = 6.25 / GAME.p.m;

@@ -174,7 +174,7 @@ let onStart = () => {
     //Engine
     GAME.e("click", clickAccept, acceptButton);
     GAME.e("click", () => clickTravel(1), travelButton);
-    GAME.e("click", () => clickTravel(2), travelButton2);
+    GAME.e("click", () => clickTravel(1.2), travelButton2);
     GAME.e("click", clickKeyboard, keyboardPosition);
     GAME.e("keydown", keyDown);
 };

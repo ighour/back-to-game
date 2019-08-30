@@ -281,7 +281,7 @@ let onStart = () => {
 
     //Engine
     GAME.p.d = 25 * GAME.p.m;
-    GAME.p.s[GAME.cu()] = 1000 / GAME.p.m;
+    GAME.p.s[GAME.cu()] = 1000 / Math.pow(GAME.p.m, 2);
     GAME.b.n = "Tic & Tac";
     GAME.b.l = 100;
     GAME.b.d = 15 / GAME.p.m;
