@@ -90,6 +90,14 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 
 * Added Fun Game mode, with HP regen and ATAK/DEF bonus.
 
+### v1.6
+
+* Improved tutorials with game controls.
+
+* Optimized fun game mode.
+
+* Optimized Pacman and Pong UI.
+
 ## Built With
 
 * [HTML](https://www.w3schools.com/html/html5_intro.asp) - WWW Markup Language.
