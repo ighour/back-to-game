@@ -158,7 +158,7 @@ export const cp = {
     UI: {
         tx: (texts, x, y, styles, time) => drawTexts(d, texts, x, y, styles, time),
         b: (position, text, styles) => drawButton(d, position, text, styles),
-        t: (title, year, boss, intel, startPosition) => drawTutorial(d, canvas.width, canvas.height, title, year, boss, intel, startPosition),
+        t: (tutorial, title, texts, timer, button, buttonTitle) => drawTutorial(d, canvas, tutorial, title, texts, timer, button, buttonTitle),
         p: (player, boss, text) => drawPanel(d, p, player, boss, text),
         ap: (dirX, dirY, active, position = panelCenter) => drawArrowPointer(d, dirX, dirY, position, active),
     },

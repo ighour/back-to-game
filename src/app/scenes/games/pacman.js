@@ -1,16 +1,23 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, travelButton, unit, map, bossAnimation, playerAnimation, tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, timeAnimation, moving, graph, textTimer, scoreChange;
+let gamePosition, travelButton, startButton, unit, map, bossAnimation, playerAnimation, tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, timeAnimation, moving, graph, textTimer, scoreChange;
 
 /** Events */
 let clickTravel = () => {
-    tutorial = false
-    GAME.ca.t("Tip: move your mouse to call ghosts to your position.");
+    if(tutorial == 1){
+        setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
+    }
+};
+
+let clickStart = () => {
+    if(tutorial == 2){
+        tutorial = 0;
+    }
 };
 
 let mouseMove = (event, x, y) => {
-    if(!tutorial)
+    if(tutorial == 0)
         moving = GAME.f.norm(x - (gamePosition.x + gamePosition.w / 2), y - (gamePosition.y + gamePosition.h / 2));
 };
 
@@ -46,7 +53,7 @@ let playerChooseMove = (coord, prev, next) => {
 
 /** Logic */
 let logic = () => {
-    if(tutorial || gameOver)
+    if(tutorial != 0 || gameOver)
         return;
 
     time += GAME.dt;
@@ -176,37 +183,50 @@ let generateGraph = () => {
 
 /** Draw */
 let draw = () => {
-    if(tutorial){
+    if(tutorial != 0){
         textTimer += GAME.dt;
-
-        let x = GAME.c.x, y = GAME.c.y;
-
-        GAME.d.ft("Mission #1", x + GAME.c.w / 2, y + 70, {f: 70});
 
         let sp = 70, tm = 50;
 
-        let texts = [
-            {c: "The year is 1980.", sp, tm},
+        GAME.d.dt(tutorial,
+            ["Mission #1", "Controls"],
+            [
+                [
+                    {c: "The year is 1980.", sp, tm},
+    
+                    {c: "Evil Chess has taken control of Pac Man. Your first mission is to defeat", sp: sp / 1.8, tm},
+                    {c: "Pac Man in order to restart it.", sp, tm},
+        
+                    {c: "You will be given control of the ghosts and aim to eat Pac Man.", sp, tm},
+        
+                    {c: "However, to be able to eat Pac Man, you will need to gather all weakened", sp: sp / 1.8, tm},
+                    {c: "ghosts into one.", sp, tm},
+        
+                    {c: "Be careful, Pac Man can eat your weakened ghosts and foods along the", sp: sp / 1.8, tm},
+                    {c: "map, and this can hurt you.", sp: sp * 1.1, tm},
+        
+                    {c: "Do you accept this mission?", sp, tm, s: {ta: "c"}, x: GAME.c.x + GAME.c.w / 2},
+                ],
+                [
+                    {c: "- Use your mouse to move through the game board.", sp, tm},
+        
+                    {c: "- You control the ghosts direction with the position of your mouse.", sp, tm},
+        
+                    {c: "- If you're in the left side of map, ghosts will go to left.", sp, tm},
+        
+                    {c: "- If you're in the top side of map, ghosts will go to top.", sp, tm},
+        
+                    {c: "- The same to right side and bottom side.", sp, tm},
 
-            {c: "Evil Chess has taken control of Pac Man. Your first mission is to defeat", sp: sp / 1.8, tm},
-            {c: "Pac Man in order to restart it.", sp, tm},
-
-            {c: "You will be given control of the ghosts and aim to eat Pac Man.", sp, tm},
-
-            {c: "However, to be able to eat Pac Man, you will need to gather all weakened", sp: sp / 1.8, tm},
-            {c: "ghosts into one.", sp, tm},
-
-            {c: "Be careful, Pac Man can eat your weakened ghosts and foods along the", sp: sp / 1.8, tm},
-            {c: "map, and this can hurt you.", sp: sp * 1.1, tm},
-
-            {c: "Do you accept this mission?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
-        ];
-
-        GAME.d.dtx(texts, x + 20, y + 170, {ta: "l", f: 30}, textTimer);
-
-        if(textTimer >= 1000)
-            GAME.d.db(travelButton, "Travel to 1980");
+                    {c: "- Check the panel at bottom to see which direction are you pointing now.", sp, tm},
+                ]
+            ],
+            textTimer,
+            [travelButton, startButton],
+            ["Travel to 1980", "Play"]
+        );
     }
+
     else {
         //Map
         for(let i = 0; i < map.length; i++){
@@ -311,6 +331,12 @@ let onStart = () => {
         w: 360,
         h: 60
     };
+    startButton = {
+        x: x - 120,
+        y: y * 2 - 100,
+        w: 240,
+        h: 60
+    };
     map = [ // 0 = empty, 1 = wall
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -353,7 +379,7 @@ let onStart = () => {
     };
 
     //State
-    tutorial = true;
+    tutorial = 1;
     gameOver = false;
     mapPlayers = [
         21, 38,
@@ -404,6 +430,7 @@ let onStart = () => {
     GAME.b.p = [];
 
     GAME.e("click", clickTravel, travelButton);
+    GAME.e("click", clickStart, startButton);
     GAME.e("mousemove", mouseMove);
 
     //Other

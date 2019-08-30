@@ -1,16 +1,23 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, travelButton, cellSize, tutorial, gameOver, signs, matchWinner, winCombos, board, playing, textTimer, scoreChange;
+let gamePosition, travelButton, startButton, cellSize, tutorial, gameOver, signs, matchWinner, winCombos, board, playing, textTimer, scoreChange;
 
 /** Events */
 let clickTravel = () => {
-    tutorial = false;
-    GAME.ca.t("Tip: click on a square to move yourself.");
+    if(tutorial == 1){
+        setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
+    }
+};
+
+let clickStart = () => {
+    if(tutorial == 2){
+        tutorial = 0;
+    }
 };
 
 let clickBoard = (event, x, y) => {
-    if(!tutorial && playing === -1 && matchWinner === 0 && !gameOver) {
+    if(tutorial == 0 && playing === -1 && matchWinner === 0 && !gameOver) {
         let square = {
             x: Math.floor((x - gamePosition.x) / cellSize.w),
             y: Math.floor((y - gamePosition.y) / cellSize.h)
@@ -138,38 +145,47 @@ let markBoard = boardIndex => {
 
 /** Draw */
 let draw = () => {
-    if(tutorial){
+    if(tutorial != 0){
         textTimer += GAME.dt;
-
-        let x = GAME.c.x, y = GAME.c.y;
-
-        GAME.d.ft("Mission #3", x + GAME.c.w / 2, y + 70, {f: 70});
 
         let sp = 70, tm = 50;
 
-        let texts = [
-            {c: "The year is 1952.", sp, tm},
-
-            {c: "Evil Chess has taken control of Tic Tac Toe. Your third mission is to defeat", sp: sp / 1.8, tm},
-            {c: "Tic and Tac in order to restart it.", sp, tm},
-
-            {c: "Tic is playing against Tac. Your goal is to prevent any of them from winning", sp: sp / 1.8, tm},
-            {c: "a match by weakening them.", sp, tm},
-
-            {c: "For this you will be positioned inside the board. Each turn, you will have to", sp: sp / 1.8, tm},
-            {c: "move to an adjacent board square.", sp, tm},
-
-            {c: "This will prevent Tic or Tac from marking the board where you are situated.", sp: sp / 1.8, tm},
-            {c: "Be careful, as if Tic or Tac wins a match, you will take damage.", sp: sp * 1.05, tm},
-
-            {c: "Ready for this?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
-        ];
-
-        GAME.d.dtx(texts, x + 20, y + 160, {ta: "l", f: 30}, textTimer);
-
-        if(textTimer >= 1000)
-            GAME.d.db(travelButton, "Travel to 1952");
+        GAME.d.dt(tutorial,
+            ["Mission #3", "Controls"],
+            [
+                [
+                    {c: "The year is 1952.", sp, tm},
+        
+                    {c: "Evil Chess has taken control of Tic Tac Toe. Your third mission is to defeat", sp: sp / 1.8, tm},
+                    {c: "Tic and Tac in order to restart it.", sp, tm},
+        
+                    {c: "Tic is playing against Tac. Your goal is to prevent any of them from winning", sp: sp / 1.8, tm},
+                    {c: "a match by weakening them.", sp, tm},
+        
+                    {c: "For this you will be positioned inside the board. Each turn, you will have to", sp: sp / 1.8, tm},
+                    {c: "move to an adjacent board square.", sp, tm},
+        
+                    {c: "This will prevent Tic or Tac from marking the board where you are situated.", sp: sp / 1.8, tm},
+                    {c: "Be careful, as if Tic or Tac wins a match, you will take damage.", sp: sp * 1.05, tm},
+        
+                    {c: "Ready for this?", sp, tm, s: {ta: "c"}, x: GAME.c.x + GAME.c.w / 2},
+                ],
+                [
+                    {c: "- Use your mouse to move through the board cells.", sp, tm},
+        
+                    {c: "- Click on a cell to move to it.", sp, tm},
+        
+                    {c: "- Movable cells will have a small ball on it's center.", sp, tm},
+        
+                    {c: "- You can only move to adjacent cells.", sp, tm},
+                ]
+            ],
+            textTimer,
+            [travelButton, startButton],
+            ["Travel to 1952", "Play"]
+        );
     }
+
     else{
         //Board
         for(let i = 0; i < 2; i++)
@@ -228,13 +244,19 @@ let onStart = () => {
         w: 360,
         h: 60
     };
+    startButton = {
+        x: x * 2.5 - 120,
+        y: y * 10 - 100,
+        w: 240,
+        h: 60
+    };
     cellSize = {
         w: gamePosition.w / 3,
         h: gamePosition.h / 3 
     };
 
     //State
-    tutorial = true;
+    tutorial = 1;
     gameOver = false;
     signs = {
         "-1": "⊗",
@@ -265,6 +287,7 @@ let onStart = () => {
     GAME.b.d = 15 / GAME.p.m;
 
     GAME.e("click", clickTravel, travelButton);
+    GAME.e("click", clickStart, startButton);
     GAME.e("click", clickBoard, gamePosition);
 
     //Other

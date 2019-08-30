@@ -11,9 +11,6 @@ export const drawTexts = (draw, texts, x, y, styles, currentTime) => {
                 break;
         }
 
-        if(text.co && !text.co())
-            return;
-
         let currentStyles = Object.assign({}, styles, text.s);
         let y2 = text.y ? text.y : y;
 

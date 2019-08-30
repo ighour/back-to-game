@@ -1,22 +1,29 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, travelButton, barSize, tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse, textTimer, scoreChange;
+let gamePosition, travelButton, startButton, barSize, tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse, textTimer, scoreChange;
 
 /** Events */
 let clickTravel = () => {
-    tutorial = false;
-    GAME.ca.t("Tip: move your mouse and click to activate magnetic field.");
+    if(tutorial == 1){
+        setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
+    }
 };
-let mouseMove = (event, x, y) => {if(!tutorial) mouse = {x, y}};
-let mouseDown = () => {if(!tutorial) magnetic = true};
-let mouseUp = () => {if(!tutorial) magnetic = false};
+
+let clickStart = () => {
+    if(tutorial == 2){
+        tutorial = 0;
+    }
+};
+let mouseMove = (event, x, y) => {if(tutorial == 0) mouse = {x, y}};
+let mouseDown = () => {if(tutorial == 0) magnetic = true};
+let mouseUp = () => {if(tutorial == 0) magnetic = false};
 
 /** Helper Functions */
 
 /** Logic */
 let logic = () => {
-    if(tutorial)
+    if(tutorial != 0)
         return;
 
     moveNPCs();
@@ -154,38 +161,49 @@ let checkBallHit = (self, player) => {
 
 /** Draw Functions */
 let draw = () => {
-    if(tutorial){
+    if(tutorial != 0){
         textTimer += GAME.dt;
-
-        let x = GAME.c.x, y = GAME.c.y;
-
-        GAME.d.ft("Mission #2", x + GAME.c.w / 2, y + 70, {f: 70});
 
         let sp = 70, tm = 50;
 
-        let texts = [
-            {c: "The year is 1972.", sp, tm},
+        GAME.d.dt(tutorial,
+            ["Mission #2", "Controls"],
+            [
+                [
+                    {c: "The year is 1972.", sp, tm},
+        
+                    {c: "Evil Chess has taken control of Pong. Your second mission is to defeat", sp: sp / 1.8, tm},
+                    {c: "Pong in order to restart it.", sp, tm},
+        
+                    {c: "You will receive control of a magnetic field with the power to influence the", sp: sp / 1.8, tm},
+                    {c: "movement of the ball on the field.", sp, tm},
+        
+                    {c: "However, Pong will do everything to avoid the ball going out of bounds by ", sp: sp / 1.8, tm},
+                    {c: "controlling the side bars.", sp, tm},
+        
+                    {c: "Your goal, then, is to get the ball out of the field to weaken the Pong. But", sp: sp / 1.8, tm},
+                    {c: "be careful, you can be hurt when hitting the side bars.", sp: sp * 1.1, tm},
+        
+                    {c: "Are you ready for the mission?", sp, tm, s: {ta: "c"}, x: GAME.c.x + GAME.c.w / 2},
+                ],
+                [
+                    {c: "- Use your mouse to move through the game area.", sp, tm},
+        
+                    {c: "- Click to activate the magnetic field.", sp, tm},
+        
+                    {c: "- It will try to push the ball to your mouse position.", sp, tm},
+        
+                    {c: "- This can slightly change ball direction.", sp, tm},
 
-            {c: "Evil Chess has taken control of Pong. Your second mission is to defeat", sp: sp / 1.8, tm},
-            {c: "Pong in order to restart it.", sp, tm},
-
-            {c: "You will receive control of a magnetic field with the power to influence the", sp: sp / 1.8, tm},
-            {c: "movement of the ball on the field.", sp, tm},
-
-            {c: "However, Pong will do everything to avoid the ball going out of bounds by ", sp: sp / 1.8, tm},
-            {c: "controlling the side bars.", sp, tm},
-
-            {c: "Your goal, then, is to get the ball out of the field to weaken the Pong. But", sp: sp / 1.8, tm},
-            {c: "be careful, you can be hurt when hitting the side bars.", sp: sp * 1.1, tm},
-
-            {c: "Are you ready for the mission?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
-        ];
-
-        GAME.d.dtx(texts, x + 20, y + 160, {ta: "l", f: 30}, textTimer);
-
-        if(textTimer >= 1000)
-            GAME.d.db(travelButton, "Travel to 1972");
+                    {c: "- Check the panel at bottom to see the direction of you magnetic field.", sp, tm},
+                ]
+            ],
+            textTimer,
+            [travelButton, startButton],
+            ["Travel to 1972", "Play"]
+        );
     }
+
     else {
         //Board
         GAME.d.sr(gamePosition.x, gamePosition.y, gamePosition.w, gamePosition.h);
@@ -224,6 +242,12 @@ let onStart = () => {
         w: 360,
         h: 60
     };
+    startButton = {
+        x: x * 5 - 120,
+        y: y * 10 - 100,
+        w: 240,
+        h: 60
+    };
     barSize = {
         w: 10,
         h: gamePosition.h / 5
@@ -238,7 +262,7 @@ let onStart = () => {
     };
 
     //State
-    tutorial = true;
+    tutorial = 1;
     gameOver = false;
     ball = {
         x: gamePosition.x + gamePosition.w / 2,
@@ -268,6 +292,7 @@ let onStart = () => {
     GAME.b.d = 1;
 
     GAME.e("click", clickTravel, travelButton);
+    GAME.e("click", clickStart, startButton);
     GAME.e("mousemove", mouseMove);
     GAME.e("mousedown", mouseDown);
     GAME.e("mouseup", mouseUp);

@@ -220,7 +220,7 @@ export const GAME = {
         sc: cp.d.sc,
         dtx: cp.UI.tx,
         db: cp.UI.b,
-        dt: (title, year, intel, startPosition) => cp.UI.t(title, year, boss, intel, startPosition),
+        dt: cp.UI.t,
         dp: text => cp.UI.p(player, boss, text),
         dap: cp.UI.ap,
         dic: cp.im.c,

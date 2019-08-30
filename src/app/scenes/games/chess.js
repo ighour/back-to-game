@@ -1,12 +1,19 @@
 const { GAME } = require('../../game');
 
 /** Variables */
-let gamePosition, travelButton, unit, hovering, npcSelect, npcTarget, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack, textTimer, scoreChange;
+let gamePosition, travelButton, startButton, unit, hovering, npcSelect, npcTarget, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack, textTimer, scoreChange;
 
 /** Events */
 let clickTravel = () => {
-    tutorial = false;
-    GAME.ca.t("Tip: click on a green square to move and red square to attack.");
+    if(tutorial == 1){
+        setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
+    }
+};
+
+let clickStart = () => {
+    if(tutorial == 2){
+        tutorial = 0;
+    }
 };
 
 let clickSquare = (event, x, y) => {
@@ -293,38 +300,49 @@ let checkBoardRules = (boardIndex, modifier, jump) => {
 
 /** Draw */
 let draw = () => {
-    if(tutorial){
+    if(tutorial != 0){
         textTimer += GAME.dt;
-
-        let x = GAME.c.x, y = GAME.c.y;
-
-        GAME.d.ft("Final Mission", x + GAME.c.w / 2, y + 70, {f: 70});
 
         let sp = 70, tm = 50;
 
-        let texts = [
-            {c: "The year is 1950.", sp, tm},
-
-            {c: "Evil Chess has completely replaced it's original game. Your last mission is", sp: sp / 1.8, tm},
-            {c: "to defeat him in order to restart it.", sp, tm},
-
-            {c: "Your goal is to kill enough pieces of Evil Chess, but he is controlling both", sp: sp / 1.8, tm},
-            {c: "sides and you are just one piece.", sp, tm},
-
-            {c: "Each turn, only one type of piece can move or attack. But don't worry, you", sp: sp / 1.8, tm},
-            {c: "got the power to change your piece type as the selected at round.", sp, tm},
-
-            {c: "Killing a King will do a lot of damage to Evil Chess. Think smart and plan", sp: sp / 1.8, tm},
-            {c: "your best strategy.", sp: sp * 1.05, tm},
-
-            {c: "Are you prepared?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
-        ];
-
-        GAME.d.dtx(texts, x + 20, y + 160, {ta: "l", f: 30}, textTimer);
-
-        if(textTimer >= 1000)
-            GAME.d.db(travelButton, "Travel to 1950");
+        GAME.d.dt(tutorial,
+            ["Final Mission", "Controls"],
+            [
+                [
+                    {c: "The year is 1950.", sp, tm},
+        
+                    {c: "Evil Chess has completely replaced it's original game. Your last mission is", sp: sp / 1.8, tm},
+                    {c: "to defeat him in order to restart it.", sp, tm},
+        
+                    {c: "Your goal is to kill enough pieces of Evil Chess, but he is controlling both", sp: sp / 1.8, tm},
+                    {c: "sides and you are just one piece.", sp, tm},
+        
+                    {c: "Each turn, only one type of piece can move or attack. But don't worry, you", sp: sp / 1.8, tm},
+                    {c: "got the power to change your piece type as the selected at round.", sp, tm},
+        
+                    {c: "Killing a King will do a lot of damage to Evil Chess. Think smart and plan", sp: sp / 1.8, tm},
+                    {c: "your best strategy.", sp: sp * 1.05, tm},
+        
+                    {c: "Are you prepared?", sp, tm, s: {ta: "c"}, x: GAME.c.x + GAME.c.w / 2},
+                ],
+                [
+                    {c: "- Use your mouse to move through the board cells.", sp, tm},
+        
+                    {c: "- Click on a cell to move to it or attack it.", sp, tm},
+        
+                    {c: "- Movable cells will have green borders and attackable red.", sp, tm},
+        
+                    {c: "- Your piece type will change along the turns (check sequence on bottom).", sp, tm},
+        
+                    {c: "- Only pieces of turn type can move, attack or be attacked.", sp, tm},
+                ]
+            ],
+            textTimer,
+            [travelButton, startButton],
+            ["Travel to 1950", "Play"]
+        );
     }
+
     else {
         //Board
         for(let i = 0; i < board.length; i++){
@@ -417,6 +435,12 @@ let onStart = () => {
         w: 360,
         h: 60
     };
+    startButton = {
+        x: x - 120,
+        y: y * 2 - 100,
+        w: 240,
+        h: 60
+    };
     unit = {
         w: gamePosition.w / 8,
         h: gamePosition.h / 8,
@@ -427,7 +451,7 @@ let onStart = () => {
     npcTarget = -1;
 
     //State
-    tutorial = true;
+    tutorial = 1;
     gameOver = false;
     colors = [
         "#D8DbBf",  //board 1
@@ -485,6 +509,7 @@ let onStart = () => {
     GAME.b.d = 6.25 / GAME.p.m;
 
     GAME.e("click", clickTravel, travelButton);
+    GAME.e("click", clickStart, startButton);
     GAME.e("click", clickSquare, gamePosition);
     GAME.e("mousemove", moveSquare, gamePosition);
 };

@@ -1,30 +1,15 @@
-const { drawButton, drawLifeCircle } = require("./components");
+const { drawButton, drawLifeCircle, drawTexts } = require("./components");
 
 /** Tutorial of Games */
-export const drawTutorial = (draw, width, height, title, year, boss, intel, startPosition) => {
-    //Mission
-    draw.ft(title, width / 2, height / 5, {f: "100"});
+export const drawTutorial = (draw, canvas, tutorial, title, texts, timer, button, buttonTitle) => {
+    tutorial--;
 
-    //Brief
-    let f = 30;
-    let ta = "l";
-    let texts = [
-        "Year:",
-        `Boss:`,
-        "Intel:"
-    ];
-    draw.ftb(texts, width / 20, height * 2 / 5, 70, {ta, f});
+    draw.ft(title[tutorial], canvas.width / 2, 70, {f: 70});
 
-    texts = [
-        year,
-        boss.n
-    ];
-    draw.ftb(texts, width / 20 + 100, height * 2 / 5, 70, {ta, f});
+    drawTexts(draw, texts[tutorial], 20, 160, {ta: "l", f: 30}, timer);
 
-    draw.ftb(intel, width / 20 + 100, height * 2 / 5 + 140, 40, {ta, f});
-
-    //Start
-    drawButton(draw, startPosition, "Travel");
+    if(timer >= 1000)
+        drawButton(draw, button[tutorial], buttonTitle[tutorial]);
 };
 
 /** Panel */
