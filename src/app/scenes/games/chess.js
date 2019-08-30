@@ -3,57 +3,6 @@ const { GAME } = require('../../game');
 /** Variables */
 let gamePosition, travelButton, startButton, unit, hovering, npcSelect, npcTarget, tutorial, gameOver, colors, symbol, pieces, turn, sequence, board, player0, player1, player2, playerCanMove, playerCanAttack, textTimer, scoreChange;
 
-/** Events */
-let clickTravel = () => {
-    if(tutorial == 1){
-        setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
-    }
-};
-
-let clickStart = () => {
-    if(tutorial == 2){
-        tutorial = 0;
-    }
-};
-
-let clickSquare = (event, x, y) => {
-    if(turn == 0){
-        let square = {
-            x: Math.floor((x - gamePosition.x) / unit.w),
-            y: Math.floor((y - gamePosition.y) / unit.h)
-        };
-        
-        let boardIndex = (square.x + square.y*8);
-
-        if(playerCanMove.includes(boardIndex)){
-            if(player0.length == 0)
-                insertPiece(player0, boardIndex, sequence[0]);
-            else
-                movePiece(player0, player0[0], boardIndex);
-
-            turn = 1;
-            setTimeout(() => playNPC(player1), 1000);
-        }
-
-        else if(playerCanAttack.includes(boardIndex)){
-            attackPiece(player0, player0[0], boardIndex);
-            turn = 1;
-            setTimeout(() => playNPC(player1), 1000);
-        }
-    }
-};
-
-let moveSquare = (event, x, y) => {
-    if(turn == 0){
-        let square = {
-            x: Math.floor((x - gamePosition.x) / unit.w),
-            y: Math.floor((y - gamePosition.y) / unit.h)
-        };
-        
-        hovering = (square.x + square.y*8);
-    }
-};
-
 /** Helper Functions */
 let getUnitXY = index => {
     return {
@@ -64,11 +13,6 @@ let getUnitXY = index => {
 
 /** Logic */
 // let logic = () => {};
-
-let insertPiece = (player, boardIndex, boardValue) => {
-    player.push(boardIndex);
-    board[boardIndex] = boardValue;
-};
 
 let movePiece = (player, fromBoardIndex, toBoardIndex) => {
     player[player.indexOf(fromBoardIndex)] = toBoardIndex;
@@ -92,10 +36,6 @@ let attackPiece = (player, attackerBoardIndex, defenderBoardIndex) => {
         gameOver = GAME.f.dp(undefined, scoreChange[0]);
         removePiece(player, attackerBoardIndex);
     }
-};
-
-let evolvePiece = targetBoardIndex => {
-    board[targetBoardIndex] = pieces[Math.floor(Math.random() * (pieces.length - 2)) + 1]
 };
 
 let playNPC = (player) => {
@@ -164,7 +104,7 @@ let playNPC = (player) => {
                     movePiece(player, moveBoardIndex, targetBoardIndex);
 
                     if(board[targetBoardIndex] == 1 && (player === player2 && targetBoardIndex < 8 || player === player1 && targetBoardIndex >= 56))
-                        evolvePiece(targetBoardIndex);
+                        board[targetBoardIndex] = pieces[Math.floor(Math.random() * (pieces.length - 2)) + 1];
 
                     playNPCEnd(player);
                 }, 400);
@@ -508,10 +448,55 @@ let onStart = () => {
     GAME.b.l = 100;
     GAME.b.d = 6.25 / GAME.p.m;
 
-    GAME.e("click", clickTravel, travelButton);
-    GAME.e("click", clickStart, startButton);
-    GAME.e("click", clickSquare, gamePosition);
-    GAME.e("mousemove", moveSquare, gamePosition);
+    GAME.e("click", () => {
+        if(tutorial == 1)
+            setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
+    }, travelButton);
+
+    GAME.e("click", () => {
+        if(tutorial == 2)
+            tutorial = 0;
+    }, startButton);
+
+    GAME.e("click", (event, x, y) => {
+        if(turn == 0){
+            let square = {
+                x: Math.floor((x - gamePosition.x) / unit.w),
+                y: Math.floor((y - gamePosition.y) / unit.h)
+            };
+            
+            let boardIndex = (square.x + square.y*8);
+    
+            if(playerCanMove.includes(boardIndex)){
+                if(player0.length == 0){
+                    player0.push(boardIndex);
+                    board[boardIndex] = sequence[0];
+                }
+                else
+                    movePiece(player0, player0[0], boardIndex);
+    
+                turn = 1;
+                setTimeout(() => playNPC(player1), 1000);
+            }
+    
+            else if(playerCanAttack.includes(boardIndex)){
+                attackPiece(player0, player0[0], boardIndex);
+                turn = 1;
+                setTimeout(() => playNPC(player1), 1000);
+            }
+        }
+    }, gamePosition);
+
+    GAME.e("mousemove", (event, x, y) => {
+        if(turn == 0){
+            let square = {
+                x: Math.floor((x - gamePosition.x) / unit.w),
+                y: Math.floor((y - gamePosition.y) / unit.h)
+            };
+            
+            hovering = (square.x + square.y*8);
+        }
+    }, gamePosition);
 };
 
 let onUpdate = () => {

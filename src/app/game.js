@@ -212,8 +212,6 @@ export const GAME = {
         l: cp.d.l,
         sl: cp.d.sl,
         ft: cp.d.ft,
-        st: cp.d.st,
-        ftb: cp.d.ftb,
         fr: cp.d.fr,
         sr: cp.d.sr,
         fc: cp.d.fc,
@@ -222,9 +220,7 @@ export const GAME = {
         db: cp.UI.b,
         dt: cp.UI.t,
         dp: text => cp.UI.p(player, boss, text),
-        dap: cp.UI.ap,
-        dic: cp.im.c,
-        dio: (name, x, y, fs, notFs = "#2A293E", size) => cp.im.o(name, x, y, fs, notFs, size)
+        dic: cp.im.c
     },
     f: {    //functions
         dp: (damage, score) => doDamage(player, damage ? damage : boss.d, score),

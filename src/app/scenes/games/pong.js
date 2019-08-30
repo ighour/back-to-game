@@ -3,22 +3,6 @@ const { GAME } = require('../../game');
 /** Variables */
 let gamePosition, travelButton, startButton, barSize, tutorial, gameOver, p1Bar, p2Bar, ball, magnetic, mouse, textTimer, scoreChange;
 
-/** Events */
-let clickTravel = () => {
-    if(tutorial == 1){
-        setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
-    }
-};
-
-let clickStart = () => {
-    if(tutorial == 2){
-        tutorial = 0;
-    }
-};
-let mouseMove = (event, x, y) => {if(tutorial == 0) mouse = {x, y}};
-let mouseDown = () => {if(tutorial == 0) magnetic = true};
-let mouseUp = () => {if(tutorial == 0) magnetic = false};
-
 /** Helper Functions */
 
 /** Logic */
@@ -26,12 +10,7 @@ let logic = () => {
     if(tutorial != 0)
         return;
 
-    moveNPCs();
-    setBallDirection();
-    setBallPosition();
-};
-
-let moveNPCs = () => {
+    //Move NPCs
     let targetY = ball.y - barSize.h / 2, y = gamePosition.y + gamePosition.h - barSize.h;
 
     if(targetY < gamePosition.y)
@@ -41,31 +20,8 @@ let moveNPCs = () => {
 
     moveNPC(p1Bar, targetY);
     moveNPC(p2Bar, targetY);
-};
 
-let moveNPC = (player, targetY) => {
-    let target = {
-        x: ball.x - player.x,
-        y: targetY - player.y
-    };
-
-    let normVector = GAME.f.norm(target.x, target.y);
-
-    if(normVector.y >= -0.1 && normVector.y <= 0.1)
-        return;
-
-    let newY = player.y + normVector.y * GAME.dt;
-
-    let y = gamePosition.y + gamePosition.h - barSize.h;
-    if(newY < gamePosition.y)
-        newY = gamePosition.y;
-    else if(newY > y)
-        newY = y;
-    
-    player.y = newY;
-};
-
-let setBallDirection = () => {
+    //Set ball direction
     let tempDir = {
         x: ball.dx,
         y: ball.dy 
@@ -96,9 +52,8 @@ let setBallDirection = () => {
 
     ball.dx = normDir.x;
     ball.dy = normDir.y;
-};
 
-let setBallPosition = () => {
+    //Set Ball position
     let move = ball.s * GAME.dt / 1.5;
 
     let newX = ball.x + ball.dx * move;
@@ -142,6 +97,28 @@ let setBallPosition = () => {
 
     ball.x = newX;
     ball.y = newY;
+};
+
+let moveNPC = (player, targetY) => {
+    let target = {
+        x: ball.x - player.x,
+        y: targetY - player.y
+    };
+
+    let normVector = GAME.f.norm(target.x, target.y);
+
+    if(normVector.y >= -0.1 && normVector.y <= 0.1)
+        return;
+
+    let newY = player.y + normVector.y * GAME.dt;
+
+    let y = gamePosition.y + gamePosition.h - barSize.h;
+    if(newY < gamePosition.y)
+        newY = gamePosition.y;
+    else if(newY > y)
+        newY = y;
+    
+    player.y = newY;
 };
 
 let checkBallHit = (self, player) => {
@@ -304,11 +281,30 @@ let onStart = () => {
     GAME.b.l = 100;
     GAME.b.d = 1;
 
-    GAME.e("click", clickTravel, travelButton);
-    GAME.e("click", clickStart, startButton);
-    GAME.e("mousemove", mouseMove);
-    GAME.e("mousedown", mouseDown);
-    GAME.e("mouseup", mouseUp);
+    GAME.e("click", () => {
+        if(tutorial == 1)
+            setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
+    }, travelButton);
+
+    GAME.e("click", () => {
+        if(tutorial == 2)
+            tutorial = 0;
+    }, startButton);
+
+    GAME.e("mousemove", (event, x, y) => {
+        if(tutorial == 0)
+            mouse = {x, y};
+    });
+
+    GAME.e("mousedown", () => {
+        if(tutorial == 0)
+            magnetic = true;
+    });
+
+    GAME.e("mouseup", () => {
+        if(tutorial == 0)
+            magnetic = false;
+    });
 };
 
 let onUpdate = () => {

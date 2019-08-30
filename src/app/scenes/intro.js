@@ -3,48 +3,6 @@ const { GAME } = require('../game');
 /** Variables */
 let acceptButton, travelButton, travelButton2, keyboardPosition, keySize, capsLock, creating, name, keyboard, nameMax, nameRules, textTimer;
 
-/** Events */
-let clickAccept = () => {
-    if(creating == false && textTimer >= 1000) creating = true;
-};
-
-let clickTravel = (mode) => {
-    if(creating && name.length > 0){
-        GAME.p.n = name;
-        GAME.p.m = mode;
-        GAME.n(true);
-    }
-};
-
-let clickKeyboard = (event, x, y) => {
-    if(creating){
-        let keyIndex = Math.floor((x - keyboardPosition.x) / keySize.w) + Math.floor((y - keyboardPosition.y) / keySize.h) * 10;
-
-        if(keyIndex === 29)
-            capsLock = !capsLock;
-        else if(keyIndex === 38){
-            if(name.length > 0 && name.length < nameMax)
-                name += " ";
-        }
-        else if(keyIndex === 39)
-            name = name.slice(0, name.length - 1);
-        else if(name.length < nameMax)
-            name += capsLock ? keyboard[keyIndex] : keyboard[keyIndex].toLowerCase();
-    }
-};
-
-let keyDown = (event) => {
-    if(!creating)
-        return;
-        
-    if(name.length < nameMax && event.key.length === 1 && nameRules.test(event.key))
-        name += event.key;
-    else if(event.keyCode === 8) //Backspace
-        name = name.slice(0, name.length - 1);
-    else if(event.keyCode === 20) //Caps Lock
-        capsLock = !capsLock;
-};
-
 /** Helper Functions */
 
 /** Logic */
@@ -54,45 +12,41 @@ let keyDown = (event) => {
 let draw = () => {
     if(creating === false){
         textTimer += GAME.dt;
-        
-        let x = GAME.c.x, y = GAME.c.y;
-
-        GAME.d.ft("Back To Game", x + GAME.c.w / 2, y + 70, {f: 70});
 
         let sp = 70, tm = 50;
 
-        let texts = [
-            {c: "The year is 2019.", sp, tm},
-
-            {c: "Chess is angry with technology because people prefer digital games.", sp, tm},
-
-            {c: "He believes that he would be an important game again if he could reach", sp: sp / 1.8, tm},
-            {c: "the most famous and classic digital games of history.", sp, tm},
-
-            {c: "So he has decided to create an improved and digital version of chess and", sp: sp / 1.8, tm},
-            {c: "send it back in time to corrupt those games.", sp, tm},
-
-            {c: "The gaming world now has only one hope, a traveler able to rescue all", sp: sp / 1.8, tm},
-            {c: "corrupted games and destroy the Evil Chess.", sp: sp * 1.1, tm},
-
-            {c: "Do you accept this mission?", sp, tm, s: {ta: "c"}, x: x + GAME.c.w / 2},
-        ];
-
-        GAME.d.dtx(texts, x + 20, y + 190, {ta: "l", f: 30}, textTimer);
-
-        if(textTimer >= 1000)
-            GAME.d.db(acceptButton, "Accept");
+        GAME.d.dt(1,
+            ["Back To Game"],
+            [
+                [
+                    {c: "The year is 2019.", sp, tm},
+        
+                    {c: "Chess is angry with technology because people prefer digital games.", sp, tm},
+        
+                    {c: "He believes that he would be an important game again if he could reach", sp: sp / 1.8, tm},
+                    {c: "the most famous and classic digital games of history.", sp, tm},
+        
+                    {c: "So he has decided to create an improved and digital version of chess and", sp: sp / 1.8, tm},
+                    {c: "send it back in time to corrupt those games.", sp, tm},
+        
+                    {c: "The gaming world now has only one hope, a traveler able to rescue all", sp: sp / 1.8, tm},
+                    {c: "corrupted games and destroy the Evil Chess.", sp: sp * 1.1, tm},
+        
+                    {c: "Do you accept this mission?", sp, tm, s: {ta: "c"}, x: GAME.c.x + GAME.c.w / 2},
+                ]
+            ],
+            textTimer,
+            [acceptButton],
+            ["Accept"]
+        );
     }
 
     else{
         let x = GAME.c.x + GAME.c.w / 2, y = GAME.c.y;
 
         //Call
-        let texts = [
-            "May I know your name,",
-            "Traveler?"
-        ];
-        GAME.d.ftb(texts, x, y + 70, 70);
+        GAME.d.ft("May I know your name,", x, y + 70);
+        GAME.d.ft("Traveler?", x, y + 140);
 
         //Input
         GAME.d.fr(x - 160, y + 200, 320, 46);
@@ -172,11 +126,50 @@ let onStart = () => {
     textTimer = 0;
 
     //Engine
-    GAME.e("click", clickAccept, acceptButton);
+    let clickTravel = (mode) => {
+        if(creating && name.length > 0){
+            GAME.p.n = name;
+            GAME.p.m = mode;
+            GAME.n(true);
+        }
+    };
+
+    GAME.e("click", () => {
+        if(creating == false && textTimer >= 1000)
+            creating = true;
+    }, acceptButton);
+
     GAME.e("click", () => clickTravel(1), travelButton);
     GAME.e("click", () => clickTravel(1.2), travelButton2);
-    GAME.e("click", clickKeyboard, keyboardPosition);
-    GAME.e("keydown", keyDown);
+
+    GAME.e("click", (event, x, y) => {
+        if(creating){
+            let keyIndex = Math.floor((x - keyboardPosition.x) / keySize.w) + Math.floor((y - keyboardPosition.y) / keySize.h) * 10;
+    
+            if(keyIndex === 29)
+                capsLock = !capsLock;
+            else if(keyIndex === 38){
+                if(name.length > 0 && name.length < nameMax)
+                    name += " ";
+            }
+            else if(keyIndex === 39)
+                name = name.slice(0, name.length - 1);
+            else if(name.length < nameMax)
+                name += capsLock ? keyboard[keyIndex] : keyboard[keyIndex].toLowerCase();
+        }
+    }, keyboardPosition);
+
+    GAME.e("keydown", (event) => {
+        if(!creating)
+            return;
+            
+        if(name.length < nameMax && event.key.length === 1 && nameRules.test(event.key))
+            name += event.key;
+        else if(event.keyCode === 8) //Backspace
+            name = name.slice(0, name.length - 1);
+        else if(event.keyCode === 20) //Caps Lock
+            capsLock = !capsLock;
+    });
 };
 
 let onUpdate = () => {  

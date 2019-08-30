@@ -3,33 +3,6 @@ const { GAME } = require('../game');
 /** Variables */
 let newButton, reviveButton, monetizeButton, codeButton, win, textTimer;
 
-/** Events */
-let clickNew = () => {
-    if(textTimer >= 1300){
-        GAME.p.n = "";
-        GAME.p.l = 100;
-        GAME.n();
-    }
-};
-let clickRevive = () => {
-    if(textTimer >= 1300 && !win && GAME.m.s){
-        GAME.r();
-    }
-        
-};
-let clickMonetize = () => {
-    if(textTimer >= 1300){
-        if(!GAME.m.a)
-            window.open('https://coil.com', '_blank');
-        else if(!GAME.m.s)
-            window.open('https://coil.com/settings/payment', '_blank'); 
-    }
-};
-let clickCode = () => {
-    if(textTimer >= 1300)
-        window.open('https://gitlab.com/ighour-projects/games/html/back-to-game','_blank');
-};
-
 /** Helper Functions */
 
 /** Logic */
@@ -115,8 +88,16 @@ let drawButtons = () => {
         reviveButton.y = y;
         GAME.d.db(reviveButton, "Revive", {fs: color, ss: color});
 
-        if(!GAME.m.s)
-            GAME.d.dio("LO", reviveButton.x + reviveButton.w - 30, reviveButton.y + reviveButton.h / 2 + 2, color);
+        if(!GAME.m.s){
+            //Lock
+            let baseUnit = 1, x = reviveButton.x + reviveButton.w - 30, y = reviveButton.y + reviveButton.h / 2 + 2, notFs = "#2A293E";
+
+            GAME.d.fc(x, y - baseUnit * 5, baseUnit * 10, undefined, undefined, {fs: color});
+            GAME.d.fr(x - baseUnit * 10, y + baseUnit * 10, baseUnit * 20, -baseUnit * 13, {fs: color});
+            GAME.d.fc(x, y - baseUnit * 5, baseUnit * 6.5, Math.PI, Math.PI * 2, {fs: notFs});
+            GAME.d.fc(x, y + baseUnit, baseUnit * 3.5, undefined, undefined, {fs: notFs});
+            GAME.d.l(x, y, x, y + baseUnit * 7, {ss: notFs, lw: 4});
+        }
     }
 
     if(!GAME.m.s){
@@ -132,6 +113,7 @@ let drawButtons = () => {
 
 /** Lifecycle */
 let onStart = _win => {
+    _win = false;
     let x = GAME.c.x + GAME.c.w / 2, y = GAME.c.y + GAME.c.h;
 
     //UI
@@ -165,10 +147,32 @@ let onStart = _win => {
     textTimer = 0;
 
     //Engine
-    GAME.e("click", clickNew, newButton);
-    GAME.e("click", clickRevive, reviveButton);
-    GAME.e("click", clickMonetize, monetizeButton);
-    GAME.e("click", clickCode, codeButton);
+    GAME.e("click", () => {
+        if(textTimer >= 1300){
+            GAME.p.n = "";
+            GAME.p.l = 100;
+            GAME.n();
+        }
+    }, newButton);
+
+    GAME.e("click", () => {
+        if(textTimer >= 1300 && !win && GAME.m.s)
+            GAME.r();           
+    }, reviveButton);
+
+    GAME.e("click", () => {
+        if(textTimer >= 1300){
+            if(!GAME.m.a)
+                window.open('https://coil.com', '_blank');
+            else if(!GAME.m.s)
+                window.open('https://coil.com/settings/payment', '_blank'); 
+        }
+    }, monetizeButton);
+
+    GAME.e("click", () => {
+        if(textTimer >= 1300)
+            window.open('https://gitlab.com/ighour-projects/games/html/back-to-game','_blank');
+    }, codeButton);
 };
 
 let onUpdate = () => {  

@@ -3,37 +3,6 @@ const { GAME } = require('../../game');
 /** Variables */
 let gamePosition, travelButton, startButton, cellSize, tutorial, gameOver, signs, matchWinner, winCombos, board, playing, textTimer, scoreChange;
 
-/** Events */
-let clickTravel = () => {
-    if(tutorial == 1){
-        setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
-    }
-};
-
-let clickStart = () => {
-    if(tutorial == 2){
-        tutorial = 0;
-    }
-};
-
-let clickBoard = (event, x, y) => {
-    if(tutorial == 0 && playing === -1 && matchWinner === 0 && !gameOver) {
-        let square = {
-            x: Math.floor((x - gamePosition.x) / cellSize.w),
-            y: Math.floor((y - gamePosition.y) / cellSize.h)
-        };
-        let playerIndex = getPlayerIndex();
-        let coords = getPlayerCoords(playerIndex);
-
-        if(playerIndex === -1 || Math.abs(square.x - coords.x) <= 1 && Math.abs(square.y - coords.y) <= 1){
-            let boardIndex = square.x + square.y*3;
-
-            if(board[boardIndex] === 0)
-                markBoard(boardIndex);
-        }
-    }
-};
-
 /** Helper Functions */
 let getPlayerIndex = () => {
     for(let i = 0; i < board.length; i++){
@@ -68,34 +37,6 @@ let checkResult = compareBoard => {
 
 /** Logic */
 // let logic = () => {};
-
-let makeNPCMove = () => {
-    let boardIndex = -1, lose = [], random = [];
-    let otherPlaying = playing === 1 ? 2 : 1;
-
-    for(let i = 0; i < 9; i++){
-        if(board[i] === 0){
-            let nextBoard = board.slice(0);
-
-            nextBoard[i] = playing;
-            if(checkResult(nextBoard) === playing){
-                boardIndex = i;
-                break;
-            }
-
-            nextBoard[i] = otherPlaying;
-            if(checkResult(nextBoard) === otherPlaying)
-                lose.push(i);
-            else
-                random.push(i);
-        }
-    }
-
-    if(boardIndex === -1)
-        boardIndex = lose.length > 0 ? lose[0] : random[Math.floor(Math.random() * random.length)];
-
-    setTimeout(() => markBoard(boardIndex), 500);
-};
 
 let markBoard = boardIndex => {
     if(playing === -1){
@@ -139,8 +80,36 @@ let markBoard = boardIndex => {
         }
     }
     
-    else if(playing > 0)
-        setTimeout(() => makeNPCMove(), Math.random() * 501 + 500);
+    else if(playing > 0){
+        setTimeout(() => {
+            //Make NPC Move
+            let boardIndex = -1, lose = [], random = [];
+            let otherPlaying = playing === 1 ? 2 : 1;
+        
+            for(let i = 0; i < 9; i++){
+                if(board[i] === 0){
+                    let nextBoard = board.slice(0);
+        
+                    nextBoard[i] = playing;
+                    if(checkResult(nextBoard) === playing){
+                        boardIndex = i;
+                        break;
+                    }
+        
+                    nextBoard[i] = otherPlaying;
+                    if(checkResult(nextBoard) === otherPlaying)
+                        lose.push(i);
+                    else
+                        random.push(i);
+                }
+            }
+        
+            if(boardIndex === -1)
+                boardIndex = lose.length > 0 ? lose[0] : random[Math.floor(Math.random() * random.length)];
+        
+            setTimeout(() => markBoard(boardIndex), 500);
+        }, 1000);
+    }
 };
 
 /** Draw */
@@ -286,9 +255,33 @@ let onStart = () => {
     GAME.b.l = 100;
     GAME.b.d = 15 / GAME.p.m;
 
-    GAME.e("click", clickTravel, travelButton);
-    GAME.e("click", clickStart, startButton);
-    GAME.e("click", clickBoard, gamePosition);
+    GAME.e("click", () => {
+        if(tutorial == 1)
+            setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
+    }, travelButton);
+
+    GAME.e("click", () => {
+        if(tutorial == 2)
+            tutorial = 0;
+    }, startButton);
+
+    GAME.e("click", (event, x, y) => {
+        if(tutorial == 0 && playing === -1 && matchWinner === 0 && !gameOver) {
+            let square = {
+                x: Math.floor((x - gamePosition.x) / cellSize.w),
+                y: Math.floor((y - gamePosition.y) / cellSize.h)
+            };
+            let playerIndex = getPlayerIndex();
+            let coords = getPlayerCoords(playerIndex);
+    
+            if(playerIndex === -1 || Math.abs(square.x - coords.x) <= 1 && Math.abs(square.y - coords.y) <= 1){
+                let boardIndex = square.x + square.y*3;
+    
+                if(board[boardIndex] === 0)
+                    markBoard(boardIndex);
+            }
+        }
+    }, gamePosition);
 
     //Other
     onReset();

@@ -3,24 +3,6 @@ const { GAME } = require('../../game');
 /** Variables */
 let gamePosition, travelButton, startButton, unit, map, bossAnimation, playerAnimation, tutorial, gameOver, mapPlayers, mapBoss, lastMapBoss, mapFoods, time, timeAnimation, moving, graph, textTimer, scoreChange;
 
-/** Events */
-let clickTravel = () => {
-    if(tutorial == 1){
-        setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
-    }
-};
-
-let clickStart = () => {
-    if(tutorial == 2){
-        tutorial = 0;
-    }
-};
-
-let mouseMove = (event, x, y) => {
-    if(tutorial == 0)
-        moving = GAME.f.norm(x - (gamePosition.x + gamePosition.w / 2), y - (gamePosition.y + gamePosition.h / 2));
-};
-
 /** Helper Functions */
 let getUnitXY = index => {
     return {
@@ -163,24 +145,6 @@ let checkCollisions = () => {
     });
 };
 
-let generateGraph = () => {
-    graph = new GAME.ds.g();
-
-    for(let i = 0; i < map.length; i++){
-        if(map[i] === 0){   //movable
-            graph.addVertex(i);
-
-            ["l", "r", "t", "b"].forEach(e => {
-                let near = getNearIndex(e, i);
-                let neighbor = map[near] === 0 ? near : -1;
-
-                if(neighbor !== -1)
-                    graph.addEdge(i, neighbor);
-            });
-        }
-    }
-};
-
 /** Draw */
 let draw = () => {
     if(tutorial != 0){
@@ -241,7 +205,64 @@ let draw = () => {
         }
 
         //Targets
-        drawTargets();
+        let radius = unit.w >= unit.h ? unit.h / 2 : unit.w / 2;
+
+        // Target Foods
+        mapFoods.forEach(e => {
+            let coords = getUnitXY(e);
+            GAME.d.fc(coords.x + unit.w / 2, coords.y + unit.h / 2, radius / 8);
+        });
+    
+        //Target Players
+        mapPlayers.forEach(e => {
+            let coords = getUnitXY(e);
+            let playerX = coords.x + unit.w / 2, playerY = coords.y + unit.h / 2;
+    
+            let bgColor = mapPlayers.length === 1 ? "orange" : playerAnimation.t[playerAnimation.c][0];
+            let color = mapPlayers.length === 1 ? "royalblue" : playerAnimation.t[playerAnimation.c][1];
+    
+            GAME.d.fc(playerX, playerY, radius, undefined, undefined, {fs: bgColor});
+            GAME.d.fr(playerX - radius, playerY, radius * 2, radius * 9 / 10, {fs: bgColor});
+    
+            if(mapPlayers.length !== 1){
+                let mouthY = playerY + radius / 4;
+                let mouth = [
+                    [playerX, mouthY, playerX - radius / 4, mouthY + radius / 5],
+                    [playerX - radius / 4, mouthY + radius / 5, playerX - radius * 2 / 4, mouthY],
+                    [playerX - radius * 2 / 4, mouthY, playerX - radius * 3 / 4, mouthY + radius / 5],
+        
+                    [playerX, mouthY, playerX + radius / 4, mouthY + radius / 5],
+                    [playerX + radius / 4, mouthY + radius / 5, playerX + radius * 2 / 4, mouthY],
+                    [playerX + radius * 2 / 4, mouthY, playerX + radius * 3 / 4, mouthY + radius / 5],
+                ];
+        
+                mouth.forEach(m => {
+                    GAME.d.l(m[0], m[1], m[2], m[3], {ss: color});
+                });
+            }
+    
+            GAME.d.fc(playerX - radius / 3, playerY - radius / 2, radius / 8, undefined, undefined, {fs: color});
+            GAME.d.fc(playerX + radius / 3, playerY - radius / 2, radius / 8, undefined, undefined, {fs: color});
+        });
+    
+        //Target Boss
+        if(GAME.b.l > 0){
+            let bossCoords = getUnitXY(mapBoss);
+            let bossX = bossCoords.x + unit.w / 2, bossY = bossCoords.y + unit.h / 2;
+            let bossStartAngle = Math.PI, bossStartAngle2 = Math.PI, bossEyeX, bossEyeY, biteAngle = Math.PI / 8 * bossAnimation.b;
+            switch(bossAnimation.d){
+                case "l": bossStartAngle *= 1.25; bossStartAngle2 *= 1.75; bossEyeX = bossX + unit.w / 20; bossEyeY = bossY - unit.h / 5; break;
+                case "r": bossStartAngle *= 0.25; bossStartAngle2 *= 0.75; bossEyeX = bossX - unit.w / 20; bossEyeY = bossY - unit.h / 5;  break;
+                case "t": bossStartAngle *= 1.75; bossStartAngle2 *= 0.25; bossEyeX = bossX - unit.w / 5; bossEyeY = bossY - unit.h / 20;  break;
+                case "b": bossStartAngle *= 0.75; bossStartAngle2 *= 1.25; bossEyeX = bossX - unit.w / 5; bossEyeY = bossY + unit.h / 20;  break;
+                default: bossStartAngle = 0; break;
+            }
+        
+            let fs = "yellow";
+            GAME.d.fc(bossX, bossY, radius, bossStartAngle - biteAngle, bossStartAngle + Math.PI + biteAngle, {fs});
+            GAME.d.fc(bossX, bossY, radius, bossStartAngle2 - biteAngle, bossStartAngle2 + Math.PI + biteAngle, {fs});
+            GAME.d.fc(bossEyeX, bossEyeY, radius / 7, undefined, undefined, {fs: "black"});
+        }
 
         //Panel
         if(gameOver === true)
@@ -264,67 +285,6 @@ let draw = () => {
             GAME.d.l(x2, y2, x2 + L2 / L1 * ((x1 - x2) * Math.cos(angle) - (y1 - y2) * Math.sin(angle)), 
                 y2 + L2 / L1 * ((y1 - y2) * Math.cos(angle) + (x1 - x2) * Math.sin(angle)));
         }
-    }
-};
-
-let drawTargets = () => {
-    let radius = unit.w >= unit.h ? unit.h / 2 : unit.w / 2;
-
-    //Foods
-    mapFoods.forEach(e => {
-        let coords = getUnitXY(e);
-        GAME.d.fc(coords.x + unit.w / 2, coords.y + unit.h / 2, radius / 8);
-    });
-
-    //Players
-    mapPlayers.forEach(e => {
-        let coords = getUnitXY(e);
-        let playerX = coords.x + unit.w / 2, playerY = coords.y + unit.h / 2;
-
-        let bgColor = mapPlayers.length === 1 ? "orange" : playerAnimation.t[playerAnimation.c][0];
-        let color = mapPlayers.length === 1 ? "royalblue" : playerAnimation.t[playerAnimation.c][1];
-
-        GAME.d.fc(playerX, playerY, radius, undefined, undefined, {fs: bgColor});
-        GAME.d.fr(playerX - radius, playerY, radius * 2, radius * 9 / 10, {fs: bgColor});
-
-        if(mapPlayers.length !== 1){
-            let mouthY = playerY + radius / 4;
-            let mouth = [
-                [playerX, mouthY, playerX - radius / 4, mouthY + radius / 5],
-                [playerX - radius / 4, mouthY + radius / 5, playerX - radius * 2 / 4, mouthY],
-                [playerX - radius * 2 / 4, mouthY, playerX - radius * 3 / 4, mouthY + radius / 5],
-    
-                [playerX, mouthY, playerX + radius / 4, mouthY + radius / 5],
-                [playerX + radius / 4, mouthY + radius / 5, playerX + radius * 2 / 4, mouthY],
-                [playerX + radius * 2 / 4, mouthY, playerX + radius * 3 / 4, mouthY + radius / 5],
-            ];
-    
-            mouth.forEach(m => {
-                GAME.d.l(m[0], m[1], m[2], m[3], {ss: color});
-            });
-        }
-
-        GAME.d.fc(playerX - radius / 3, playerY - radius / 2, radius / 8, undefined, undefined, {fs: color});
-        GAME.d.fc(playerX + radius / 3, playerY - radius / 2, radius / 8, undefined, undefined, {fs: color});
-    });
-
-    //Boss
-    if(GAME.b.l > 0){
-        let bossCoords = getUnitXY(mapBoss);
-        let bossX = bossCoords.x + unit.w / 2, bossY = bossCoords.y + unit.h / 2;
-        let bossStartAngle = Math.PI, bossStartAngle2 = Math.PI, bossEyeX, bossEyeY, biteAngle = Math.PI / 8 * bossAnimation.b;
-        switch(bossAnimation.d){
-            case "l": bossStartAngle *= 1.25; bossStartAngle2 *= 1.75; bossEyeX = bossX + unit.w / 20; bossEyeY = bossY - unit.h / 5; break;
-            case "r": bossStartAngle *= 0.25; bossStartAngle2 *= 0.75; bossEyeX = bossX - unit.w / 20; bossEyeY = bossY - unit.h / 5;  break;
-            case "t": bossStartAngle *= 1.75; bossStartAngle2 *= 0.25; bossEyeX = bossX - unit.w / 5; bossEyeY = bossY - unit.h / 20;  break;
-            case "b": bossStartAngle *= 0.75; bossStartAngle2 *= 1.25; bossEyeX = bossX - unit.w / 5; bossEyeY = bossY + unit.h / 20;  break;
-            default: bossStartAngle = 0; break;
-        }
-    
-        let fs = "yellow";
-        GAME.d.fc(bossX, bossY, radius, bossStartAngle - biteAngle, bossStartAngle + Math.PI + biteAngle, {fs});
-        GAME.d.fc(bossX, bossY, radius, bossStartAngle2 - biteAngle, bossStartAngle2 + Math.PI + biteAngle, {fs});
-        GAME.d.fc(bossEyeX, bossEyeY, radius / 7, undefined, undefined, {fs: "black"});
     }
 };
 
@@ -427,7 +387,6 @@ let onStart = () => {
         x,
         y
     };
-    graph = {};
     textTimer = 0;
     scoreChange = [
         -300 / mapPlayers.length, //eat player
@@ -443,12 +402,39 @@ let onStart = () => {
     GAME.b.d2 = 20 / GAME.p.m;
     GAME.b.p = [];
 
-    GAME.e("click", clickTravel, travelButton);
-    GAME.e("click", clickStart, startButton);
-    GAME.e("mousemove", mouseMove);
+    GAME.e("click", () => {
+        if(tutorial == 1)
+            setTimeout(() => {textTimer = 0; tutorial = 2}, 100);
+    }, travelButton);
+
+    GAME.e("click", () => {
+        if(tutorial == 2)
+            tutorial = 0;
+    }, startButton);
+
+    GAME.e("mousemove", (event, x, y) => {
+        if(tutorial == 0)
+            moving = GAME.f.norm(x - (gamePosition.x + gamePosition.w / 2), y - (gamePosition.y + gamePosition.h / 2));
+    });
 
     //Other
-    generateGraph();
+
+    //Generate Graph
+    graph = new GAME.ds.g();
+
+    for(let i = 0; i < map.length; i++){
+        if(map[i] === 0){   //movable
+            graph.addVertex(i);
+
+            ["l", "r", "t", "b"].forEach(e => {
+                let near = getNearIndex(e, i);
+                let neighbor = map[near] === 0 ? near : -1;
+
+                if(neighbor !== -1)
+                    graph.addEdge(i, neighbor);
+            });
+        }
+    }
 };
 
 let onUpdate = () => {
