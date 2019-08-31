@@ -1,6 +1,12 @@
 const {cp, ca} = require("./canvas");
 const { Graph } = require("./datastructures");
 
+/** Adjust Canvas */
+let adjustCanvas = () => {
+    if(Math.abs((cp.i.height + ca.i.height) / window.innerHeight - 1) > 0.1)
+        cp.r(window.innerHeight / (cp.c.h + ca.c.h));
+};
+
 /** Variables */
 let animationFrame, instances = [], currentInstance = 0, lastInstance = 0;
 let events = {
@@ -49,8 +55,8 @@ let getCanvasCoords = (x, y) => {
     cp.i.addEventListener(type, event => {
         let coords = getCanvasCoords(event.clientX, event.clientY);
         events[type].forEach(e => {
-            if(coords.x >= e[1].x && coords.x <= e[1].x + e[1].w && coords.y >= e[1].y && coords.y <= e[1].y + e[1].h)
-                e[0](event, coords.x, coords.y)
+            if(coords.x >= e[1].x * cp.c.r() && coords.x <= e[1].x * cp.c.r() + e[1].w * cp.c.r() && coords.y >= e[1].y * cp.c.r() && coords.y <= e[1].y * cp.c.r() + e[1].h * cp.c.r())
+                e[0](event, coords.x * 1 / cp.c.r(), coords.y * 1 / cp.c.r());
         });
     });
 });
@@ -71,6 +77,8 @@ let getCanvasCoords = (x, y) => {
 document.addEventListener("keydown", event => events.keydown.forEach(e => e[0](event)));
 
 document.addEventListener("contextmenu", event => event.preventDefault());
+
+window.addEventListener("resize", adjustCanvas);
 
 /** Monetize */
 let monetize = {
@@ -149,7 +157,7 @@ let update = timestamp => {
         timing.d -= timing.u;
  
     //Draw
-    cp.d.fr(0, 0, cp.i.width, cp.i.height, {fs: "#2A293E"});
+    cp.d.fr(0, 0, cp.c.w, cp.c.h, {fs: "#2A293E"});
     instances[currentInstance].ou();    //onUpdate
     animationFrame = requestAnimationFrame(update);
 };
@@ -195,8 +203,8 @@ export const GAME = {
     c: {    //canvas
         x: 0,
         y: 0,
-        w: cp.i.width,  //width
-        h: cp.i.height,  //height
+        w: cp.c.w,  //width
+        h: cp.c.h,  //height
         p: cp.p //panel
     },
     ca: {
@@ -207,7 +215,7 @@ export const GAME = {
     b: boss,  //boss
     dt: timing.u, //delta
     m: monetize,    //web monetizing
-    e: (type, event, coords = {x: 0, y: 0, w: cp.i.width, h: cp.i.height}) => events[type].push([event, coords]),  //add event
+    e: (type, event, coords = {x: 0, y: 0, w: cp.c.w, h: cp.c.h}) => events[type].push([event, coords]),  //add event
     d: {    //draw
         l: cp.d.l,
         sl: cp.d.sl,
@@ -235,6 +243,8 @@ export const GAME = {
     s: () => {  //start
         if(instances.length === 0)
             return false;
+
+        adjustCanvas();
 
         start();
 

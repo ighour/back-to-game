@@ -1,13 +1,23 @@
+let ratio = 1;
+
 /** Canvas Config */
 let canvas = document.querySelector("#gc"), ctx = canvas.getContext("2d");
 canvas.width = 1024;
 canvas.height = 768;
 
-/** Panel */
-let p = {
+let c = {    //virtual canvas
     x: 0,
-    y: canvas.height - 150,
-    w: canvas.width,
+    y: 0,
+    w: 1024,
+    h: 768,
+    r: () => ratio
+};
+
+/** Panel */
+let p = {    //panel
+    x: 0,
+    y: 618,
+    w: 1024,
     h: 150
 };
 
@@ -51,19 +61,18 @@ let tempStyleAction = (callback, newStyles) => {
 };
 
 let styles = ({fs, ss, f, ta, tb, lw}) => {
-    if(lw) ctx.lineWidth = lw;
+    if(lw) ctx.lineWidth = lw * ratio;
     if(fs) ctx.fillStyle = fs;
     if(ss) ctx.strokeStyle = ss;
-    if(f) ctx.font = `${f}px Arial`;
+    if(f) ctx.font = `${f * ratio}px Arial`;
     if(ta) ctx.textAlign = defaultCtxTA[ta];
     if(tb) ctx.textBaseline = defaultCtxTB[tb];
 };
 
-//Clear Canvas
-d.cc = (x, y, w, h) => ctx.clearRect(x, y, w, h);
-
 //Line
 d.l = (x1, y1, x2, y2, styles) => {
+    x1 *= ratio, y1 *= ratio, x2 *= ratio, y2 *= ratio;
+
     tempStyleAction(() => {
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -74,6 +83,8 @@ d.l = (x1, y1, x2, y2, styles) => {
 
 //Split Line
 d.sl = (x1, y1, x2, y2, spacing, styles) => {
+    x1 *= ratio, y1 *= ratio, x2 *= ratio, y2 *= ratio, spacing *= ratio;
+
     tempStyleAction(() => {
         let x = x1;
         let y = y1;
@@ -97,15 +108,17 @@ d.sl = (x1, y1, x2, y2, spacing, styles) => {
 };
 
 //Fill Text
-d.ft = (text, x, y, styles) => tempStyleAction(() => ctx.fillText(text, x, y), styles);
+d.ft = (text, x, y, styles) => tempStyleAction(() => ctx.fillText(text, x * ratio, y * ratio), styles);
 
-let drawRect = (type, x, y, width, height, styles) => tempStyleAction(() => ctx[type](x, y, width, height), styles);
+let drawRect = (type, x, y, width, height, styles) => tempStyleAction(() => ctx[type](x * ratio, y * ratio, width * ratio, height * ratio), styles);
 //Fill Rect
 d.fr = (x, y, width, height, styles) => drawRect("fillRect", x, y, width, height, styles);
 //Stroke Rect
 d.sr = (x, y, width, height, styles) => drawRect("strokeRect", x, y, width, height, styles);
 
 let drawCircle = (type, x, y, radius, startAngle = 0, endAngle = 2*Math.PI, styles) => {
+    x *= ratio, y *= ratio, radius *= ratio;
+
     tempStyleAction(() => {
         ctx.beginPath();
         ctx.arc(x, y, radius, startAngle, endAngle);
@@ -123,8 +136,8 @@ let drawMix = (type, coords, styles) => {
     tempStyleAction(() => {
         ctx.beginPath();
         let first = coords.shift();
-        ctx.moveTo(first[0], first[1]);
-        coords.forEach(c => ctx.lineTo(c[0], c[1]));
+        ctx.moveTo(first[0] * ratio, first[1] * ratio);
+        coords.forEach(c => ctx.lineTo(c[0] * ratio, c[1] * ratio));
         ctx.closePath();
         ctx[type]();
     }, styles);
@@ -183,7 +196,7 @@ let drawLifeCircle = (x, y, radius, life, lw = 5) => {
 let drawTutorial = (tutorial, title, texts, timer, button, buttonTitle) => {
     tutorial--;
 
-    d.ft(title[tutorial], canvas.width / 2, 70, {f: 70});
+    d.ft(title[tutorial], c.w / 2, 70, {f: 70});
 
     drawTexts(texts[tutorial], 20, 160, {ta: "l", f: 30}, timer);
 
@@ -193,20 +206,22 @@ let drawTutorial = (tutorial, title, texts, timer, button, buttonTitle) => {
 
 //Panel
 let drawPanel = (player, boss, text) => {
+    let px = p.x, py = p.y, pw = p.w, ph = p.h;
+    
     //Divisor
-    d.l(p.x, p.y + 5, p.x + p.w, p.y + 5, {ss: "#444444"});
+    d.l(px, py + 5, px + pw, py + 5, {ss: "#444444"});
 
     //Life
-    let x = p.x + p.w / 12, y = p.y + p.h / 2, radius = 50;
+    let x = px + pw / 12, y = py + ph / 2, radius = 50;
     drawLifeCircle(x, y, radius, player.l);
     drawLifeCircle(x * 11, y, radius, boss.l);
 
     if(text)
-        d.ft(text, p.x + p.w / 2, p.y + p.h / 2);
+        d.ft(text, px + pw / 2, py + ph / 2);
     else{
         // Names
         let tb = "b";
-        y += p.h / 2;
+        y += ph / 2;
         radius += 5;
         d.ft(player.n, x + radius, y, {tb, ta: "l"});
         d.ft(boss.n, x * 11 - radius, y, {tb, ta: "r"});
@@ -327,7 +342,8 @@ let drawChess = (piece, x, y, fs, notFs, size = 100) => {
 
 export const cp = {
     i: canvas,  //instance
-    p,  //panel 
+    c,  //virtual canvas
+    p,  //panel
     d,  //draw
     UI: {
         tx: drawTexts,
@@ -337,6 +353,21 @@ export const cp = {
     },
     im: {
         c: drawChess
+    },
+    r: _ratio => {
+        ratio = _ratio;
+
+        canvas.width = 1024 * _ratio;
+        canvas.height = 768 * _ratio;
+
+        defaultCtx.lw = 2 * _ratio;
+        ctx.lineWidth = defaultCtx.lw;
+        defaultCtx.f = 50 * _ratio;
+        ctx.font = `${defaultCtx.f}px Arial`;
+
+        auxCanvas.width = canvas.width;
+        auxCanvas.height = 50 * _ratio;
+        auxCtx.font = `${20*_ratio}px Arial`;
     }
 };
 
@@ -354,9 +385,8 @@ export const cp = {
 let auxCanvas = document.querySelector("#ga"), auxCtx = auxCanvas.getContext("2d");
 
 /** Canvas Config */
-let w = canvas.width, h = 50;
-auxCanvas.width = w;
-auxCanvas.height = h;
+auxCanvas.width = canvas.width;
+auxCanvas.height = 50;
 
 /** Context Config */
 auxCtx.font = "20px Arial";
@@ -367,17 +397,23 @@ let auxDefText = "";
 
 /** Update */
 let update = (FPS, maxFPS) => {
-    auxCtx.clearRect(0, 0, w, h);
+    auxCtx.clearRect(0, 0, auxCanvas.width, auxCanvas.height);
     auxCtx.textAlign = "left";
     auxCtx.fillStyle = "#777777";
-    auxCtx.fillText(auxDefText, 0, h / 2);
+    auxCtx.fillText(auxDefText, 0, auxCanvas.height / 2);
     auxCtx.textAlign = "right";
     auxCtx.fillStyle = FPS < maxFPS / 2 ? "red" : "#777777";
-    auxCtx.fillText(`${FPS} FPS`, w, h / 2);
+    auxCtx.fillText(`${FPS} FPS`, auxCanvas.width, auxCanvas.height / 2);
 };
 
 export const ca = {
     i: auxCanvas,   //instance
+    c: {    //virtual canvas
+        x: 0,
+        y: 0,
+        w: 1024,
+        h: 50,
+    },
     u: update,   //update canvas
     t: text => auxDefText = text    //set left canvas text
 };
