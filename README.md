@@ -2,6 +2,8 @@
 
 Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](https://2019.js13kgames.com/).
 
+*Original repository can be found on [**Gitlab**](https://gitlab.com/ighour-projects/games/html/back-to-game).*
+
 ## About
 
 * In a world ruled by digital games, one of them travel to past and try to corrupt classic digital games.
@@ -14,19 +16,33 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 
 * **Pacman** : run from Pacman until you have enough power.
 
-![Pacman](/uploads/e4bef96a550da6cc3100a19f1d877aef/Pacman_Fast.gif)
+![Pacman](https://gitlab.com/ighour-projects/games/html/back-to-game/uploads/e4bef96a550da6cc3100a19f1d877aef/Pacman_Fast.gif)
 
 * **Pong** : get away from the field or die trying. Be carefull with the boss bars.
 
-![Pong](/uploads/31265c3e56693459f8f1f011c5458b8c/Pong_Fast.gif)
+![Pong](https://gitlab.com/ighour-projects/games/html/back-to-game/uploads/31265c3e56693459f8f1f011c5458b8c/Pong_Fast.gif)
 
 * **Tic Tac Toe** : enforce the game match to draw and avoid the boss winning as player X and player 0.
 
-![Tic Tac Toe](/uploads/459b765d13c56cd484dd8b5bd63e7474/TicTacToe_Fast.gif)
+![Tic Tac Toe](https://gitlab.com/ighour-projects/games/html/back-to-game/uploads/459b765d13c56cd484dd8b5bd63e7474/TicTacToe_Fast.gif)
 
 * **Chess** : eat pieces from both sides and avoid your enemies.
 
-![Chess](/uploads/83785727d6a07b096c7e13a19a013386/Chess_Fast.gif)
+![Chess](https://gitlab.com/ighour-projects/games/html/back-to-game/uploads/83785727d6a07b096c7e13a19a013386/Chess_Fast.gif)
+
+## Screenshots
+
+* **Introduction**
+
+![Intro](https://gitlab.com/ighour-projects/games/html/back-to-game/uploads/adfe9d18f65e2e780a6c7052e15c5d8f/Captura_de_tela_de_2019-08-31_09-52-14.png)
+
+* **Name Choose**
+
+![Name Choose](https://gitlab.com/ighour-projects/games/html/back-to-game/uploads/e9cba0e6e1227dae929009f0a0c6d78a/Captura_de_tela_de_2019-08-31_09-42-19.png)
+
+* **Game Over**
+
+![Game Over](https://gitlab.com/ighour-projects/games/html/back-to-game/uploads/1ff6dae2db09b7031adb51b2694b7cbb/Captura_de_tela_de_2019-08-31_09-52-02.png)
 
 ## Versions
 
