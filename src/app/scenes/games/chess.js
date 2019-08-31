@@ -326,11 +326,11 @@ let draw = () => {
             GAME.d.dp();
 
             //Sequence
-            GAME.d.dic(symbol[sequence[0]], GAME.c.p.x + GAME.c.p.w / 2 - 70, GAME.c.p.y + GAME.c.p.h / 3 - 5, "white", "#333333", 25);
+            GAME.d.dic(symbol[sequence[0]], GAME.c.p.x + GAME.c.p.w / 2 - 70, GAME.c.p.y + GAME.c.p.h / 3 - 5, "white", "#2A293E", 25);
             GAME.d.ft("->", GAME.c.p.x + GAME.c.p.w / 2 - 35, GAME.c.p.y + GAME.c.p.h / 3 - 5, {f: 20});
-            GAME.d.dic(symbol[sequence[1]], GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 - 5, "#AAAAAA", "#333333", 25);
+            GAME.d.dic(symbol[sequence[1]], GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 - 5, "#AAAAAA", "#2A293E", 25);
             GAME.d.ft("->", GAME.c.p.x + GAME.c.p.w / 2 + 35, GAME.c.p.y + GAME.c.p.h / 3 - 5, {f: 20});
-            GAME.d.dic(symbol[sequence[2]], GAME.c.p.x + GAME.c.p.w / 2 + 70, GAME.c.p.y + GAME.c.p.h / 3 - 5, "#AAAAAA", "#333333", 25);
+            GAME.d.dic(symbol[sequence[2]], GAME.c.p.x + GAME.c.p.w / 2 + 70, GAME.c.p.y + GAME.c.p.h / 3 - 5, "#AAAAAA", "#2A293E", 25);
             GAME.d.ft("Order", GAME.c.p.x + GAME.c.p.w / 2, GAME.c.p.y + GAME.c.p.h / 3 + 35, {f: 20});
         }
     }
