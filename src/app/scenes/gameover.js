@@ -113,7 +113,6 @@ let drawButtons = () => {
 
 /** Lifecycle */
 let onStart = _win => {
-    _win = false;
     let x = GAME.c.x + GAME.c.w / 2, y = GAME.c.y + GAME.c.h;
 
     //UI
