@@ -98,7 +98,7 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 
 * Optimized Pacman and Pong UI.
 
-### v1.7
+### v1.7/v1.8
 
 * Added responsive screen on height.
 
