@@ -360,10 +360,8 @@ export const cp = {
         canvas.width = 1024 * _ratio;
         canvas.height = 768 * _ratio;
 
-        defaultCtx.lw = 2 * _ratio;
-        ctx.lineWidth = defaultCtx.lw;
-        defaultCtx.f = 50 * _ratio;
-        ctx.font = `${defaultCtx.f}px Arial`;
+        ctx.lineWidth = defaultCtx.lw * _ratio;
+        ctx.font = `${defaultCtx.f * _ratio}px Arial`;
 
         auxCanvas.width = canvas.width;
         auxCanvas.height = 50 * _ratio;
