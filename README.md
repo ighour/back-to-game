@@ -12,13 +12,21 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 
 ## Available Games
 
-* **Tic Tac Toe** : enforce the game match to draw and avoid the boss winning as player X and player 0.
+* **Pacman** : run from Pacman until you have enough power.
+
+![Pacman](/uploads/e4bef96a550da6cc3100a19f1d877aef/Pacman_Fast.gif)
 
 * **Pong** : get away from the field or die trying. Be carefull with the boss bars.
 
-* **Pacman** : run from Pacman until you have enough power.
+![Pong](/uploads/31265c3e56693459f8f1f011c5458b8c/Pong_Fast.gif)
+
+* **Tic Tac Toe** : enforce the game match to draw and avoid the boss winning as player X and player 0.
+
+![Tic Tac Toe](/uploads/459b765d13c56cd484dd8b5bd63e7474/TicTacToe_Fast.gif)
 
 * **Chess** : eat pieces from both sides and avoid your enemies.
+
+![Chess](/uploads/83785727d6a07b096c7e13a19a013386/Chess_Fast.gif)
 
 ## Versions
 
@@ -98,9 +106,11 @@ Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](
 
 * Optimized Pacman and Pong UI.
 
-### v1.7/v1.8
+### v1.7/v1.8/v1.9
 
 * Added responsive screen on height.
+
+* Fixed minor UI bugs.
 
 ## Built With
 
