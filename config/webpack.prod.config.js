@@ -29,7 +29,7 @@ module.exports = merge(webpackBaseConfig, {
         }),
         new ZipPlugin({
             path: '../dist_zip',
-            filename: 'backtohash.zip',
+            filename: 'backtogame.zip',
             exclude: [/\.gitkeep$/]
         })
     ]
