@@ -2,6 +2,8 @@
 
 Game developed for **js13kGames** [**2019 JavaScript Game Coding Competition**](https://2019.js13kgames.com/).
 
+The objective is to develop a HTML + CSS + JS game with 13kb or less.
+
 *Original repository can be found on [**Gitlab**](https://gitlab.com/ighour-projects/games/html/back-to-game).*
 
 ## About
