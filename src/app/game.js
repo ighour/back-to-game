@@ -193,8 +193,10 @@ let next = (proceed, toLastInstance) => {
     else 
         currentInstance = proceed !== false ? (currentInstance + 1) % instances.length : instances.length - 1;
 
-    if(player.m != 1)
-        player.l = player.l + 10 > 100 ? 100 : player.l + 10;
+    const regen = (player.m - 1) * 100
+    if(regen > 0) {
+        player.l = player.l + regen > 100 ? 100 : player.l + regen;
+    }
 
     start(proceed);
 };
@@ -231,8 +233,8 @@ export const GAME = {
         dic: cp.im.c
     },
     f: {    //functions
-        dp: (damage, score) => doDamage(player, damage ? damage : boss.d, score),
-        db: (damage, score) => doDamage(boss, damage ? damage : player.d, score),
+        dp: (damage, score) => doDamage(player, (damage ? damage : boss.d) / player.m, score),
+        db: (damage, score) => doDamage(boss, (damage ? damage : player.d) * player.m, score),
         mag: getMagVector,
         norm: getNormalizedVector
     },

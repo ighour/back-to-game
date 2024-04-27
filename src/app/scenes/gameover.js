@@ -170,7 +170,7 @@ let onStart = _win => {
 
     GAME.e("click", () => {
         if(textTimer >= 1300)
-            window.open('https://gitlab.com/ighour-projects/games/html/back-to-game','_blank');
+            window.open('https://github.com/ighour/back-to-game','_blank');
     }, codeButton);
 };
 
