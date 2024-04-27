@@ -130,6 +130,12 @@ Go back to past and destroy the evil!
 
 * Fixed minor UI bugs.
 
+### v2.0
+
+* Make it easier in Fun Mode.
+
+* Minor fixes and updates.
+
 ## Built With
 
 * [HTML](https://www.w3schools.com/html/html5_intro.asp)
